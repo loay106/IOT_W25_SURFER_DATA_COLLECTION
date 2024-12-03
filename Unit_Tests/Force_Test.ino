@@ -21,7 +21,7 @@ Serial.println(scale.get_value(5));   // print the average of 5 readings from th
 Serial.print("get units: \t\t");
 Serial.println(scale.get_units(5), 1);  // print the average of 5 readings from the ADC minus tare weight (not set) divided
 // by the SCALE parameter (not set yet)
-scale.set_scale(416.9347); //!!!!!!!!!!!!!!!!!!!!!!!!insert your calibration factor!!!!!!!!!!!!!!!!!!!!!!!!!!!
+scale.set_scale(438); //!!!!!!!!!!!!!!!!!!!!!!!!insert your calibration factor!!!!!!!!!!!!!!!!!!!!!!!!!!!
 scale.tare();               // reset the scale to 0
 Serial.print("read: \t\t");
 Serial.println(scale.read());                 // print a raw reading from the ADC
