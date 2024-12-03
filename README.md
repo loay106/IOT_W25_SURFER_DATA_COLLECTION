@@ -9,13 +9,10 @@
 # Folder description:
 // to be added later
 
-# Arduino/ESP32 libraries used in this project:
-// to be added later
-
-# Arduino/ESP libraries installed for the project:
-// to be added later - saved for template use
-1. XXXX - version XXXXX
-2. XXXX - version XXXXX
+# Arduino/ESP libraries used for the project:
+1. RTClib (by Adafruit) - version 2.1.4
+2. HX711 (by Rob Tillaart) - version 0.5.2
+3. SparkFun BNO080 Cortex Based IMU (by SparkFun) - version 1.1.12
 
 # Project Poster:
 // to be edited later - saved for template use
