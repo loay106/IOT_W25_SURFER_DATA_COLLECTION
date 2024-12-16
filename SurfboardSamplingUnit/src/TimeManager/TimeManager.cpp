@@ -2,12 +2,19 @@
 
 #include <Arduino.h>
 
-TimeManager::TimeManager(int currentTimeStamp){
-    receivedTimestamp = currentTimeStamp;
-    syncMillis = millis();
+TimeManager::TimeManager(){
+    isConfigured = false;
 }
 
+void TimeManager::adjust(int currentTimeStamp){
+    receivedTimestamp = currentTimeStamp;
+    this->syncMillis = millis();
+    isConfigured = true;
+}
 int TimeManager::getCurrentTimeStamp(){
-    // todo: test this......
+    if (!isConfigured){
+        // todo: throw exception....
+        return -1;
+    }
     return receivedTimestamp + (millis() - syncMillis) / 1000;
 }

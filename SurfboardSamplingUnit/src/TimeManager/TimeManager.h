@@ -5,9 +5,11 @@ class TimeManager {
     private:
         int receivedTimestamp;
         long syncMillis;
+        bool isConfigured;
 
     public:
-        TimeManager(int currentTimeStamp);
+        TimeManager();
+        void adjust(int currentTimeStamp);
         int getCurrentTimeStamp();
 };
 

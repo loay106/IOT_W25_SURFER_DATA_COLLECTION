@@ -23,12 +23,17 @@ UnitManager::UnitManager(DataLogger dataLogger, TimeManager timeManager){
     samplingDelayTime = 50;
 }
 
+void UnitManager::configure(int currentTimeStamp){
+    timeManager.adjust(currentTimeStamp);
+    status = UnitManagerStatus::STANDBY;
+}
+
 void UnitManager::addIMUSensor(SupportedIMUModels model, int samplingRatio){
     if(model == SupportedIMUModels::BNO085){
-        IMU_BNO085 sensor = IMU_BNO085(createUniqueID(), dataLogger, samplingRatio)
+        IMU_BNO085 sensor = IMU_BNO085(createUniqueID(), dataLogger, samplingRatio);
         imuSensors.push_back(sensor);
 
-        if(imuSensors.isEmpty()){
+        if(imuSensors.size() == 0){
             samplingDelayTime = samplingRatio;
         }else{
             samplingDelayTime = calculateGCD(samplingDelayTime, samplingRatio);
@@ -45,7 +50,7 @@ UnitManagerStatus UnitManager::getStatus(){
 
 void UnitManager::startSampling(){
     // todo: add force sensors later on...
-    int sampleStartTime = timeManger.getCurrentTimeStamp();
+    int sampleStartTime = timeManager.getCurrentTimeStamp();
     for(i=0; i<imuSensors.size();i++){
         imuSensors[i].startSampling(sampleStartTime, true, true);
     }
@@ -60,14 +65,14 @@ int UnitManager::getSamplingDelayTime()
 
 void UnitManager::logSamples(){
         // todo: add force sensors later on...
-    int currentTimeStamp = timeManger.getCurrentTimeStamp();
+    int currentTimeStamp = timeManager.getCurrentTimeStamp();
     for(i=0; i<imuSensors.size();i++){
         imuSensors[i].logSamples(currentTimeStamp);
     }
 }
 
 void UnitManager::stopSampling(){
-    int currentTimeStamp = timeManger.getCurrentTimeStamp();
+    int currentTimeStamp = timeManager.getCurrentTimeStamp();
     for(i=0; i<imuSensors.size();i++){
         imuSensors[i].stopSampling(currentTimeStamp);
     }

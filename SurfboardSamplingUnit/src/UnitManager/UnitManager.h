@@ -17,7 +17,7 @@ class UnitManager {
         std::list<IMUBase> imuSensors;
 
         UnitManager(DataLogger dataLogger, TimeManager timeManager);
-
+        void configure(int currentTimeStamp);
         void addIMUSensor(SupportedIMUModels model, int samplingRatio);
         UnitManagerStatus getStatus();
 
@@ -29,6 +29,7 @@ class UnitManager {
 };
 
 enum UnitManagerStatus{
+    CONFIGURING,
     STANDBY,
     SAMPLING,
     SYNCING, // sycning samples data to the control unit
