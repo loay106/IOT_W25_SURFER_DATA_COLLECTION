@@ -28,7 +28,7 @@ class IMUBase {
         bool rotationVectorEnabled;
     
     public:
-        IMUBase(const std::string id, const std::string model, DataLogger dataLogger);
+        IMUBase(const std::string id, const std::string model, DataLogger dataLogger, int samplingRatio);
         void startSampling(int currentTimestamp,bool accelerometereSampling, bool rotationVectorSampling);
         void logSamples(int currentTimestamp);
         void stopSampling(int currentTimestamp);

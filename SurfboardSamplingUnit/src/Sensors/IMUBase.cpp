@@ -1,12 +1,13 @@
 #include "IMUBase.h"
 #include <../DataLogger/DataLogger.h>
 
-IMUBase::IMUBase(const std::string id, const std::string model, DataLogger dataLogger){
+IMUBase::IMUBase(const std::string id, const std::string model, DataLogger dataLogger, int samplingRatio){
     this->id=id;
     this->model = model;
     this->dataLogger = dataLogger;
     accelerometerDataFile = NULL;
     rotationVectorDataFile = NULL;
+    this->samplingRatio = samplingRatio;
     status = IMUStatus::STANDBY;
 }
 
@@ -24,13 +25,13 @@ void IMUBase::startSampling(int currentTimestamp,bool accelerometereSampling, bo
         // todo: create unique file names with timestamps/id etc.....
         accelerometerDataFile = &dataLogger.createSampleLogFile("test1234", "quatI,quatJ,quatK,quatReal,quatRadianAccuracy");
         // todo: change to parameter
-        enableAccelerometer(50);
+        enableAccelerometer();
         accelerometerEnabled = true;
     }else if(rotationVectorSampling){
         // todo: create unique file names with timestamps/id etc.....
         rotationVectorDataFile = &dataLogger.createSampleLogFile("test1234", "quatI,quatJ,quatK,quatReal,quatRadianAccuracy");
         // todo: change to parameter
-        enableRotationVector(50);
+        enableRotationVector();
         rotationVectorEnabled = true;
     }
     status = IMUStatus::SAMPLING;

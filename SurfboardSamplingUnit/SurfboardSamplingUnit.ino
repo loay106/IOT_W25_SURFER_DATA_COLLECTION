@@ -4,6 +4,7 @@
 
 // constants
 int SDCardPin = 5;
+int IMUSamplingRatio = 50; // todo: change this to a parameter later on?
 
 // global objects
 UnitManager unitManager;
@@ -15,7 +16,7 @@ void setup() {
   unitManager = UnitManager(dataLogger, timeManager);
 
   // add imu sensors here
-  unitManager.addIMUSensor(SupportedIMUModels::BNO085, 50);
+  unitManager.addIMUSensor(SupportedIMUModels::BNO085, IMUSamplingRatio);
 }
 
 void loop() {

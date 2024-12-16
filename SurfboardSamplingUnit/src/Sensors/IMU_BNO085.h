@@ -3,13 +3,17 @@
 
 #include "IMUBase.h"
 #include <string>
-#include "SparkFun_BNO080_Arduino_Library.h"
 
 class IMU_BNO085: public IMUBase {   
-    private:
-        BNO080 myIMU;
+    // todo: implement and add methods as needed
     public:
         IMU_BNO085(const std::string id, DataLogger dataLogger, int samplingRatio);
+        void enableAccelerometer() override;
+        void disableAccelerometer() override;
+        void enableRotationVector() override;
+        void disableRotationVector() override;
+        std::string getgAccelerometerSample() override;
+        std::string getgRotationVectorSample() override;
 };
 
 #endif // IMU_BNO085_H
