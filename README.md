@@ -7,7 +7,18 @@
 // to be added later
 
 # Folder description:
-// to be added later
+The project includes two main folders:
+1. SurfboardControlUnit:
+   
+   This folder is used to program the Surfboard control unit.
+   The device should only include one control unit.
+   The control unit's properties, descriptions, and features can be found below.
+   
+3. SurfboardSamplingUnit:
+   
+   This folder is used to program the Surfboard sampling units.
+   The device is modular and can support multiple sampling units.
+   The sampling unit's properties, descriptions, and features can be found below.
 
 # Arduino/ESP libraries used for the project:
 1. RTClib (by Adafruit) - version 2.1.4
