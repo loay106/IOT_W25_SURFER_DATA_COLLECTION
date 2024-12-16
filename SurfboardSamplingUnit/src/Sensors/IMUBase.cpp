@@ -1,20 +1,66 @@
 #include "IMUBase.h"
+#include <../DataLogger/DataLogger.h>
 
-IMUBase::IMUBase(const std::string name, const std::string id, const std::string model) : name(name), id(id), model(model){
-    rotationVectorDataLogger = NULL;
-    accelerometerDataLogger = NULL;
+IMUBase::IMUBase(const std::string id, const std::string model, DataLogger dataLogger){
+    this->id=id;
+    this->model = model;
+    this->dataLogger = dataLogger;
+    accelerometerDataFile = NULL;
+    rotationVectorDataFile = NULL;
     status = IMUStatus::STANDBY;
 }
 
-void IMUBase::startSampling(int currentTimestamp){
-    // todo: create unique file names with timestamps/id etc.....
-    rotationVectorDataLogger = SampleDataLogger("test1234", "quatI,quatJ,quatK,quatReal,quatRadianAccuracy");
-    accelerometerDataLogger = SampleDataLogger("test12345", "AccX,AccY,AccZ");;
+void IMUBase::startSampling(int currentTimestamp,bool accelerometereSampling, bool rotationVectorSampling){
+    if(status != IMUStatus::STANDBY){
+        // already sampling or on error mode...
+        // todo: log accordingly
+        return;
+    }
+    if(!accelerometereSampling && !rotationVectorSampling){
+        // nothing to sample...
+        // todo: add warning?
+        return;
+    }else if(accelerometereSampling){
+        // todo: create unique file names with timestamps/id etc.....
+        accelerometerDataFile = &dataLogger.createSampleLogFile("test1234", "quatI,quatJ,quatK,quatReal,quatRadianAccuracy");
+        // todo: change to parameter
+        enableAccelerometer(50);
+        accelerometerEnabled = true;
+    }else if(rotationVectorSampling){
+        // todo: create unique file names with timestamps/id etc.....
+        rotationVectorDataFile = &dataLogger.createSampleLogFile("test1234", "quatI,quatJ,quatK,quatReal,quatRadianAccuracy");
+        // todo: change to parameter
+        enableRotationVector(50);
+        rotationVectorEnabled = true;
+    }
+    status = IMUStatus::SAMPLING;
 }
 
-void IMUBase::stopSampling(){
-    // todo: valid way to desconstruct? ... I forgot c++....
-    // might want to close file here
-    rotationVectorDataLogger = NULL;
-    accelerometerDataLogger = NULL;
+void IMUBase::logSamples(int currentTimestamp){
+    if(rotationVectorEnabled){
+        std::string sample = getgRotationVectorSample();
+        dataLogger.logSampleToFile(*rotationVectorDataFile, sample, currentTimestamp);
+        
+    }
+    if(accelerometerEnabled){
+        std::string sample = getgAccelerometerSample();
+        dataLogger.logSampleToFile(*accelerometerDataFile, sample, currentTimestamp);
+    }
+}
+
+void IMUBase::stopSampling(int currentTimestamp){
+    if(rotationVectorEnabled){
+        disableRotationVector();
+        // todo: close rotation vector file...
+        rotationVectorDataFile = NULL;
+        rotationVectorEnabled = false;
+    }
+    if(accelerometerEnabled){
+        disableAccelerometer();
+        // todo: close accelerometer file...
+        accelerometerDataFile = NULL;
+        accelerometerEnabled = false;
+    }
+    
+    status = IMUStatus::STANDBY;
 }
