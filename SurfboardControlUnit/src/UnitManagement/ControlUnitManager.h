@@ -5,14 +5,25 @@ using namespace std;
 #include <map>
 #include <string>
 #include <src/SamplingUnitSync/ESPNowSyncManager.h>
-#include <src/DataManagement/SampleLogger.h>
+#include <src/DataManagement/SDCardSampleLogger.h>
 #include <SamplingUnit.h>
+
+/*
+    Class handling the logic of the device. Only one instance is needed
+    // todo: change to singleton maybe...
+
+    This device consits of the following parts:
+        1. ESP controller with WIFI compatibility
+        2. SD Card
+        3. RTC 
+        4. RGB light (status updates)
+ */
 
 class ControlUnitManager{
     private:
         map<string, SamplingUnit> samplingUnits; // id to instance mapping
         ESPNowSyncManager espSyncManager;
-        SampleLogger sampleLogger;
+        SDCardSampleLogger sampleLogger;
         SystemStatus status;
 
     public:
