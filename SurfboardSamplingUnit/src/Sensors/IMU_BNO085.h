@@ -7,7 +7,7 @@
 class IMU_BNO085: public IMUBase {   
     // todo: implement and add methods as needed
     public:
-        IMU_BNO085(const std::string id, DataLogger dataLogger, int samplingRatio);
+        IMU_BNO085(const std::string id, int samplingRate);
         void enableAccelerometer() override;
         void disableAccelerometer() override;
         void enableRotationVector() override;

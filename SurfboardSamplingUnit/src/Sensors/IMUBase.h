@@ -2,14 +2,13 @@
 #define IMU_BASE_H
 
 #include <string>
-#include <../DataLogger/DataLogger.h>
 
 class IMUBase {
     protected:
         std::string id;
         std::string model;
         IMUStatus status;
-        int samplingRatio;
+        int samplingRate;
 
         virtual void enableAccelerometer() = 0;
         virtual void disableAccelerometer() = 0;
@@ -21,17 +20,16 @@ class IMUBase {
         virtual std::string getgRotationVectorSample() = 0;
 
     private:
-        DataLogger dataLogger;
         FILE* accelerometerDataFile;
         FILE* rotationVectorDataFile;
         bool accelerometerEnabled;
         bool rotationVectorEnabled;
     
     public:
-        IMUBase(const std::string id, const std::string model, DataLogger dataLogger, int samplingRatio);
-        void startSampling(int currentTimestamp,bool accelerometereSampling, bool rotationVectorSampling);
-        void logSamples(int currentTimestamp);
-        void stopSampling(int currentTimestamp);
+        IMUBase(const std::string id, const std::string model, int samplingRate);
+        void startSampling(bool accelerometereSampling, bool rotationVectorSampling);
+        void getSamples();
+        void stopSampling();
 };
 
 enum IMUStatus{
