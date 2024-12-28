@@ -2,6 +2,7 @@
 #define IMU_BASE_H
 
 #include <string>
+#include "SparkFun_BNO080_Arduino_Library.h"
 
 class IMUBase {
     protected:
@@ -10,23 +11,15 @@ class IMUBase {
         IMUStatus status;
         SamplingModes mode;
         int samplingRate;
-        bool samplingEnabled;
-
-        virtual void setup() = 0;
-        virtual void enableAccelerometer() = 0;
-        virtual void disableAccelerometer() = 0;
-
-        virtual void enableRotationVector() = 0;
-        virtual void disableRotationVector() = 0;
-
-        virtual std::string getgAccelerometerSample() = 0;
-        virtual std::string getgRotationVectorSample() = 0;
+        bool sensorEnabled;
 
     public:
         IMUBase(SupportedIMUModels model, SamplingModes mode, int samplingRate);
-        void setup();
-        void enableSampling();
-        void getSample();
+        virtual void setup() = 0;
+        virtual void enableSensor() = 0;
+        virtual void disableSensor() = 0;
+        virtual std::string getSample() = 0;
+
 };
 
 enum IMUStatus{

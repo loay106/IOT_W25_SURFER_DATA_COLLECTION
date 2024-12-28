@@ -5,15 +5,13 @@
 #include <string>
 
 class IMU_BNO080: public IMUBase {
-    // todo: implement and add methods as needed
+    BNO080 sensor;
     public:
-        IMU_BNO080(const std::string id, int samplingRate);
-        void enableAccelerometer() override;
-        void disableAccelerometer() override;
-        void enableRotationVector() override;
-        void disableRotationVector() override;
-        std::string getgAccelerometerSample() override;
-        std::string getgRotationVectorSample() override;
+        IMU_BNO080(SamplingModes mode, int samplingRate);
+        void setup() override;
+        void enableSensor() override;
+        void disableSensor() override;
+        std::string getSample() override;
 };
 
 #endif // IMU_BNO080_H
