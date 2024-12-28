@@ -26,22 +26,15 @@
 
 */
 class UnitManager {
-    private:
-        UnitManagerStatus status;
-        int samplingDelayTime; 
-        ESPNowControlUnitSyncManager syncManager;
-    
     public:
+        UnitManagerStatus status;
+        int samplingDelayTime;
+        ESPNowControlUnitSyncManager syncManager;
         std::list<IMUBase> imuSensors;
-
-        UnitManager(ESPNowControlUnitSyncManager syncManager);
-        void configure(int currentTimeStamp);
-        void addIMUSensor(SupportedIMUModels model, int samplingRatio);
-        UnitManagerStatus getStatus();
-
+        std::list<IMUBase> strainSensors;
+        UnitManager(int samplingDelayTime);
+        void addIMUSensor(SupportedIMUModels model);
         void startSampling();
-        int getSamplingDelayTime();
-        void logSamples();
         void stopSampling();
 
 };
@@ -58,8 +51,5 @@ enum ControlUnitCommand{
     STOP_SAMPLING
 };
 
-enum SupportedIMUModels{
-    BNO085,
-};
 
 #endif // UNIT_MANAGER_H

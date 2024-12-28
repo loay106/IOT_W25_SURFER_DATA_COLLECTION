@@ -6,10 +6,13 @@
 class IMUBase {
     protected:
         std::string id;
-        std::string model;
+        SupportedIMUModels model;
         IMUStatus status;
+        SamplingModes mode;
         int samplingRate;
+        bool samplingEnabled;
 
+        virtual void setup() = 0;
         virtual void enableAccelerometer() = 0;
         virtual void disableAccelerometer() = 0;
 
@@ -19,23 +22,25 @@ class IMUBase {
         virtual std::string getgAccelerometerSample() = 0;
         virtual std::string getgRotationVectorSample() = 0;
 
-    private:
-        FILE* accelerometerDataFile;
-        FILE* rotationVectorDataFile;
-        bool accelerometerEnabled;
-        bool rotationVectorEnabled;
-    
     public:
-        IMUBase(const std::string id, const std::string model, int samplingRate);
-        void startSampling(bool accelerometereSampling, bool rotationVectorSampling);
-        void getSamples();
-        void stopSampling();
+        IMUBase(SupportedIMUModels model, SamplingModes mode, int samplingRate);
+        void setup();
+        void enableSampling();
+        void getSample();
 };
 
 enum IMUStatus{
     STANDBY,
     SAMPLING,
     ERROR,
+};
+
+enum SupportedIMUModels{
+    BNO080,
+};
+enum SamplingModes{
+    ACCELEROMETER,
+    ROTATION_VECTOR
 };
 
 #endif // IMU_BASE_H

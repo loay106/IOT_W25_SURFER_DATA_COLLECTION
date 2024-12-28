@@ -1,13 +1,13 @@
-#ifndef IMU_BNO085_H
-#define IMU_BNO085_H
+#ifndef IMU_BNO080_H
+#define IMU_BNO080_H
 
 #include "IMUBase.h"
 #include <string>
 
-class IMU_BNO085: public IMUBase {   
+class IMU_BNO080: public IMUBase {
     // todo: implement and add methods as needed
     public:
-        IMU_BNO085(const std::string id, int samplingRate);
+        IMU_BNO080(const std::string id, int samplingRate);
         void enableAccelerometer() override;
         void disableAccelerometer() override;
         void enableRotationVector() override;
@@ -16,4 +16,4 @@ class IMU_BNO085: public IMUBase {
         std::string getgRotationVectorSample() override;
 };
 
-#endif // IMU_BNO085_H
+#endif // IMU_BNO080_H
