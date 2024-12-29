@@ -11,8 +11,9 @@ class ESPNowControlUnitSyncManager {
     public:
         ESPNowControlUnitSyncManager(uint8_t controlUnitDeviceMac[]);
         void reportStatus(UnitManagerStatus status);
-        void sendSamples(); // todo: add params (see format of how they're sent in ControlUnit!)
+        void sendSamples(std::string sample, std::string pattern, std::string id); // todo: add params (see format of how they're sent in ControlUnit!)
         ControlUnitCommand getNextCommand();
 };
+
 
 #endif // CONTROL_UNIT_SYNC_MANAGER_H

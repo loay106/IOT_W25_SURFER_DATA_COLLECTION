@@ -10,6 +10,7 @@ class IMUBase {
         SupportedIMUModels model;
         IMUStatus status;
         SamplingModes mode;
+        std::string pattern;
         int samplingRate;
         bool sensorEnabled;
 

@@ -1,49 +1,56 @@
 #include "src/UnitManager/UnitManager.h"
 #include "src/ControlUnitSync/ControlUnitSyncManager.h"
+#include "src/Sensors/IMU_BNO080.h"
 
 uint8_t CONTROL_UNIT_DEVICE_MAC[] = {0x24, 0x6F, 0x28, 0xAB, 0xCD, 0xEF}; // todo: change to control unit device's MAC..
 
 // global objects
 UnitManager unitManager;
 ControlUnitSyncManager syncManager;
+int SamplingDelayTime = 80;
 
 void setup() {
+    Serial.begin(9600);
     syncManager = ControlUnitSyncManager(CONTROL_UNIT_DEVICE_MAC);
     unitManager = UnitManager();
 
     // add imu sensors here
-    unitManager.addIMUSensor(SupportedIMUModels::BNO085, IMUSamplingRatio);
+    IMU_BNO080 sensor_1 = IMU_BNO080(SamplingModes::ACCELEROMETER,SamplingDelayTime);
+    sensor.setup();
+    unitManager.addIMUSensor(sensor_1);
 }
 
 void loop() {
-    UnitManagerStatus status = unitManager.getStatus();
+    UnitManagerStatus status = unitManager.status;
     switch (status)
     {
-        case UnitManagerStatus::CONFIGURING:
-            if(receivedTimeStamp == NULL){
-                delay(5);
-            }else{
-                unitManager.configure(receivedTimeStamp);
-            }
-            break;
-
         case UnitManagerStatus::STANDBY:
-            // todo: wait for instructions from the control unit to start sampling...
-            // todo: add support for ESP now between the two boxes
-            delay(50);
+            if(syncManager.getNextCommand() == ControlUnitCommand::START_SAMPLING){
+                unitManager.status = UnitManagerStatus::SAMPLING;
+                syncManager.reportStatus(unitManager.status);
+
+            }
+            else{
+                unitManager.status = UnitManagerStatus::ERROR;
+            }
+            delay(SamplingDelayTime);
             break;
 
         case UnitManagerStatus::SAMPLING:
-            unitManager.logSamples();
-            delay(unitManager.getSamplingDelayTime());
-            break;
-
-        case UnitManagerStatus::SYNCING:
-            delay(50);
+            if(syncManager.getNextCommand() == ControlUnitCommand::STOP_SAMPLING){
+                unitManager.stopSampling();
+                unitManager.status = UnitManagerStatus::STANDBY;
+                syncManager.reportStatus(unitManager.status);
+            }
+            else{
+                unitManager.startSampling();
+            }
+            delay(SamplingDelayTime);
             break;
 
         case UnitManagerStatus::ERROR:
-            delay(50);
+            syncManager.reportStatus(unitManager.status);
+            while(1);// don't know what to do
             break;
 
         default:

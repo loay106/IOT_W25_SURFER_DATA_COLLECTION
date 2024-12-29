@@ -2,21 +2,30 @@
 #include <../Sensors/IMUBase.h>
 #include <../Sensors/IMU_BNO080.h>
 
-UnitManager::UnitManager(int samplingDelayTime): status(UnitManagerStatus::CONFIGURING),samplingDelayTime(samplingDelayTime){
-
+UnitManager::UnitManager(ESPNowControlUnitSyncManager& syncManager): status(UnitManagerStatus::STANDBY){
+    this->syncManager = syncManager;
 }
-void UnitManager::addIMUSensor(SupportedIMUModels model){
-    if(model == SupportedIMUModels::BNO080){
-        IMU_BNO080 sensor = IMU_BNO080();
-        imuSensors.push_back(sensor);
-    }
-    else{
-        status = UnitManagerStatus::ERORR;
-    }
+void UnitManager::addIMUSensor(IMUBase& sensor){
+    imuSensors.push_back(sensor);
 }
 void UnitManager::startSampling(){
-    status = UnitManagerStatus::SAMPLING;
+    for(IMUBase& imuSensor : imuSensors){
+        if(!sensor.sensorEnabled){
+            sensor.enableSensor();
+            sensor.sensorEnabled = true;
+        }
+        std::string sampleString = imuSensor.getSample();
+        syncManager.sendSamples(sampleString,imuSensor.pattern,imuSensor.id);
+        if(imuSensor.status == IMUStatus::ERROR || SyncManager.status == ){
+            status = UnitManagerStatus::ERROR;
+        }
+    }
 }
 void UnitManager::stopSampling(){
-    status = UnitManagerStatus::STANDBY;
+    for(IMUBase& imuSensor : imuSensors){
+        if(sensor.sensorEnabled){
+            sensor.disableSensor();
+            sensor.sensorEnabled = false;
+        }
+    }
 }

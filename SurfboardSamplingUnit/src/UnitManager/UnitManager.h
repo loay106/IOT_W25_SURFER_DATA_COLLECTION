@@ -28,19 +28,17 @@
 class UnitManager {
     public:
         UnitManagerStatus status;
-        int samplingDelayTime;
         ESPNowControlUnitSyncManager syncManager;
         std::list<IMUBase> imuSensors;
         std::list<IMUBase> strainSensors;
-        UnitManager(int samplingDelayTime);
-        void addIMUSensor(SupportedIMUModels model);
+        UnitManager(ESPNowControlUnitSyncManager& syncManager);
+        void addIMUSensor(IMUBase& sensor);
         void startSampling();
         void stopSampling();
 
 };
 
 enum UnitManagerStatus{
-    CONFIGURING,
     STANDBY,
     SAMPLING,
     ERROR,
@@ -48,7 +46,7 @@ enum UnitManagerStatus{
 
 enum ControlUnitCommand{
     START_SAMPLING,
-    STOP_SAMPLING
+    STOP_SAMPLING,
 };
 
 
