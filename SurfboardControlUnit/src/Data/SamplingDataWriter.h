@@ -4,6 +4,8 @@
 using namespace std;
 #include <cstdint>
 #include <string>
+#include <vector>
+#include <SD.h>
 
 /*
     Log samples to a file in an SD card.
@@ -23,9 +25,13 @@ using namespace std;
 
 */
 class SamplingDataWriter{
+    private:
+        const uint8_t SDCardChipSelectPin;
     public:
-        FILE createSamplingFile(int timestamp); // automatically creates the above header in the file
-        void writeSample(FILE logFile, string samplingUnitID, string sensorID, string sampleData, string sampleUnits);
+        SamplingDataWriter(const uint8_t SDCardChipSelectPin);
+        void initialize();
+        string createSamplingFile(int timestamp); // automatically creates the above header in the file
+        void writeSamples(string fileName, string samplingUnitID, string sensorID, vector<string> sampleData, string sampleUnits);
 };
 
 
