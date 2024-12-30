@@ -3,6 +3,8 @@
 
 #include "IMUBase.h"
 #include <string>
+#include <Arduino.h>
+#include "SparkFun_BNO080_Arduino_Library.h"
 
 class IMU_BNO080: public IMUBase {
     BNO080 sensor;

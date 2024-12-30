@@ -1,6 +1,6 @@
 #include "UnitManager.h"
-#include <../Sensors/IMUBase.h>
-#include <../Sensors/IMU_BNO080.h>
+#include "../Sensors/IMUBase.h"
+#include "../Sensors/IMU_BNO080.h"
 
 UnitManager::UnitManager(ESPNowControlUnitSyncManager& syncManager): status(UnitManagerStatus::STANDBY){
     this->syncManager = syncManager;
@@ -16,7 +16,7 @@ void UnitManager::startSampling(){
         }
         std::string sampleString = imuSensor.getSample();
         syncManager.sendSamples(sampleString,imuSensor.pattern,imuSensor.id);
-        if(imuSensor.status == IMUStatus::ERROR || SyncManager.status == ){
+        if(imuSensor.status == IMUStatus::ERROR ){
             status = UnitManagerStatus::ERROR;
         }
     }

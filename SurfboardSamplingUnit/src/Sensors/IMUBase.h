@@ -2,7 +2,22 @@
 #define IMU_BASE_H
 
 #include <string>
-#include "SparkFun_BNO080_Arduino_Library.h"
+#include <Arduino.h>
+#include <SparkFun_BNO080_Arduino_Library.h>
+
+enum IMUStatus{
+    STANDBY,
+    SAMPLING,
+    ERROR,
+};
+
+enum SupportedIMUModels{
+    BNO080,
+};
+enum SamplingModes{
+    ACCELEROMETER,
+    ROTATION_VECTOR
+};
 
 class IMUBase {
     protected:
@@ -23,18 +38,6 @@ class IMUBase {
 
 };
 
-enum IMUStatus{
-    STANDBY,
-    SAMPLING,
-    ERROR,
-};
 
-enum SupportedIMUModels{
-    BNO080,
-};
-enum SamplingModes{
-    ACCELEROMETER,
-    ROTATION_VECTOR
-};
 
 #endif // IMU_BASE_H

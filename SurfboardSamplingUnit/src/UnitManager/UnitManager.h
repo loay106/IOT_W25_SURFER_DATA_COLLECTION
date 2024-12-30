@@ -1,10 +1,10 @@
 #ifndef UNIT_MANAGER_H
 #define UNIT_MANAGER_H
 
-#include <../Sensors/IMUBase.h>
+#include "../Sensors/IMUBase.h"
 #include <string>
 #include <list>
-#include <src/ControlUnitSync/ESPNowControlUnitSyncManager.h>
+#include "../ControlUnitSync/ESPNowControlUnitSyncManager.h"
 
 /* 
     This class handles the logic for the sampling unit device.
