@@ -7,7 +7,6 @@ using namespace std;
 #include <src/Sync/ESPNowSyncManager.h>
 #include <src/Status/SystemStatus.h>
 #include <src/Data/SamplingDataWriter.h>
-#include <SamplingUnitRep.h>
 #include <src/Time/TimeManager.h>
 
 /*
@@ -44,5 +43,9 @@ class ControlUnitManager{
         void updateSystem();
 };
 
+struct SamplingUnitRep{
+    uint8_t mac[6];
+    SamplingUnitStatus status;    
+}
 
 #endif /* CONTROL_UNIT_MANAGER_H */
