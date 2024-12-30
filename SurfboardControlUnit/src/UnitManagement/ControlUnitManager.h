@@ -6,7 +6,7 @@ using namespace std;
 #include <string>
 #include <src/Sync/ESPNowSyncManager.h>
 #include <src/Status/SystemStatus.h>
-#include <src/Data/DataLogger.h>
+#include <src/Data/SamplingDataWriter.h>
 #include <SamplingUnitRep.h>
 #include <src/Time/TimeManager.h>
 
@@ -25,14 +25,14 @@ class ControlUnitManager{
     private:
         map<string, SamplingUnitRep> samplingUnits; // id to instance mapping
         ESPNowSyncManager espSyncManager;
-        DataLogger dataLogger;
+        SamplingDataWriter samplingDataWriter;
         SystemStatus status;
         TimeManager timeManager;
 
         void handleSyncMessages();
 
     public:
-        ControlUnitManager(ESPNowSyncManager espSyncManager, DataLogger dataLogger, TimeManager timeManager);
+        ControlUnitManager(ESPNowSyncManager espSyncManager, SamplingDataWriter samplingDataWriter, TimeManager timeManager);
         void initialize();
 
         string addSamplingUnit();

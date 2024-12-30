@@ -1,11 +1,16 @@
 #ifndef TIME_MANAGER_H 
 #define TIME_MANAGER_H
 
+#include "RTClib.h"
+
 class TimeManager{
+    private:
+        RTC_DS1307 rtc;
     public:
         TimeManager();
-        int getCurrentTimestamp();
-        void adjust(int timestamp);
+        void initialize();
+        DateTime getCurrentDatetime();
+        void adjust(DateTime current);
 };
 
 
