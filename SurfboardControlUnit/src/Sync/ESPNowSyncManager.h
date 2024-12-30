@@ -5,6 +5,7 @@ using namespace std;
 #include <cstdint>
 #include <string>
 #include <queue>
+#include <src/Status/SystemStatus.h>
 
 /* 
     NOTE: ESP NOW DOES NOT ENSURE MESSAGES HAVE BEEN HANDLED - NO SYN/ACK MEACHANISM
@@ -29,19 +30,35 @@ using namespace std;
 
 class ESPNowSyncManager{
     private:
-        queue<SyncMessage> messageQueue;
+        queue<StatusUpdateMessage> statusUpdateQueue;
+        queue<SamplingSyncMessage> samplingSyncQueue;
 
-        SyncMessage decodeMessage(const uint8_t *mac, const uint8_t *data, int len);
-        void enqueueMessage(SyncMessage message);
-
+        void decodeAndEnqueueMessage(const uint8_t *mac, const uint8_t *data, int len);
     public:
         static const char DELIMETER = '|';
 
         ESPNowSyncManager();
         void initialize();
-        void sendMessage(SyncMessage message);
-        bool hasMessage();
-        SyncMessage popMessage();
+        void sendCommand(ControlUnitCommand command, uint8_t samplingUnitMac[6]);
+        void broadcastCommand(ControlUnitCommand command); 
+
+        bool hasStatusUpdateMessages();
+        bool hasSamplingUpdateMessages();
+
+        StatusUpdateMessage popStatusUpdateMessage();
+        SamplingSyncMessage popSamplingUpdateMessage();
+};
+
+struct SamplingSyncMessage{
+    uint8_t from[6]; 
+    string sensorID;
+    string units;
+    vector<string> samplingData;
+};
+
+struct StatusUpdateMessage{
+    uint8_t from[6]; 
+    SamplingUnitStatus status;
 };
 
 enum MessageSubject{
@@ -49,11 +66,9 @@ enum MessageSubject{
     SAMPLE_SYNC, 
 };
 
-struct SyncMessage {
-    uint8_t macAddress[6];
-    MessageSubject subject; // first 3 bytes
-    const uint8_t *messageContent; // rest of the payload
-    int messageContentLen; 
+enum ControlUnitCommand{
+    START_SAMPLING,
+    STOP_SAMPLING,
 };
 
 #endif /* ESP_NOW_SYNC_MANAGER_H */

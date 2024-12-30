@@ -4,9 +4,11 @@
 using namespace std;
 #include <map>
 #include <string>
-#include <src/SamplingUnitSync/ESPNowSyncManager.h>
-#include <src/DataManagement/SDCardSampleLogger.h>
-#include <SamplingUnit.h>
+#include <src/Sync/ESPNowSyncManager.h>
+#include <src/Status/SystemStatus.h>
+#include <src/Data/DataLogger.h>
+#include <SamplingUnitRep.h>
+#include <src/Time/TimeManager.h>
 
 /*
     Class handling the logic of the device. Only one instance is needed
@@ -21,36 +23,25 @@ using namespace std;
 
 class ControlUnitManager{
     private:
-        map<string, SamplingUnit> samplingUnits; // id to instance mapping
+        map<string, SamplingUnitRep> samplingUnits; // id to instance mapping
         ESPNowSyncManager espSyncManager;
-        SDCardSampleLogger sampleLogger;
+        DataLogger dataLogger;
         SystemStatus status;
+        TimeManager timeManager;
+
+        void handleSyncMessages();
 
     public:
-        ControlUnitManager();
+        ControlUnitManager(ESPNowSyncManager espSyncManager, DataLogger dataLogger, TimeManager timeManager);
+        void initialize();
 
         string addSamplingUnit();
         void updateSamplingUnitStatus(string unitID, SamplingUnitStatus status);
 
-        void handleSyncMessages();
-        void sendCommand(ControlUnitCommand command, string samplingUnitID); // send to specific unit   
-        void broadcastCommand(ControlUnitCommand command); // send to all units
-};
+        void startSampling();
+        void stopSampling();
 
-enum SystemStatus{
-    INITILAZING,
-    STAND_BY,
-    SAMPLING,
-    FILE_UPLOAD,
-    ERROR
-    // add more ass needed
-};
-
-enum ControlUnitCommand{
-    START_SAMPLING, // send timestamp here
-    STOP_SAMPLING,
-    START_SAMPLE_FILE_TRANSFER,
-    STOP_SAMPLE_FILE_TRANSFER
+        void updateSystem();
 };
 
 

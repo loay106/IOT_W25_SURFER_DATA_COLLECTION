@@ -26,7 +26,7 @@ class SDCardSampleLogger{
                     ----------------------------------------------------------------------------------------------------------------
 
         */
-        static FILE createCSVSampleFile(int timestamp); // automatically creates the above header in the file
+        static FILE createSamplingFile(int timestamp); // automatically creates the above header in the file
         static void logSample(FILE logFile, string samplingUnitID, string sensorID, string sampleData, string sampleUnits);
 };
 

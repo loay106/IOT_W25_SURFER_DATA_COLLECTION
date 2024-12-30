@@ -4,8 +4,9 @@
 using namespace std;
 #include <vector>
 #include <string>
+#include <src/Status/SystemStatus.h>
 
-class SamplingUnit{
+class SamplingUnitRep{
     private:
         SamplingUnitStatus status;
 
@@ -14,13 +15,6 @@ class SamplingUnit{
         void updateStatus(SamplingUnitStatus status);
 };
 
-
-enum SamplingUnitStatus{
-    STAND_BY,
-    SAMPLING,
-    DISCONNECTED,
-    ERROR  
-};
 
 
 #endif /* SAMPLING_UNIT_H */
