@@ -9,19 +9,19 @@ SamplingDataWriter::SamplingDataWriter(const uint8_t SDCardChipSelectPin, Logger
 
 void SamplingDataWriter::initialize(){
     if (!SD.begin(SDCardChipSelectPin)) {
-        Serial.println("SD card initialization failed!");
+        logger.error("SD card initialization failed!");
         throw InitError();
     }
-    Serial.println("SD card initialized successfully.");
+    logger.info("SD card initialized successfully.");
 
     const char *folderName = "/samplings";
     // Check if the folder already exists
     if (!SD.exists(folderName)) {
         // Attempt to create the folder
         if (SD.mkdir(folderName)) {
-            Serial.println("Folder 'samplings' created successfully.");
+            logger.info("Folder 'samplings' created successfully.");
         } else {
-            Serial.println("Failed to create folder 'samplings'.");
+            logger.error("Failed to create folder 'samplings'.");
             throw InitError();
         }
     }
@@ -32,14 +32,14 @@ string SamplingDataWriter::createSamplingFile(int timestamp){
     string filePath = "/samplings/" + fileName;
     File logFile = SD.open(filePath.c_str(), FILE_WRITE);
     if (!logFile) {
-        Serial.println("Failed to create sampling file!");
+        logger.error("Failed to create sampling file!");
         return File();
     }
 
     // Write the CSV header
     logFile.println("sample_data,sample_units,sampling_unit_id,sensor_id");
     logFile.flush();
-    Serial.println("Sampling file created successfully: " + filePath);
+    logger.info("Sampling file created successfully: " + filePath);
     logFile.close();
     return fileName;
 }
@@ -48,8 +48,7 @@ void SamplingDataWriter::writeSamples(string fileName, string samplingUnitID, st
     string filePath = "/samplings/" + fileName;
     File logFile = SD.open(filePath.c_str(), FILE_APPEND);
     if (!logFile) {
-        Serial.println("Failed to open file: " + fileName);
-        // todo: show error...
+        logger.error("Failed to open file: " + fileName);
         return;
     }
     

@@ -9,6 +9,7 @@
         5. Wifi connection
         6. a way to download files wirelessly...
         7. a user interface....
+        8. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
 */
 
 // constants

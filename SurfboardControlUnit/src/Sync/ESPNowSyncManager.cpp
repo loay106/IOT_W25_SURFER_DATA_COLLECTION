@@ -13,7 +13,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
     }
 
     if (tokens.empty()) {
-        Serial.println("Invalid message format.");
+        logger.error("Invalid message format.")
         return;
     }
 
@@ -21,7 +21,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
 
     if (subject == "STATUS_UPDATE") {
         if (tokens.size() < 2) {
-            Serial.println("Invalid STATUS_UPDATE message format.");
+            logger.error("Invalid STATUS_UPDATE message format.")
             return;
         }
 
@@ -34,7 +34,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
         } else if (tokens[1] == "ERROR") {
             status = SamplingUnitStatus::ERROR;
         } else {
-            Serial.println("Unknown STATUS_UPDATE status.");
+            logger.error("Unknown STATUS_UPDATE status.");
             return;
         }
 
@@ -47,7 +47,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
 
     } else if (subject == "SAMPLE_SYNC") {
         if (tokens.size() < 4) {
-            Serial.println("Invalid SAMPLE_SYNC message format.");
+            logger.error("Invalid SAMPLE_SYNC message format.");
             return;
         }
 
@@ -65,7 +65,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
         samplingSyncQueue.push(syncMessage);
 
     } else {
-        Serial.println("Unknown message received.");
+        logger.error("Unknown message received.");
     }
 }
 
@@ -74,9 +74,9 @@ void ESPNowSyncManager::initialize(vector<esp_now_peer_info_t> peers)
     WiFi.mode(WIFI_STA);
 
     if (esp_now_init() == ESP_OK) {
-        Serial.println("ESPNow Init success");
+        logger.info("ESPNow Init success");
     }else {
-        Serial.println("ESPNow Init fail");
+        logger.error("ESPNow Init fail");
         throw InitError();
     }
 
@@ -85,7 +85,7 @@ void ESPNowSyncManager::initialize(vector<esp_now_peer_info_t> peers)
         peerInfo[i].encrypt = false;
 
         if (esp_now_add_peer(&peerInfo[i]) != ESP_OK) {
-            Serial.println("Failed to add peer");
+            logger.error("Failed to add peer");
             throw InitError();
         }
     }
@@ -111,7 +111,7 @@ void ESPNowSyncManager::sendCommand(ControlUnitCommand command, uint8_t sampling
 
     esp_err_t result = esp_now_send(samplingUnitMac, (uint8_t *) &messageToSend, sizeof(messageToSend));
     if (result != ESP_OK) {
-        Serial.print("Failed to send command");
+        logger.error("Failed to send command");
     }
 }
 
@@ -134,7 +134,7 @@ void ESPNowSyncManager::broadcastCommand(ControlUnitCommand command){
 
     esp_err_t result = esp_now_send(NULL, (uint8_t *) &messageToSend, sizeof(messageToSend));
     if (result != ESP_OK) {
-        Serial.print("Failed to send command");
+        logger.error("Failed to send command");
     }
 }
 

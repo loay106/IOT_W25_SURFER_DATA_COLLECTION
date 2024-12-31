@@ -13,7 +13,8 @@ class RGBStatusManager{
     private:
         SystemStatus currentStatus;
     public:
-        RGBStatusManager(SystemStatus currentStatus);
+        RGBStatusManager();
+        void initialize(SystemStatus currentSystemStatus);
         void updateStatus(SystemStatus newStatus); 
 };
 
