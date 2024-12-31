@@ -29,7 +29,7 @@ void SamplingDataWriter::initialize(){
     }
 }
 
-FILE SamplingDataWriter::createSamplingFile(int timestamp){
+string SamplingDataWriter::createSamplingFile(int timestamp){
     string fileName = generateUniqueFileName(timestamp);
     string filePath = "/samplings/" + fileName;
     File logFile = SD.open(filePath.c_str(), FILE_WRITE);

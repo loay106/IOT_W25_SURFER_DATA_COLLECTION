@@ -1,4 +1,5 @@
 enum SystemStatus{
+    STARTING,
     INITILAZING,
     STAND_BY,
     SAMPLING,

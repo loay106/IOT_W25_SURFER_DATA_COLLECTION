@@ -27,19 +27,22 @@ class ControlUnitManager{
         SamplingDataWriter samplingDataWriter;
         SystemStatus status;
         TimeManager timeManager;
+        string* samplingFileName;
 
-        void handleSyncMessages();
+        void updateSamplingUnitStatus(uint8_t samplingUnitMac[], SamplingUnitStatus status);
+        void addSamplingUnit(uint8_t mac[]);
 
     public:
-        ControlUnitManager(ESPNowSyncManager espSyncManager, SamplingDataWriter samplingDataWriter, TimeManager timeManager);
-        void initialize();
-
-        string addSamplingUnit();
-        void updateSamplingUnitStatus(string unitID, SamplingUnitStatus status);
-
+        ControlUnitManager(const uint8_t SDCardChipSelectPin);
+        void initialize(uint8_t samplingUnits[][], int samplingUnitsNum);
         void startSampling();
         void stopSampling();
 
+        /*
+            1. Handle status updates from sampling units in espSyncManager
+            2. Handle sampling data from sampling units in espSyncManager
+            3. 
+        */
         void updateSystem();
 };
 

@@ -10,6 +10,7 @@ class TimeManager{
         TimeManager();
         void initialize();
         DateTime getCurrentDatetime();
+        int getCurrentTimestamp();
         void adjust(DateTime current);
 };
 
