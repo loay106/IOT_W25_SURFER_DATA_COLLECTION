@@ -32,19 +32,13 @@ class ControlUnitManager{
         SystemStatus status;
         string* samplingFileName;
 
-        void updateSamplingUnitStatus(uint8_t samplingUnitMac[], SamplingUnitStatus status);
-
     public:
         ControlUnitManager(const uint8_t SDCardChipSelectPin, const int serialBaudRate);
         void initialize(uint8_t samplingUnits[][], int samplingUnitsNum);
+        
         void startSampling();
         void stopSampling();
 
-        /*
-            1. Handle status updates from sampling units in espSyncManager
-            2. Handle sampling data from sampling units in espSyncManager
-            3. 
-        */
         void updateSystem();
 };
 
