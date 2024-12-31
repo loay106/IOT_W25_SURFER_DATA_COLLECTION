@@ -1,10 +1,12 @@
+#ifndef SYSTEM_STATUS_H 
+#define SYSTEM_STATUS_H
+
 enum SystemStatus{
     STARTING,
     INITILAZING,
     STAND_BY,
     SAMPLING,
     ERROR
-    // add more ass needed
 };
 
 enum SamplingUnitStatus{
@@ -13,3 +15,5 @@ enum SamplingUnitStatus{
     DISCONNECTED,
     ERROR  
 };
+
+#endif /* SYSTEM_STATUS_H */

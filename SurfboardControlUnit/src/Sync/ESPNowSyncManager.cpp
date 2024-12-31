@@ -1,5 +1,5 @@
 #include "ESPNowSyncManager.h"
-#include "src/Exceptions/UnitExceptions.h"
+#include "../Exceptions/UnitExceptions.h"
 
 void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, const uint8_t *incomingData, int len){
     string message(reinterpret_cast<const char *>(incomingData), len); // Convert incoming data to string

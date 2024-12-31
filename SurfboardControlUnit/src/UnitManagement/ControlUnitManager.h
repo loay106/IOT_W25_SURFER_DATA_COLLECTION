@@ -4,11 +4,12 @@
 using namespace std;
 #include <map>
 #include <string>
-#include <src/Sync/ESPNowSyncManager.h>
-#include <src/Status/SystemStatus.h>
-#include <src/Data/SamplingDataWriter.h>
-#include <src/Data/Logger.h>
-#include <src/Time/TimeManager.h>
+
+#include "../Sync/ESPNowSyncManager.h"
+#include "../Status/SystemStatus.h"
+#include "../Data/SamplingDataWriter.h"
+#include "../Data/Logger.h"
+#include "../Time/TimeManager.h"
 
 /*
     Class handling the logic of the device. Only one instance is needed

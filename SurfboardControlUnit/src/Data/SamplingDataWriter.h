@@ -7,7 +7,7 @@ using namespace std;
 #include <vector>
 #include <SD.h>
 
-#include <src/Data/Logger.h>
+#include "../Data/Logger.h"
 
 /*
     Log samples to a file in an SD card.
