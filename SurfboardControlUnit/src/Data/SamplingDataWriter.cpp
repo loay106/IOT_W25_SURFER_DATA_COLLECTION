@@ -1,4 +1,5 @@
 #include "SamplingDataWriter.h"
+#include "src/Exceptions/UnitExceptions.h"
 
 string generateUniqueFileName(int timestamp){
     return "sampling_" + std::to_string(timestamp) + ".csv";
@@ -9,11 +10,9 @@ SamplingDataWriter::SamplingDataWriter(const uint8_t SDCardChipSelectPin, Logger
 void SamplingDataWriter::initialize(){
     if (!SD.begin(SDCardChipSelectPin)) {
         Serial.println("SD card initialization failed!");
-        // todo: throw error...
-        return;
+        throw InitError();
     }
     Serial.println("SD card initialized successfully.");
-
 
     const char *folderName = "/samplings";
     // Check if the folder already exists
@@ -23,9 +22,8 @@ void SamplingDataWriter::initialize(){
             Serial.println("Folder 'samplings' created successfully.");
         } else {
             Serial.println("Failed to create folder 'samplings'.");
+            throw InitError();
         }
-    } else {
-        Serial.println("Folder 'samplings' already exists.");
     }
 }
 

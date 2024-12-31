@@ -15,10 +15,12 @@ class Logger{
         void info(string message){
             string fmessage = "[INFO] " + message;
             Serial.println(fmessage);
+            Serial.flush();
         };
         void error(string message){
             string fmessage = "[ERROR] " + message;
             Serial.println(fmessage);
+            Serial.flush();
         };
 
 };

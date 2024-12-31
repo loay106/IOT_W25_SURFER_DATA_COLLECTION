@@ -1,5 +1,6 @@
 #include "ControlUnitManager.h"
 #include "src/Utils/Adresses.h"
+#include "src/Exceptions/UnitExceptions.h"
 
 ControlUnitManager::ControlUnitManager(const uint8_t SDCardChipSelectPin, const int serialBaudRate)
 {
@@ -14,22 +15,23 @@ ControlUnitManager::ControlUnitManager(const uint8_t SDCardChipSelectPin, const 
 
 void ControlUnitManager::initialize(uint8_t samplingUnits[][], int samplingUnitsNum){
     status = SystemStatus::INITILAZING;
-    logger.initialize();
-    espSyncManager.initialize();
-    samplingDataWriter.initialize();
-    timeManager.initialize();
-    for(int i=0;i<samplingUnitsNum;i++){
-        addSamplingUnit(samplingUnits[i]);
+    try{
+        logger.initialize();
+        espSyncManager.initialize();
+        samplingDataWriter.initialize();
+        timeManager.initialize();
+        // add sampling units
+        for(int i=0;i<samplingUnitsNum;i++){
+            SamplingUnitRep samplingUnit;
+            memcpy(samplingUnit.mac, mac, 6);
+            samplingUnit.status = SamplingUnitStatus::DISCONNECTED;
+            macString = macToString(samplingUnit.mac);
+            samplingUnits[macString] = samplingUnit;
+        }
+        status = SystemStatus::STAND_BY;
+    }catch(InitError& e){
+        status = SystemStatus::ERROR;
     }
-    status = SystemStatus::STAND_BY;
-}
-
-string ControlUnitManager::addSamplingUnit(uint8_t mac[]){
-    SamplingUnitRep samplingUnit;
-    memcpy(samplingUnit.mac, mac, 6);
-    samplingUnit.status = SamplingUnitStatus::DISCONNECTED;
-    macString = macToString(samplingUnit.mac);
-    samplingUnits[macString] = samplingUnit;
 }
 
 void ControlUnitManager::startSampling(){

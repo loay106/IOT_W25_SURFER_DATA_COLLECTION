@@ -33,7 +33,6 @@ class ControlUnitManager{
         string* samplingFileName;
 
         void updateSamplingUnitStatus(uint8_t samplingUnitMac[], SamplingUnitStatus status);
-        void addSamplingUnit(uint8_t mac[]);
 
     public:
         ControlUnitManager(const uint8_t SDCardChipSelectPin, const int serialBaudRate);

@@ -1,4 +1,5 @@
 #include "ESPNowSyncManager.h"
+#include "src/Exceptions/UnitExceptions.h"
 
 void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, const uint8_t *incomingData, int len){
     string message(reinterpret_cast<const char *>(incomingData), len); // Convert incoming data to string
@@ -74,11 +75,9 @@ void ESPNowSyncManager::initialize(vector<esp_now_peer_info_t> peers)
 
     if (esp_now_init() == ESP_OK) {
         Serial.println("ESPNow Init success");
-    }
-    else {
+    }else {
         Serial.println("ESPNow Init fail");
-        // todo: throw an error here
-        return;
+        throw InitError();
     }
 
     for(const esp_now_peer_info_t& peerInfo: peers){
@@ -87,11 +86,9 @@ void ESPNowSyncManager::initialize(vector<esp_now_peer_info_t> peers)
 
         if (esp_now_add_peer(&peerInfo[i]) != ESP_OK) {
             Serial.println("Failed to add peer");
-            // todo: throw an error here
-            return;
+            throw InitError();
         }
     }
-
     esp_now_register_recv_cb(processReceivedMessages);
 }
 

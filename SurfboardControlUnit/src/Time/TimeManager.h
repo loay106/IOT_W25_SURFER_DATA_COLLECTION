@@ -11,7 +11,6 @@ class TimeManager{
     public:
         TimeManager(Logger logger);
         void initialize();
-        DateTime getCurrentDatetime();
         int getCurrentTimestamp();
         void adjust(DateTime current);
 };
