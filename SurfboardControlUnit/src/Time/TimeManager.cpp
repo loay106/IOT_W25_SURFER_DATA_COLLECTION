@@ -1,6 +1,6 @@
 #include "TimeManager.h"
 
-TimeManager::TimeManager(){}
+TimeManager::TimeManager(Logger logger): logger(logger){}
 
 void TimeManager::initialize()
 {

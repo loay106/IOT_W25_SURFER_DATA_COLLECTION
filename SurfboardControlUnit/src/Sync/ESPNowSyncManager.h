@@ -11,6 +11,7 @@ using namespace std;
 #include <WiFi.h>
 
 #include <src/Status/SystemStatus.h>
+#include <src/Data/Logger.h>
 
 /* 
     NOTE: ESP NOW DOES NOT ENSURE MESSAGES HAVE BEEN HANDLED - NO SYN/ACK MEACHANISM
@@ -35,6 +36,7 @@ using namespace std;
 
 class ESPNowSyncManager{
     private:
+        Logger logger;
         queue<StatusUpdateMessage> statusUpdateQueue;
         queue<SamplingSyncMessage> samplingSyncQueue;
 
@@ -42,7 +44,7 @@ class ESPNowSyncManager{
     public:
         static const char DELIMETER = '|';
 
-        ESPNowSyncManager(){};
+        ESPNowSyncManager(Logger logger): logger(logger){};
         void initialize(vector<esp_now_peer_info_t> peers);
         void sendCommand(ControlUnitCommand command, uint8_t samplingUnitMac[6]);
         void broadcastCommand(ControlUnitCommand command); 

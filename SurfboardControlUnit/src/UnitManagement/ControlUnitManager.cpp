@@ -1,17 +1,20 @@
 #include "ControlUnitManager.h"
 #include "src/Utils/Adresses.h"
 
-ControlUnitManager::ControlUnitManager(const uint8_t SDCardChipSelectPin)
+ControlUnitManager::ControlUnitManager(const uint8_t SDCardChipSelectPin, const int serialBaudRate)
 {
-    this->espSyncManager = ESPNowSyncManager();
-    this->samplingDataWriter = SamplingDataWriter(SDCardChipSelectPin);
-    this->timeManager = TimeManager();
+    this->logger = Logger(serialBaudRate);
+    this->espSyncManager = ESPNowSyncManager(logger);
+    this->samplingDataWriter = SamplingDataWriter(SDCardChipSelectPin, logger);
+    this->timeManager = TimeManager(logger);
+
     this->samplingFileName = NULL;
     this->status = SystemStatus::STARTING;
 }
 
 void ControlUnitManager::initialize(uint8_t samplingUnits[][], int samplingUnitsNum){
     status = SystemStatus::INITILAZING;
+    logger.initialize();
     espSyncManager.initialize();
     samplingDataWriter.initialize();
     timeManager.initialize();
@@ -56,6 +59,11 @@ void ControlUnitManager::updateSystem(){
 
 void ControlUnitManager::updateSamplingUnitStatus(uint8_t samplingUnitMac[], SamplingUnitStatus status){
     // todo: handle exceptions - https://en.cppreference.com/w/cpp/container/map/at
-    SamplingUnitRep& samplingUnit = samplingUnits.at(unitID);
-    samplingUnit.status = status;
+    try{
+        SamplingUnitRep& samplingUnit = samplingUnits.at(unitID);
+        samplingUnit.status = status;
+    }
+    catch(const std::out_of_range& ex){
+        logger.error("Unit not found")
+    }
 }

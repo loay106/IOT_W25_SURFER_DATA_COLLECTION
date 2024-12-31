@@ -4,7 +4,7 @@ string generateUniqueFileName(int timestamp){
     return "sampling_" + std::to_string(timestamp) + ".csv";
 }
 
-SamplingDataWriter::SamplingDataWriter(const uint8_t SDCardChipSelectPin): SDCardChipSelectPin(SDCardChipSelectPin){}
+SamplingDataWriter::SamplingDataWriter(const uint8_t SDCardChipSelectPin, Logger logger): SDCardChipSelectPin(SDCardChipSelectPin), logger(logger){}
 
 void SamplingDataWriter::initialize(){
     if (!SD.begin(SDCardChipSelectPin)) {

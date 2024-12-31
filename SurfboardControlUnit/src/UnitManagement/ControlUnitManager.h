@@ -7,6 +7,7 @@ using namespace std;
 #include <src/Sync/ESPNowSyncManager.h>
 #include <src/Status/SystemStatus.h>
 #include <src/Data/SamplingDataWriter.h>
+#include <src/Data/Logger.h>
 #include <src/Time/TimeManager.h>
 
 /*
@@ -25,15 +26,17 @@ class ControlUnitManager{
         map<string, SamplingUnitRep> samplingUnits; // id to instance mapping
         ESPNowSyncManager espSyncManager;
         SamplingDataWriter samplingDataWriter;
-        SystemStatus status;
         TimeManager timeManager;
+        Logger logger;
+
+        SystemStatus status;
         string* samplingFileName;
 
         void updateSamplingUnitStatus(uint8_t samplingUnitMac[], SamplingUnitStatus status);
         void addSamplingUnit(uint8_t mac[]);
 
     public:
-        ControlUnitManager(const uint8_t SDCardChipSelectPin);
+        ControlUnitManager(const uint8_t SDCardChipSelectPin, const int serialBaudRate);
         void initialize(uint8_t samplingUnits[][], int samplingUnitsNum);
         void startSampling();
         void stopSampling();

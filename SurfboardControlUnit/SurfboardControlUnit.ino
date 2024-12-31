@@ -13,6 +13,7 @@
 
 // constants
 const uint8_t SDCardChipSelectPin = 5;
+const int serialBaudRate = 57600;
 
 // globals
 ControlUnitManager controlUnit;
@@ -23,7 +24,7 @@ uint8_t samplingUnitsMacAddress[3][6] =  {
 };
 
 void setup() {
-    controlUnit = ControlUnitManager(SDCardChipSelectPin);
+    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate);
     controlUnit.initialize(samplingUnitsMacAddress, 3);
 }
 

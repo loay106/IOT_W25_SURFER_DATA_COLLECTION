@@ -2,12 +2,14 @@
 #define TIME_MANAGER_H
 
 #include "RTClib.h"
+#include <src/Data/Logger.h>
 
 class TimeManager{
     private:
+        Logger logger;
         RTC_DS1307 rtc;
     public:
-        TimeManager();
+        TimeManager(Logger logger);
         void initialize();
         DateTime getCurrentDatetime();
         int getCurrentTimestamp();
