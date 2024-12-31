@@ -1,7 +1,8 @@
 #include "ESPNowSyncManager.h"
 #include "../Exceptions/UnitExceptions.h"
+#include <sstream>
 
-void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, const uint8_t *incomingData, int len){
+void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len){
     string message(reinterpret_cast<const char *>(incomingData), len); // Convert incoming data to string
     vector<string> tokens;
     stringstream ss(message);
@@ -13,7 +14,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
     }
 
     if (tokens.empty()) {
-        logger.error("Invalid message format.")
+        logger.error("Invalid message format.");
         return;
     }
 
@@ -21,18 +22,18 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
 
     if (subject == "STATUS_UPDATE") {
         if (tokens.size() < 2) {
-            logger.error("Invalid STATUS_UPDATE message format.")
+            logger.error("Invalid STATUS_UPDATE message format.");
             return;
         }
 
         // Parse STATUS_UPDATE
         SamplingUnitStatus status;
         if (tokens[1] == "SAMPLING") {
-            status = SamplingUnitStatus::SAMPLING;
+            status = SamplingUnitStatus::UNIT_SAMPLING;
         } else if (tokens[1] == "STAND_BY") {
-            status = SamplingUnitStatus::STAND_BY;
+            status = SamplingUnitStatus::UNIT_STAND_BY;
         } else if (tokens[1] == "ERROR") {
-            status = SamplingUnitStatus::ERROR;
+            status = SamplingUnitStatus::UNIT_ERROR;
         } else {
             logger.error("Unknown STATUS_UPDATE status.");
             return;
@@ -40,7 +41,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
 
         // Create and print StatusUpdateMessage
         StatusUpdateMessage statusMessage;
-        memcpy(statusMessage.from, info->src_addr, 6); // Copy sender MAC address
+        memcpy(statusMessage.from, mac_addr, 6); // Copy sender MAC address
         statusMessage.status = status;
 
         statusUpdateQueue.push(statusMessage);
@@ -53,7 +54,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
 
         // Parse SAMPLE_SYNC
         SamplingSyncMessage syncMessage;
-        memcpy(syncMessage.from, info->src_addr, 6); // Copy sender MAC address
+        memcpy(syncMessage.from, mac_addr, 6); // Copy sender MAC address
         syncMessage.sensorID = tokens[1];
         syncMessage.units = tokens[2];
 
@@ -69,8 +70,7 @@ void ESPNowSyncManager::processReceivedMessages(const esp_now_recv_info *info, c
     }
 }
 
-void ESPNowSyncManager::initialize(vector<esp_now_peer_info_t> peers)
-{
+void ESPNowSyncManager::initialize(uint8_t samplingUnits[][6], int samplingUnitsNum){
     WiFi.mode(WIFI_STA);
 
     if (esp_now_init() == ESP_OK) {
@@ -80,15 +80,18 @@ void ESPNowSyncManager::initialize(vector<esp_now_peer_info_t> peers)
         throw InitError();
     }
 
-    for(const esp_now_peer_info_t& peerInfo: peers){
-        peerInfo[i].channel = 0;
-        peerInfo[i].encrypt = false;
+    for(int i=0;i<samplingUnitsNum;i++){
+        esp_now_peer_info_t peerInfo;
+        memcpy(peerInfo.peer_addr, samplingUnits[i], 6);
+        peerInfo.channel = 0;
+        peerInfo.encrypt = false;
 
-        if (esp_now_add_peer(&peerInfo[i]) != ESP_OK) {
+        if (esp_now_add_peer(&peerInfo) != ESP_OK) {
             logger.error("Failed to add peer");
             throw InitError();
         }
     }
+
     esp_now_register_recv_cb(processReceivedMessages);
 }
 
@@ -147,9 +150,14 @@ bool ESPNowSyncManager::hasSamplingUpdateMessages(){
 }
 
 StatusUpdateMessage ESPNowSyncManager::popStatusUpdateMessage(){
-    return statusUpdateQueue.pop();
+    // todo: validate for exceptions...
+    StatusUpdateMessage item = statusUpdateQueue.front();
+    statusUpdateQueue.pop();
+    return item;
 }
 
 SamplingSyncMessage ESPNowSyncManager::popSamplingUpdateMessage(){
-    return samplingSyncQueue.pop();
+    SamplingSyncMessage item = samplingSyncQueue.front();
+    samplingSyncQueue.pop();
+    return item;
 }

@@ -13,7 +13,7 @@ void TimeManager::initialize()
 
 int TimeManager::getCurrentTimestamp(){
     DateTime time = rtc.now();
-    return time.timestamp(DateTime::TIMESTAMP_FULL);
+    return time.unixtime();
 }
 
 void TimeManager::adjust(DateTime current){

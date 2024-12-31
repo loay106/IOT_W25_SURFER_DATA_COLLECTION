@@ -13,8 +13,8 @@
 */
 
 // constants
-const uint8_t SDCardChipSelectPin = 5;
-const int serialBaudRate = 57600;
+uint8_t SDCardChipSelectPin = 5;
+int serialBaudRate = 57600;
 
 // globals
 ControlUnitManager controlUnit;

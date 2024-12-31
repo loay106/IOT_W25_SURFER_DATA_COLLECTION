@@ -29,12 +29,13 @@ using namespace std;
 class SamplingDataWriter{
     private:
         Logger logger;
-        const uint8_t SDCardChipSelectPin;
+        uint8_t SDCardChipSelectPin;
     public:
-        SamplingDataWriter(const uint8_t SDCardChipSelectPin, Logger logger);
+        SamplingDataWriter(){};
+        SamplingDataWriter(uint8_t SDCardChipSelectPin, Logger logger);
         void initialize();
         string createSamplingFile(int timestamp); // automatically creates the above header in the file
-        void writeSamples(string fileName, string samplingUnitID, string sensorID, vector<string> sampleData, string sampleUnits);
+        void writeSamples(string fileName, string samplingUnitID, string sensorID, vector<string> sampleDataVec, string sampleUnits);
 };
 
 

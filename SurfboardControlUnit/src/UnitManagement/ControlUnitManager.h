@@ -22,9 +22,14 @@ using namespace std;
         4. RGB light (status updates)
  */
 
+typedef struct SamplingUnitRep{
+    uint8_t mac[6];
+    SamplingUnitStatus status;    
+} SamplingUnitRep;
+
 class ControlUnitManager{
     private:
-        map<string, SamplingUnitRep> samplingUnits; // id to instance mapping
+        std::map<string, SamplingUnitRep> samplingUnits; // id to instance mapping
         ESPNowSyncManager espSyncManager;
         SamplingDataWriter samplingDataWriter;
         TimeManager timeManager;
@@ -34,18 +39,14 @@ class ControlUnitManager{
         string* samplingFileName;
 
     public:
-        ControlUnitManager(const uint8_t SDCardChipSelectPin, const int serialBaudRate);
-        void initialize(uint8_t samplingUnits[][], int samplingUnitsNum);
+        ControlUnitManager(){};
+        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate);
+        void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum);
         
         void startSampling();
         void stopSampling();
 
         void updateSystem();
 };
-
-typedef struct SamplingUnitRep{
-    uint8_t mac[6];
-    SamplingUnitStatus status;    
-} SamplingUnitRep;
 
 #endif /* CONTROL_UNIT_MANAGER_H */

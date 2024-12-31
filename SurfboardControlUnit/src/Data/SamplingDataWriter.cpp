@@ -33,7 +33,8 @@ string SamplingDataWriter::createSamplingFile(int timestamp){
     File logFile = SD.open(filePath.c_str(), FILE_WRITE);
     if (!logFile) {
         logger.error("Failed to create sampling file!");
-        return File();
+        // todo: catch this error when using the method....
+        throw SDCardError();
     }
 
     // Write the CSV header
@@ -44,7 +45,7 @@ string SamplingDataWriter::createSamplingFile(int timestamp){
     return fileName;
 }
 
-void SamplingDataWriter::writeSamples(string fileName, string samplingUnitID, string sensorID, vector<string> sampleData, string sampleUnits){
+void SamplingDataWriter::writeSamples(string fileName, string samplingUnitID, string sensorID, vector<string> sampleDataVec, string sampleUnits){
     string filePath = "/samplings/" + fileName;
     File logFile = SD.open(filePath.c_str(), FILE_APPEND);
     if (!logFile) {
@@ -52,7 +53,7 @@ void SamplingDataWriter::writeSamples(string fileName, string samplingUnitID, st
         return;
     }
     
-    for(const string& sd : sampleData){
+    for(const string& sampleData : sampleDataVec){
         string logEntry = sampleData + "," + sampleUnits + "," + samplingUnitID + "," + sensorID;
         logFile.println(logEntry.c_str());
     }

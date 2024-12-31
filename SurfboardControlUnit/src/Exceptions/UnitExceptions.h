@@ -7,5 +7,7 @@ using namespace std;
 
 class InitError : public exception {};
 
+class SDCardError: public exception {};
+
 
 #endif /* UNIT_EXCEPTIONS_H */

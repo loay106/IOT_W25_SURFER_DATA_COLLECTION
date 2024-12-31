@@ -9,6 +9,7 @@ class TimeManager{
         Logger logger;
         RTC_DS1307 rtc;
     public:
+        TimeManager(){};
         TimeManager(Logger logger);
         void initialize();
         int getCurrentTimestamp();

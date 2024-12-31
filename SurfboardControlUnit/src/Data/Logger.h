@@ -6,20 +6,21 @@ using namespace std;
 
 class Logger{
     private:
-        const int serialBaudRate;
+        int serialBaudRate;
     public:
-        Logger(const int serialBaudRate): serialBaudRate(serialBaudRate){};
+        Logger(){};
+        Logger(int serialBaudRate): serialBaudRate(serialBaudRate){};
         void initialize(){
             Serial.begin(serialBaudRate);
         };
         void info(string message){
             string fmessage = "[INFO] " + message;
-            Serial.println(fmessage);
+            Serial.println(fmessage.c_str());
             Serial.flush();
         };
         void error(string message){
             string fmessage = "[ERROR] " + message;
-            Serial.println(fmessage);
+            Serial.println(fmessage.c_str());
             Serial.flush();
         };
 

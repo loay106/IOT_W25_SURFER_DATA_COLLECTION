@@ -34,28 +34,6 @@ using namespace std;
                 "SAMPLE_SYNC|1547|(AccX,AccY,AccZ)|(0.23,-9.77,-1.67)|(0.23,-10.77,-1.57)|(1.23,-9.78,-1.57)|(7.23,-9.77,-1.57)"
 */
 
-class ESPNowSyncManager{
-    private:
-        Logger logger;
-        queue<StatusUpdateMessage> statusUpdateQueue;
-        queue<SamplingSyncMessage> samplingSyncQueue;
-
-        void processReceivedMessages(const esp_now_recv_info *info, const uint8_t* incomingData, int len);
-    public:
-        static const char DELIMETER = '|';
-
-        ESPNowSyncManager(Logger logger): logger(logger){};
-        void initialize(vector<esp_now_peer_info_t> peers);
-        void sendCommand(ControlUnitCommand command, uint8_t samplingUnitMac[6]);
-        void broadcastCommand(ControlUnitCommand command); 
-
-        bool hasStatusUpdateMessages();
-        bool hasSamplingUpdateMessages();
-
-        StatusUpdateMessage popStatusUpdateMessage();
-        SamplingSyncMessage popSamplingUpdateMessage();
-};
-
 typedef struct SamplingSyncMessage{
     uint8_t from[6]; 
     string sensorID;
@@ -77,5 +55,29 @@ enum ControlUnitCommand{
     START_SAMPLING,
     STOP_SAMPLING,
 };
+
+class ESPNowSyncManager{
+    private:
+        Logger logger;
+        queue<StatusUpdateMessage> statusUpdateQueue;
+        queue<SamplingSyncMessage> samplingSyncQueue;
+
+        void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);
+    public:
+        static const char DELIMETER = '|';
+
+        ESPNowSyncManager(){};
+        ESPNowSyncManager(Logger logger): logger(logger){};
+        void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum);
+        void sendCommand(ControlUnitCommand command, uint8_t samplingUnitMac[6]);
+        void broadcastCommand(ControlUnitCommand command); 
+
+        bool hasStatusUpdateMessages();
+        bool hasSamplingUpdateMessages();
+
+        StatusUpdateMessage popStatusUpdateMessage();
+        SamplingSyncMessage popSamplingUpdateMessage();
+};
+
 
 #endif /* ESP_NOW_SYNC_MANAGER_H */
