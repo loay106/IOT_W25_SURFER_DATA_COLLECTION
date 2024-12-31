@@ -43,9 +43,9 @@ class ControlUnitManager{
         void updateSystem();
 };
 
-struct SamplingUnitRep{
+typedef struct SamplingUnitRep{
     uint8_t mac[6];
     SamplingUnitStatus status;    
-}
+} SamplingUnitRep;
 
 #endif /* CONTROL_UNIT_MANAGER_H */

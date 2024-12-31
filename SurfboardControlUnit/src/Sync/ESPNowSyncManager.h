@@ -5,6 +5,11 @@ using namespace std;
 #include <cstdint>
 #include <string>
 #include <queue>
+#include <vector>
+
+#include <ESPNow.h>
+#include <WiFi.h>
+
 #include <src/Status/SystemStatus.h>
 
 /* 
@@ -33,12 +38,12 @@ class ESPNowSyncManager{
         queue<StatusUpdateMessage> statusUpdateQueue;
         queue<SamplingSyncMessage> samplingSyncQueue;
 
-        void decodeAndEnqueueMessage(const uint8_t *mac, const uint8_t *data, int len);
+        void processReceivedMessages(const esp_now_recv_info *info, const uint8_t* incomingData, int len);
     public:
         static const char DELIMETER = '|';
 
-        ESPNowSyncManager();
-        void initialize();
+        ESPNowSyncManager(){};
+        void initialize(vector<esp_now_peer_info_t> peers);
         void sendCommand(ControlUnitCommand command, uint8_t samplingUnitMac[6]);
         void broadcastCommand(ControlUnitCommand command); 
 
@@ -49,17 +54,17 @@ class ESPNowSyncManager{
         SamplingSyncMessage popSamplingUpdateMessage();
 };
 
-struct SamplingSyncMessage{
+typedef struct SamplingSyncMessage{
     uint8_t from[6]; 
     string sensorID;
     string units;
     vector<string> samplingData;
-};
+} SamplingSyncMessage;
 
-struct StatusUpdateMessage{
+typedef struct StatusUpdateMessage{
     uint8_t from[6]; 
     SamplingUnitStatus status;
-};
+} StatusUpdateMessage;
 
 enum MessageSubject{
     STATUS_UPDATE, 
