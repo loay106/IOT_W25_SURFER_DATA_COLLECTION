@@ -25,29 +25,20 @@
         3. Device is agnostic to time and timestamp! This is handled in the Control Unit when commands are sent
 
 */
+//shada MAC : 08:b6:1f:33:49:e4
+
 class UnitManager {
     public:
         UnitManagerStatus status;
-        ESPNowControlUnitSyncManager syncManager;
-        std::list<IMUBase> imuSensors;
-        std::list<IMUBase> strainSensors;
-        UnitManager(ESPNowControlUnitSyncManager& syncManager);
-        void addIMUSensor(IMUBase& sensor);
+        ESPNowControlUnitSyncManager* syncManager;
+        std::list<IMUBase*> imuSensors;
+//        std::list<IMUBase> strainSensors;
+        UnitManager(ESPNowControlUnitSyncManager* syncManager);
+        void addIMUSensor(IMUBase* sensor);
         void startSampling();
-        void stopSampling();
-
 };
 
-enum UnitManagerStatus{
-    STANDBY,
-    SAMPLING,
-    ERROR,
-};
 
-enum ControlUnitCommand{
-    START_SAMPLING,
-    STOP_SAMPLING,
-};
 
 
 #endif // UNIT_MANAGER_H

@@ -1,23 +1,27 @@
 #include "ESPNowControlUnitSyncManager.h"
 
+ESPNowControlUnitSyncManager* ESPNowControlUnitSyncManager::instance = nullptr;
+
 ESPNowControlUnitSyncManager::ESPNowControlUnitSyncManager(uint8_t controlUnitDeviceMac[])
 {
     memcpy(controlUnitMac, controlUnitDeviceMac, 6);
-
-    // Initialize WiFi in station mode
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
+    WiFi.disconnect(true);
     delay(100);
-
-    // Initialize ESPNow for communication
-    if (esp_now_init() != ESP_OK) {
-        Serial.println("ESPNow initialization failed!");
+    esp_err_t result = esp_now_init();
+    if (result != ESP_OK) {
+        Serial.print("ESPNow initialization failed! Error code: ");
+        Serial.println(result);
+        return;
+    }
+    else
+    {
+        Serial.println("ESPNow initialized successfully!");
         return;
     }
 
     // Set callback for received data
     esp_now_register_recv_cb(onDataReceivedCallback);
-
     // Add the peer control unit for communication
     esp_now_peer_info_t peerInfo;
     memcpy(peerInfo.peer_addr, controlUnitMac, 6);
@@ -27,6 +31,7 @@ ESPNowControlUnitSyncManager::ESPNowControlUnitSyncManager(uint8_t controlUnitDe
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
         Serial.println("Failed to add peer!");
     }
+    instance = this;
 }
 
 void ESPNowControlUnitSyncManager::sendData(const uint8_t *data, size_t len) {
@@ -49,16 +54,27 @@ void ESPNowControlUnitSyncManager::sendSamples(const string sample , const strin
 }
 
 
-
-
-void ESPNowControlUnitSyncManager::onDataReceivedCallback(const uint8_t* mac, const uint8_t* data, int len) {
+void ESPNowControlUnitSyncManager::onDataReceived(const uint8_t* mac, const uint8_t* data, int len)
+{
     Serial.print("Received data: ");
     int min_len = min(len ,MAX_SIZE);
-    memccpy(buffer , data , min_len);
+    memcpy(buffer , data , static_cast<size_t>(min_len));
     for(int i=0 ; i<min_len ; i++)
     {
         commands.push(static_cast<ControlUnitCommand>(buffer[i]));
     }
+}
+
+void ESPNowControlUnitSyncManager::onDataReceivedCallback(const uint8_t* mac, const uint8_t* data, int len) {
+   if(instance!= nullptr)
+   {
+       instance->onDataReceived(mac,data,len);
+   }
+   else
+   {
+       Serial.print("access to nullptr");
+   }
+
 }
 
 
@@ -66,7 +82,8 @@ ControlUnitCommand ESPNowControlUnitSyncManager::getNextCommand()
 {
     if(commands.empty())
     {
-        return STOP_SAMPLING;
+        Serial.println("NO_COMMAND");
+        return NO_COMMAND;
     }
     ControlUnitCommand cmd = commands.front();
     commands.pop();

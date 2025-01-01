@@ -12,7 +12,6 @@ class IMU_BNO080: public IMUBase {
         IMU_BNO080(SamplingModes mode, int samplingRate);
         void setup() override;
         void enableSensor() override;
-        void disableSensor() override;
         std::string getSample() override;
 };
 

@@ -5,14 +5,14 @@
 #include <Arduino.h>
 #include <SparkFun_BNO080_Arduino_Library.h>
 
-enum IMUStatus{
+enum class IMUStatus{
     STANDBY,
     SAMPLING,
     ERROR,
 };
 
 enum SupportedIMUModels{
-    BNO080,
+    BNO0800,
 };
 enum SamplingModes{
     ACCELEROMETER,
@@ -20,7 +20,7 @@ enum SamplingModes{
 };
 
 class IMUBase {
-    protected:
+    public:
         std::string id;
         SupportedIMUModels model;
         IMUStatus status;
@@ -28,12 +28,9 @@ class IMUBase {
         std::string pattern;
         int samplingRate;
         bool sensorEnabled;
-
-    public:
         IMUBase(SupportedIMUModels model, SamplingModes mode, int samplingRate);
         virtual void setup() = 0;
         virtual void enableSensor() = 0;
-        virtual void disableSensor() = 0;
         virtual std::string getSample() = 0;
 
 };

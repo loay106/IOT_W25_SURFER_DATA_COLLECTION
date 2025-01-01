@@ -1,6 +1,6 @@
 #include "IMU_BNO080.h"
 
-IMU_BNO080::IMU_BNO080(SamplingModes mode, int samplingRate): IMUBase(SupportedIMUModels::BNO080,mode,samplingRate){
+IMU_BNO080::IMU_BNO080(SamplingModes mode, int samplingRate): IMUBase(SupportedIMUModels::BNO0800,mode,samplingRate){
 
 }
 void IMU_BNO080::setup(){
@@ -10,33 +10,27 @@ void IMU_BNO080::setup(){
         status = IMUStatus::ERROR;
     }
     Wire.setClock(400000);
+    Serial.println("IMU setup complete");
 }
 void IMU_BNO080::enableSensor(){
     sensorEnabled = true;
     if(mode == SamplingModes::ACCELEROMETER){
         sensor.enableAccelerometer(samplingRate);
+        Serial.println("accelerometer enabled");
+
     }
     else if(mode == SamplingModes::ROTATION_VECTOR){
         sensor.enableRotationVector(samplingRate);
+        Serial.println("rotation vector enabled");
+
     }
     else{
         status = IMUStatus::ERROR;
         Serial.println("sensor enabling failed");
     }
 }
-void IMU_BNO080::disableSensor(){
-    sensorEnabled = false;
-    if(mode == SamplingModes::ACCELEROMETER){
-        sensor.disableAccelerometer();
-    }
-    else if(mode == SamplingModes::ROTATION_VECTOR){
-        sensor.disableRotationVector();
-    }
-    else{
-        status = IMUStatus::ERROR;
-        Serial.println("sensor disabling failed");
-    }
-}
+
+
 std::string IMU_BNO080::getSample(){
     if(mode == SamplingModes::ACCELEROMETER){
         if (sensor.dataAvailable()) {
