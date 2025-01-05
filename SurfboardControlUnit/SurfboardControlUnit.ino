@@ -18,16 +18,16 @@ int serialBaudRate = 57600;
 
 int RGBRedPin = 26;
 int RGBGreenPin = 25;
-int RGBBluePin - 27;
+int RGBBluePin = 27;
 
 // globals
 ControlUnitManager controlUnit;
 uint8_t samplingUnitsMacAddresses[1][6] =  {
-    {0x08, 0xB6, 0x1F, 0x33, 0x49, 0xE4}
+    {0x08, 0xB6, 0x1F, 0x33, 0x49, 0xE4} // Shada's esp board
 };
 
 void setup() {
-    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate); 
+    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate, RGBRedPin, RGBGreenPin, RGBBluePin); 
     controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t));
     controlUnit.startSampling(); 
 }
