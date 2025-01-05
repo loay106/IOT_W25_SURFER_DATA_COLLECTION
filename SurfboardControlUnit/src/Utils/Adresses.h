@@ -9,7 +9,7 @@ using namespace std;
 #include <vector>
 #include <stdexcept>
 
-string macToString(uint8_t mac[6]) {
+inline string macToString(uint8_t mac[6]) {
     std::ostringstream macStream;
     for (int i = 0; i < 6; i++) {
         if (i > 0) {
@@ -20,7 +20,7 @@ string macToString(uint8_t mac[6]) {
     return macStream.str();
 }
 
-void stringToMac(const std::string &macString, uint8_t mac[6]) {
+inline void stringToMac(const std::string &macString, uint8_t mac[6]) {
     std::istringstream macStream(macString);
     std::string byteStr;
     int i = 0;

@@ -1,35 +1,27 @@
-#include "src/UnitManagement/ControlUnitManager.h"
-
-/*
-    Missing for now:
-        1. start/stop button for sampling
-        2. better edge cases handling
-        3. testing the code
-        4. status light
-        5. Wifi connection
-        6. a way to download files wirelessly...
-        7. a user interface....
-        8. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
-*/
-
-// constants
-uint8_t SDCardChipSelectPin = 5;
-int serialBaudRate = 57600;
+#include "src/Sync/ESPNowSyncManager.h"
+#include "src/Data/Logger.h"
+#include "src/Utils/Adresses.h"
 
 // globals
-ControlUnitManager controlUnit;
+ESPNowSyncManager syncManager;
+Logger logger;
 uint8_t samplingUnitsMacAddresses[1][6] =  {
     {0x08, 0xB6, 0x1F, 0x33, 0x49, 0xE4}
 };
 
 void setup() {
-    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate); 
-    controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t));
-    controlUnit.startSampling(); 
+    logger = Logger(57600);
+    logger.initialize();
+    syncManager = ESPNowSyncManager(logger);
+    syncManager.initialize(samplingUnitsMacAddresses, 1);
 }
 
 void loop() {
-    controlUnit.updateSystem();
-    delay(50);
+    syncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING);
+    if(syncManager.hasStatusUpdateMessages()){
+        StatusUpdateMessage updateMessage = syncManager.popStatusUpdateMessage();
+        logger.info("status update received from: "+ macToString(updateMessage.from));
+    }
+    delay(500);
 }
 

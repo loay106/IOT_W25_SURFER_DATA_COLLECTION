@@ -18,7 +18,7 @@ void setup() {
 
 
 void loop() {
-    vector<string> data = {"(-0.13,0.67,-0.71,0.13,3.14)", "(-0.13,0.67,-0.71,0.13,3.15)"};
+    vector<string> data = {"(-0.13 0.67 -0.71 0.13 3.14)", "(-0.13 0.67 -0.71 0.13 3.14)"};
     dataWriter.writeSamples(fileName, "samplingUnit123", "sensor123", data, "(quatI,quatJ,quatK,quatReal,quatRadianAccuracy)");
 
     //Delay 5s
