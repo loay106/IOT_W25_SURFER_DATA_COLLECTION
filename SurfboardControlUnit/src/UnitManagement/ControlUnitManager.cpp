@@ -2,13 +2,14 @@
 #include "../Utils/Adresses.h"
 #include "../Exceptions/UnitExceptions.h"
 
-ControlUnitManager::ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin)
+ControlUnitManager::ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin, int buttonPin)
 {
     this->logger = Logger(serialBaudRate);
     this->espSyncManager = ESPNowSyncManager(logger);
     this->samplingDataWriter = SamplingDataWriter(SDCardChipSelectPin, logger);
     this->timeManager = TimeManager(logger);
     this->statusLightManager = RGBStatusManager(logger, RGBRedPin, RGBGreenPin, RGBBluePin);
+    this->buttonManager = SamplingButtonManager(logger, buttonPin);
 
     this->samplingFileName = NULL;
     this->status = SystemStatus::SYSTEM_STARTING;
@@ -21,6 +22,7 @@ void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samp
         statusLightManager.initialize(status);
         espSyncManager.initialize(samplingUnitsAdresses,samplingUnitsNum);
         samplingDataWriter.initialize();
+        buttonManager.initialize();
         timeManager.initialize();
         // add sampling units
         for(int i=0;i<samplingUnitsNum;i++){
@@ -80,6 +82,27 @@ void ControlUnitManager::updateSystem(){
             samplingDataWriter.writeSamples(*samplingFileName, macToString(samplingUpdate.from), samplingUpdate.sensorID, samplingUpdate.samplingData, samplingUpdate.units);
         }
     };
+
+    if(buttonManager.wasPressed()){
+        switch(status){
+            case SystemStatus::SYSTEM_SAMPLING:{
+                stopSampling();
+                buttonManager.consumePress();
+                return;
+            }
+            case SystemStatus::SYSTEM_STAND_BY:{
+                startSampling();
+                buttonManager.consumePress();
+                return;
+            }
+            default:{
+                // ignore the press
+                logger.info("Pressed button was ignored because system is not in a ready state");
+                buttonManager.consumePress();
+                return;
+            }
+        }
+    }
 
     std::map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();
     while (it != samplingUnits.end()) {

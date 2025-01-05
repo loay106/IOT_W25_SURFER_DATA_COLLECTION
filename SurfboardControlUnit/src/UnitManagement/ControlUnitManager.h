@@ -11,6 +11,7 @@ using namespace std;
 #include "../Data/Logger.h"
 #include "../Time/TimeManager.h"
 #include "../Status/RGBStatusManager.h"
+#include "../IO/SamplingButtonManager.h"
 
 /*
     Class handling the logic of the device. Only one instance is needed
@@ -35,6 +36,7 @@ class ControlUnitManager{
         SamplingDataWriter samplingDataWriter;
         TimeManager timeManager;
         RGBStatusManager statusLightManager;
+        SamplingButtonManager buttonManager;
         Logger logger;
 
         SystemStatus status;
@@ -42,7 +44,7 @@ class ControlUnitManager{
 
     public:
         ControlUnitManager(){};
-        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
+        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin, int buttonPin);
         void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum);
         
         void startSampling();
