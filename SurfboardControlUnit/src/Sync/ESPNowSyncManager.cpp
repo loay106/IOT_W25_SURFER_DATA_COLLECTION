@@ -2,6 +2,10 @@
 #include "../Exceptions/UnitExceptions.h"
 #include <sstream>
 
+Logger ESPNowSyncManager::logger = Logger(9600);
+std::queue<StatusUpdateMessage> ESPNowSyncManager::statusUpdateQueue;
+std::queue<SamplingSyncMessage> ESPNowSyncManager::samplingSyncQueue;
+
 void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len){
     string message(reinterpret_cast<const char *>(incomingData), len); // Convert incoming data to string
     vector<string> tokens;
@@ -14,7 +18,7 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
     }
 
     if (tokens.empty()) {
-        logger.error("Invalid message format.");
+        ESPNowSyncManager::logger.error("Invalid message format.");
         return;
     }
 
@@ -22,7 +26,7 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
 
     if (subject == "STATUS_UPDATE") {
         if (tokens.size() < 2) {
-            logger.error("Invalid STATUS_UPDATE message format.");
+            ESPNowSyncManager::logger.error("Invalid STATUS_UPDATE message format.");
             return;
         }
 
@@ -35,7 +39,7 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
         } else if (tokens[1] == "ERROR") {
             status = SamplingUnitStatus::UNIT_ERROR;
         } else {
-            logger.error("Unknown STATUS_UPDATE status.");
+            ESPNowSyncManager::logger.error("Unknown STATUS_UPDATE status.");
             return;
         }
 
@@ -44,11 +48,11 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
         memcpy(statusMessage.from, mac_addr, 6); // Copy sender MAC address
         statusMessage.status = status;
 
-        statusUpdateQueue.push(statusMessage);
+        ESPNowSyncManager::statusUpdateQueue.push(statusMessage);
 
     } else if (subject == "SAMPLE_SYNC") {
         if (tokens.size() < 4) {
-            logger.error("Invalid SAMPLE_SYNC message format.");
+            ESPNowSyncManager::logger.error("Invalid SAMPLE_SYNC message format.");
             return;
         }
 
@@ -63,10 +67,10 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
             syncMessage.samplingData.push_back(tokens[i]);
         }
 
-        samplingSyncQueue.push(syncMessage);
+        ESPNowSyncManager::samplingSyncQueue.push(syncMessage);
 
     } else {
-        logger.error("Unknown message received.");
+        ESPNowSyncManager::logger.error("Unknown message received.");
     }
 }
 
@@ -74,9 +78,9 @@ void ESPNowSyncManager::initialize(uint8_t samplingUnits[][6], int samplingUnits
     WiFi.mode(WIFI_STA);
 
     if (esp_now_init() == ESP_OK) {
-        logger.info("ESPNow Init success");
+        ESPNowSyncManager::logger.info("ESPNow Init success");
     }else {
-        logger.error("ESPNow Init fail");
+        ESPNowSyncManager::logger.error("ESPNow Init fail");
         throw InitError();
     }
 
@@ -87,12 +91,12 @@ void ESPNowSyncManager::initialize(uint8_t samplingUnits[][6], int samplingUnits
         peerInfo.encrypt = false;
 
         if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-            logger.error("Failed to add peer");
+            ESPNowSyncManager::logger.error("Failed to add peer");
             throw InitError();
         }
     }
 
-    esp_now_register_recv_cb(processReceivedMessages);
+    esp_now_register_recv_cb(ESPNowSyncManager::processReceivedMessages);
 }
 
 void ESPNowSyncManager::sendCommand(ControlUnitCommand command, uint8_t samplingUnitMac[6]){
@@ -114,7 +118,7 @@ void ESPNowSyncManager::sendCommand(ControlUnitCommand command, uint8_t sampling
 
     esp_err_t result = esp_now_send(samplingUnitMac, (uint8_t *) &messageToSend, sizeof(messageToSend));
     if (result != ESP_OK) {
-        logger.error("Failed to send command");
+        ESPNowSyncManager::logger.error("Failed to send command");
     }
 }
 
@@ -137,27 +141,27 @@ void ESPNowSyncManager::broadcastCommand(ControlUnitCommand command){
 
     esp_err_t result = esp_now_send(NULL, (uint8_t *) &messageToSend, sizeof(messageToSend));
     if (result != ESP_OK) {
-        logger.error("Failed to send command");
+        ESPNowSyncManager::logger.error("Failed to send command");
     }
 }
 
 bool ESPNowSyncManager::hasStatusUpdateMessages(){
-    return !statusUpdateQueue.empty();
+    return !ESPNowSyncManager::statusUpdateQueue.empty();
 }
 
 bool ESPNowSyncManager::hasSamplingUpdateMessages(){
-    return !samplingSyncQueue.empty();
+    return !ESPNowSyncManager::samplingSyncQueue.empty();
 }
 
 StatusUpdateMessage ESPNowSyncManager::popStatusUpdateMessage(){
     // todo: validate for exceptions...
-    StatusUpdateMessage item = statusUpdateQueue.front();
-    statusUpdateQueue.pop();
+    StatusUpdateMessage item = ESPNowSyncManager::statusUpdateQueue.front();
+    ESPNowSyncManager::statusUpdateQueue.pop();
     return item;
 }
 
 SamplingSyncMessage ESPNowSyncManager::popSamplingUpdateMessage(){
-    SamplingSyncMessage item = samplingSyncQueue.front();
-    samplingSyncQueue.pop();
+    SamplingSyncMessage item = ESPNowSyncManager::samplingSyncQueue.front();
+    ESPNowSyncManager::samplingSyncQueue.pop();
     return item;
 }

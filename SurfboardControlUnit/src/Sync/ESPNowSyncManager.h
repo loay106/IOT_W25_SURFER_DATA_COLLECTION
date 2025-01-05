@@ -58,16 +58,18 @@ enum ControlUnitCommand{
 
 class ESPNowSyncManager{
     private:
-        Logger logger;
-        queue<StatusUpdateMessage> statusUpdateQueue;
-        queue<SamplingSyncMessage> samplingSyncQueue;
+        static Logger logger;
+        static queue<StatusUpdateMessage> statusUpdateQueue;
+        static queue<SamplingSyncMessage> samplingSyncQueue;
 
-        void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);
+        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);
     public:
         static const char DELIMETER = '|';
 
         ESPNowSyncManager(){};
-        ESPNowSyncManager(Logger logger): logger(logger){};
+                ESPNowSyncManager(Logger logger) {
+            ESPNowSyncManager::logger = logger;
+        };
         void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum);
         void sendCommand(ControlUnitCommand command, uint8_t samplingUnitMac[6]);
         void broadcastCommand(ControlUnitCommand command); 
