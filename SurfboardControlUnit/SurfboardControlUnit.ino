@@ -1,30 +1,39 @@
-#include "src/Status/RGBStatusManager.h"
-#include "src/Data/Logger.h"
+#include "src/UnitManagement/ControlUnitManager.h"
 
-// globals
-RGBStatusManager statusManager;
-Logger logger;
+/*
+    Missing for now:
+        1. start/stop button for sampling
+        2. better edge cases handling
+        3. testing the code
+        4. status light
+        5. Wifi connection
+        6. a way to download files wirelessly...
+        7. a user interface....
+        8. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
+*/
 
 // constants
-const int redPin = 26;    // GPIO pin for Red
-const int greenPin = 25;  // GPIO pin for Green
-const int bluePin = 27;   // GPIO pin for Blue
+uint8_t SDCardChipSelectPin = 5;
+int serialBaudRate = 57600;
+
+int RGBRedPin = 26;
+int RGBGreenPin = 25;
+int RGBBluePin - 27;
+
+// globals
+ControlUnitManager controlUnit;
+uint8_t samplingUnitsMacAddresses[1][6] =  {
+    {0x08, 0xB6, 0x1F, 0x33, 0x49, 0xE4}
+};
 
 void setup() {
-    logger = Logger(57600);
-    logger.initialize();
-    statusManager = RGBStatusManager(logger, redPin, greenPin, bluePin);
-    statusManager.initialize(SystemStatus::SYSTEM_SAMPLING);
+    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate); 
+    controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t));
+    controlUnit.startSampling(); 
 }
 
 void loop() {
-    statusManager.updateStatus(SystemStatus::SYSTEM_STAND_BY);
-    delay(2000);
-
-    statusManager.updateStatus(SystemStatus::SYSTEM_SAMPLING);
-    delay(2000);
-
-    statusManager.updateStatus(SystemStatus::SYSTEM_ERROR);
-    delay(2000);
+    controlUnit.updateSystem();
+    delay(50);
 }
 

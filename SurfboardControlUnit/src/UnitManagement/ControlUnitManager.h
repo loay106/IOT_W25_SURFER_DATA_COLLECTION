@@ -10,6 +10,7 @@ using namespace std;
 #include "../Data/SamplingDataWriter.h"
 #include "../Data/Logger.h"
 #include "../Time/TimeManager.h"
+#include "../Status/RGBStatusManager.h"
 
 /*
     Class handling the logic of the device. Only one instance is needed
@@ -33,6 +34,7 @@ class ControlUnitManager{
         ESPNowSyncManager espSyncManager;
         SamplingDataWriter samplingDataWriter;
         TimeManager timeManager;
+        RGBStatusManager statusLightManager;
         Logger logger;
 
         SystemStatus status;
@@ -40,7 +42,7 @@ class ControlUnitManager{
 
     public:
         ControlUnitManager(){};
-        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate);
+        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
         void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum);
         
         void startSampling();

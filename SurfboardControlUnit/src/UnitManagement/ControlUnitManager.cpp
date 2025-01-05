@@ -2,12 +2,13 @@
 #include "../Utils/Adresses.h"
 #include "../Exceptions/UnitExceptions.h"
 
-ControlUnitManager::ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate)
+ControlUnitManager::ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin)
 {
     this->logger = Logger(serialBaudRate);
     this->espSyncManager = ESPNowSyncManager(logger);
     this->samplingDataWriter = SamplingDataWriter(SDCardChipSelectPin, logger);
     this->timeManager = TimeManager(logger);
+    this->statusLightManager = RGBStatusManager(logger, RGBRedPin, RGBGreenPin, RGBBluePin);
 
     this->samplingFileName = NULL;
     this->status = SystemStatus::SYSTEM_STARTING;
@@ -17,6 +18,7 @@ void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samp
     status = SystemStatus::SYSTEM_INITIALIZING;
     try{
         logger.initialize();
+        statusLightManager.initialize(status);
         espSyncManager.initialize(samplingUnitsAdresses,samplingUnitsNum);
         samplingDataWriter.initialize();
         timeManager.initialize();
@@ -29,10 +31,13 @@ void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samp
             samplingUnits[macString] = samplingUnit;
         }
         status = SystemStatus::SYSTEM_STAND_BY;
+        statusLightManager.updateStatus(status);
     }catch(InitError& e){
         status = SystemStatus::SYSTEM_ERROR;
+        statusLightManager.updateStatus(status);
     }catch(exception& e){
         status = SystemStatus::SYSTEM_ERROR;
+        statusLightManager.updateStatus(status);
     }
 }
 
@@ -42,6 +47,7 @@ void ControlUnitManager::startSampling(){
         string fileName = samplingDataWriter.createSamplingFile(timeManager.getCurrentTimestamp());
         *samplingFileName = fileName;
         status = SystemStatus::SYSTEM_SAMPLING;
+        statusLightManager.updateStatus(status);
     }
 }
 
@@ -50,6 +56,7 @@ void ControlUnitManager::stopSampling(){
         espSyncManager.broadcastCommand(ControlUnitCommand::STOP_SAMPLING);
         samplingFileName = NULL;
         status = SystemStatus::SYSTEM_STAND_BY;
+        statusLightManager.updateStatus(status);
     }
 
 }
