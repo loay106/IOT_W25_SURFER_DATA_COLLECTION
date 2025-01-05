@@ -18,15 +18,14 @@ int serialBaudRate = 57600;
 
 // globals
 ControlUnitManager controlUnit;
-uint8_t samplingUnitsMacAddresses[3][6] =  {
-    {0xC8, 0xC9, 0xA3, 0xCA, 0x22, 0x70},
-    {0xC8, 0xC9, 0xA3, 0xC6, 0xFE, 0x54},
-    {0x94, 0xE6, 0x86, 0x0D, 0x7B, 0x80}
+uint8_t samplingUnitsMacAddresses[1][6] =  {
+    {0x08, 0xB6, 0x1F, 0x33, 0x49, 0xE4}
 };
 
 void setup() {
     controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate); 
-    controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t)); 
+    controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t));
+    controlUnit.startSampling(); 
 }
 
 void loop() {

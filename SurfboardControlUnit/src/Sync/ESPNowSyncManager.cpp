@@ -75,24 +75,28 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
 }
 
 void ESPNowSyncManager::initialize(uint8_t samplingUnits[][6], int samplingUnitsNum){
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_OFF); // Turn off WiFi first
+    delay(100);
+    WiFi.mode(WIFI_STA); // Then set to station mode
 
     if (esp_now_init() == ESP_OK) {
         ESPNowSyncManager::logger.info("ESPNow Init success");
     }else {
         ESPNowSyncManager::logger.error("ESPNow Init fail");
-        throw InitError();
+        throw InitError();;
     }
 
-    for(int i=0;i<samplingUnitsNum;i++){
-        esp_now_peer_info_t peerInfo;
+    for (int i = 0; i < samplingUnitsNum; i++) {
+        esp_now_peer_info_t peerInfo = {};
         memcpy(peerInfo.peer_addr, samplingUnits[i], 6);
-        peerInfo.channel = 0;
+        peerInfo.channel = 0; // Default channel
         peerInfo.encrypt = false;
 
         if (esp_now_add_peer(&peerInfo) != ESP_OK) {
             ESPNowSyncManager::logger.error("Failed to add peer");
-            throw InitError();
+            return;
+        } else {
+            ESPNowSyncManager::logger.info("Added peer successfully!");
         }
     }
 
@@ -116,7 +120,7 @@ void ESPNowSyncManager::sendCommand(ControlUnitCommand command, uint8_t sampling
         }
     }
 
-    esp_err_t result = esp_now_send(samplingUnitMac, (uint8_t *) &messageToSend, sizeof(messageToSend));
+    esp_err_t result = esp_now_send(samplingUnitMac, (uint8_t *) messageToSend.c_str(), sizeof(messageToSend));
     if (result != ESP_OK) {
         ESPNowSyncManager::logger.error("Failed to send command");
     }
@@ -139,9 +143,10 @@ void ESPNowSyncManager::broadcastCommand(ControlUnitCommand command){
         }
     }
 
-    esp_err_t result = esp_now_send(NULL, (uint8_t *) &messageToSend, sizeof(messageToSend));
+    esp_err_t result = esp_now_send(NULL, (uint8_t *) messageToSend.c_str(), sizeof(messageToSend));
     if (result != ESP_OK) {
-        ESPNowSyncManager::logger.error("Failed to send command");
+        //ESPNowSyncManager::logger.error("Failed to send command");
+        return;
     }
 }
 

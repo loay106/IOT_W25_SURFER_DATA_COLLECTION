@@ -67,7 +67,7 @@ class ESPNowSyncManager{
         static const char DELIMETER = '|';
 
         ESPNowSyncManager(){};
-                ESPNowSyncManager(Logger logger) {
+        ESPNowSyncManager(Logger logger) {
             ESPNowSyncManager::logger = logger;
         };
         void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum);
