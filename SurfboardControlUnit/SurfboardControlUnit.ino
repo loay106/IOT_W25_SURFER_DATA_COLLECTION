@@ -1,27 +1,36 @@
-#include "src/Data/SamplingDataWriter.h"
-#include "src/Data/Logger.h"
+#include "src/UnitManagement/ControlUnitManager.h"
 
-using namespace std;
-#include <string>;
+/*
+    Missing for now:
+        1. start/stop button for sampling
+        2. better edge cases handling
+        3. testing the code
+        4. status light
+        5. Wifi connection
+        6. a way to download files wirelessly...
+        7. a user interface....
+        8. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
+*/
 
-SamplingDataWriter dataWriter;
-string fileName = "";
+// constants
+uint8_t SDCardChipSelectPin = 5;
+int serialBaudRate = 57600;
 
+// globals
+ControlUnitManager controlUnit;
+uint8_t samplingUnitsMacAddresses[3][6] =  {
+    {0xC8, 0xC9, 0xA3, 0xCA, 0x22, 0x70},
+    {0xC8, 0xC9, 0xA3, 0xC6, 0xFE, 0x54},
+    {0x94, 0xE6, 0x86, 0x0D, 0x7B, 0x80}
+};
 
 void setup() {
-    Logger logger = Logger(57600);
-    logger.initialize();
-    dataWriter = SamplingDataWriter(5, logger);
-    dataWriter.initialize();
-    //fileName = dataWriter.createSamplingFile(1736083807);
-};
-
+    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate); 
+    controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t)); 
+}
 
 void loop() {
-    //vector<string> data = {"(-0.13,0.67,-0.71,0.13,3.14)", "(-0.13,0.67,-0.71,0.13,3.15)"};
-    //dataWriter.writeSamples(fileName, "samplingUnit123", "sensor123", data, "(quatI,quatJ,quatK,quatReal,quatRadianAccuracy)");
-
-    //Delay 5s
-    delay(5000);
-};
+    controlUnit.updateSystem();
+    delay(50);
+}
 
