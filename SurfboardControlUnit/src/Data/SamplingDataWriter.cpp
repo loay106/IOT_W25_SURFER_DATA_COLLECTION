@@ -1,5 +1,7 @@
-#include "SamplingDataWriter.h"
-#include "../Exceptions/UnitExceptions.h"
+#include "SamplingDataWriter.h";
+#include "../Exceptions/UnitExceptions.h";
+#include "SPI.h";
+#include "Wire.h";
 
 string generateUniqueFileName(int timestamp){
     return "sampling_" + std::to_string(timestamp) + ".csv";
@@ -8,10 +10,14 @@ string generateUniqueFileName(int timestamp){
 SamplingDataWriter::SamplingDataWriter(const uint8_t SDCardChipSelectPin, Logger logger): SDCardChipSelectPin(SDCardChipSelectPin), logger(logger){}
 
 void SamplingDataWriter::initialize(){
+    SPI.begin(18,19,23,SDCardChipSelectPin);
     if (!SD.begin(SDCardChipSelectPin)) {
         logger.error("SD card initialization failed!");
-        throw InitError();
+        while(1);
+        //throw InitError();
     }
+    Wire.begin(21,22);
+    Wire.setClock(400000);
     logger.info("SD card initialized successfully.");
 
     const char *folderName = "/samplings";
@@ -19,7 +25,7 @@ void SamplingDataWriter::initialize(){
     if (!SD.exists(folderName)) {
         // Attempt to create the folder
         if (SD.mkdir(folderName)) {
-            logger.info("Folder 'samplings' created successfully.");
+            logger.info("Folder samplings created successfully.");
         } else {
             logger.error("Failed to create folder 'samplings'.");
             throw InitError();
@@ -59,4 +65,5 @@ void SamplingDataWriter::writeSamples(string fileName, string samplingUnitID, st
     }
     logFile.flush();
     logFile.close();
+    //logger.info("Sample written!!");
 }

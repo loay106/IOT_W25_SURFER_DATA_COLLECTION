@@ -15,15 +15,15 @@ class Logger{
         };
         void info(string message){
             string fmessage = "[INFO] " + message;
-            Serial.println(fmessage.c_str());
+            Serial.println(String(fmessage.c_str()));
             Serial.flush();
         };
         void error(string message){
             string fmessage = "[ERROR] " + message;
-            Serial.println(fmessage.c_str());
+            Serial.println(String(fmessage.c_str()));
             Serial.flush();
         };
 
 };
 
-#endif /* CONTROL_UNIT_MANAGER_H */
+#endif /* LOGGER_H */

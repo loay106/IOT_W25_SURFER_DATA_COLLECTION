@@ -12,16 +12,10 @@ void setup() {
 
 
 void loop() {
-     DateTime time = timeManager.getCurrentDatetime();
+     int time = timeManager.getCurrentTimestamp();
 
     //Full Timestamp
-    Serial.println(String("DateTime::TIMESTAMP_FULL:\t")+time.timestamp(DateTime::TIMESTAMP_FULL));
-
-    //Date Only
-    Serial.println(String("DateTime::TIMESTAMP_DATE:\t")+time.timestamp(DateTime::TIMESTAMP_DATE));
-
-    //Full Timestamp
-    Serial.println(String("DateTime::TIMESTAMP_TIME:\t")+time.timestamp(DateTime::TIMESTAMP_TIME));
+    Serial.println(String("DateTime::TIMESTAMP_FULL:\t")+time);
 
     Serial.println("\n");
 

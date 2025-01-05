@@ -1,5 +1,5 @@
-#ifndef DATA_LOGGER_H 
-#define DATA_LOGGER_H
+#ifndef SAMPLING_DATA_WRITER_H 
+#define SAMPLING_DATA_WRITER_H
 
 using namespace std;
 #include <cstdint>
@@ -39,4 +39,4 @@ class SamplingDataWriter{
 };
 
 
-#endif /* DATA_LOGGER_H */
+#endif /* SAMPLING_DATA_WRITER_H */
