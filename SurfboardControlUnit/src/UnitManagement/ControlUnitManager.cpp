@@ -19,7 +19,6 @@ void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samp
     status = SystemStatus::SYSTEM_INITIALIZING;
     try{
         logger.initialize();
-        logger.info("System initalizing...");
         statusLightManager.initialize(status);
         espSyncManager.initialize(samplingUnitsAdresses,samplingUnitsNum);
         samplingDataWriter.initialize();
@@ -54,7 +53,12 @@ void ControlUnitManager::startSampling(){
             logger.error("Failed to create sampling file!");
             return;
         }
-        espSyncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING);
+        try{
+            espSyncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING);
+        }catch(ESPNowSyncError& error){
+            logger.error("Failed to send command to sampling units!");
+            return;
+        }
         status = SystemStatus::SYSTEM_SAMPLING;
         statusLightManager.updateStatus(status);
         logger.info("Sampling started...");
@@ -63,7 +67,12 @@ void ControlUnitManager::startSampling(){
 
 void ControlUnitManager::stopSampling(){
     if(status == SystemStatus::SYSTEM_SAMPLING){
-        espSyncManager.broadcastCommand(ControlUnitCommand::STOP_SAMPLING);
+        try{
+            espSyncManager.broadcastCommand(ControlUnitCommand::STOP_SAMPLING);
+        }catch(ESPNowSyncError& error){
+            logger.error("Failed to send command to sampling units!");
+            return;
+        }
         status = SystemStatus::SYSTEM_STAND_BY;
         delete samplingFileName;
         samplingFileName = NULL;
@@ -76,7 +85,6 @@ void ControlUnitManager::stopSampling(){
 void ControlUnitManager::updateSystem(){
     while(espSyncManager.hasStatusUpdateMessages()){
         StatusUpdateMessage statusMessage = espSyncManager.popStatusUpdateMessage();
-
         string unitID = macToString(statusMessage.from);
         try{
             SamplingUnitRep& samplingUnit = samplingUnits.at(unitID);
@@ -114,10 +122,18 @@ void ControlUnitManager::updateSystem(){
     std::map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();
     while (it != samplingUnits.end()) {
         if(status == SystemStatus::SYSTEM_SAMPLING && it->second.status != SamplingUnitStatus::UNIT_SAMPLING){
-            espSyncManager.sendCommand(ControlUnitCommand::START_SAMPLING, it->second.mac);
+            try{
+                espSyncManager.sendCommand(ControlUnitCommand::START_SAMPLING, it->second.mac);
+            }catch(ESPNowSyncError& error){
+                it->second.status = SamplingUnitStatus::UNIT_DISCONNECTED;
+            }  
         }
-        if(status != SystemStatus::SYSTEM_SAMPLING && it->second.status == SamplingUnitStatus::UNIT_SAMPLING){
-            espSyncManager.sendCommand(ControlUnitCommand::STOP_SAMPLING, it->second.mac);
+        else if(status != SystemStatus::SYSTEM_SAMPLING && it->second.status == SamplingUnitStatus::UNIT_SAMPLING){
+            try{
+                espSyncManager.sendCommand(ControlUnitCommand::STOP_SAMPLING, it->second.mac);
+            }catch(ESPNowSyncError& error){
+                it->second.status = SamplingUnitStatus::UNIT_DISCONNECTED;
+            }    
         }
         it++;
     }

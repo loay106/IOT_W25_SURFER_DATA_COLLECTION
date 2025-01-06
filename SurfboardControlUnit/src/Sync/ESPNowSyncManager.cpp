@@ -3,7 +3,7 @@
 #include "../Utils/Adresses.h"
 #include <sstream>
 
-Logger ESPNowSyncManager::logger = Logger(9600);
+Logger ESPNowSyncManager::logger = Logger(57600);
 std::queue<StatusUpdateMessage> ESPNowSyncManager::statusUpdateQueue;
 std::queue<SamplingSyncMessage> ESPNowSyncManager::samplingSyncQueue;
 
@@ -123,7 +123,8 @@ void ESPNowSyncManager::sendCommand(ControlUnitCommand command, uint8_t sampling
 
     esp_err_t result = esp_now_send(samplingUnitMac, (uint8_t *) messageToSend.c_str(), sizeof(messageToSend));
     if (result != ESP_OK) {
-        ESPNowSyncManager::logger.error("Failed to send command");
+        // ESPNowSyncManager::logger.error("Failed to send command");
+        throw ESPNowSyncError();
     }
 }
 
@@ -146,8 +147,8 @@ void ESPNowSyncManager::broadcastCommand(ControlUnitCommand command){
 
     esp_err_t result = esp_now_send(NULL, (uint8_t *) messageToSend.c_str(), sizeof(messageToSend));
     if (result != ESP_OK) {
-        ESPNowSyncManager::logger.error("Failed to broadcast command!");
-        return;
+        // ESPNowSyncManager::logger.error("Failed to broadcast command!");
+        throw ESPNowSyncError();
     }
 }
 

@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "SamplingButtonManager.h"
 
-Logger SamplingButtonManager::logger = Logger(9600);
+Logger SamplingButtonManager::logger = Logger(57600);
 bool SamplingButtonManager::buttonPressed = false;
 int SamplingButtonManager::lastPressedAt = 0;
 
