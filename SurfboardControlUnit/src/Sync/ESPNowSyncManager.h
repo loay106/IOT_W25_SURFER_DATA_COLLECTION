@@ -28,10 +28,8 @@ using namespace std;
                 "STATUS_UPDATE|STAND_BY"
                 "STATUS_UPDATE|ERROR"
         2. SAMPLE_SYNC: "SAMPLE_SYNC"|[SENSOR_ID]|[SAMPLE_UNITS]|[SAMPLE_DATA]
-            where:
-                [SAMPLE_DATA] is the data enclosed in parentheses and seperated by DELIMETER
             example message:
-                "SAMPLE_SYNC|1547|(AccX,AccY,AccZ)|(0.23,-9.77,-1.67)|(0.23,-10.77,-1.57)|(1.23,-9.78,-1.57)|(7.23,-9.77,-1.57)"
+                "SAMPLE_SYNC|1547|AccX AccY AccZ|0.23 -9.77 -1.67|0.23 -10.77 -1.57|1.23 -9.78 -1.57|7.23 -9.77 -1.57"
 */
 
 typedef struct SamplingSyncMessage{
@@ -62,7 +60,7 @@ class ESPNowSyncManager{
         static queue<StatusUpdateMessage> statusUpdateQueue;
         static queue<SamplingSyncMessage> samplingSyncQueue;
 
-        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);
+        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);        
     public:
         static const char DELIMETER = '|';
 
