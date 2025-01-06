@@ -107,7 +107,6 @@ void ControlUnitManager::updateSystem(){
                 logger.info("Pressed button was ignored because system is not in a ready state");
             }
         }
-        buttonManager.consumePress();
         return;
     }
 

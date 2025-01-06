@@ -18,7 +18,6 @@ void setup() {
 void loop() {
     if(buttonManager.wasPressed()){
         logger.info("BUTTON WAS PRESSED!");
-        buttonManager.consumePress();
     }
     delay(2000);
 }

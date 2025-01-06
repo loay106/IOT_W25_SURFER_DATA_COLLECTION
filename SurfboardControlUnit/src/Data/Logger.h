@@ -1,6 +1,8 @@
 #ifndef LOGGER_H 
 #define LOGGER_H
 
+#include <Arduino.h>
+
 using namespace std;
 #include <string>
 

@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "SamplingButtonManager.h"
 
 Logger SamplingButtonManager::logger = Logger(9600);
@@ -15,16 +16,12 @@ void SamplingButtonManager::initialize(){
 }
 
 bool SamplingButtonManager::wasPressed(){
-    return SamplingButtonManager::buttonPressed;
+    bool pressed = SamplingButtonManager::buttonPressed;
+    SamplingButtonManager::buttonPressed = false;  // Clear the flag
+    return pressed;
 }
 
-void SamplingButtonManager::onButtonPress(){
-    SamplingButtonManager::logger.info("Button was just pressed");
+void IRAM_ATTR SamplingButtonManager::onButtonPress(){
     SamplingButtonManager::buttonPressed = true;
-    delay(10); // added for stability
-}
-
-void SamplingButtonManager::consumePress(){
-    SamplingButtonManager::buttonPressed = false;
 }
 

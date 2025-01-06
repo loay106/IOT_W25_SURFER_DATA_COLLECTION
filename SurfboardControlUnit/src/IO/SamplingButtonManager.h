@@ -14,7 +14,6 @@ class SamplingButtonManager{
         SamplingButtonManager(Logger logger, int buttonPin);
         void initialize();
         bool wasPressed();
-        static void consumePress();
 };
 
 #endif /* SAMPLING_BUTTON_MANAGER_H */

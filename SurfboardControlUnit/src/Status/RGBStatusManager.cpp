@@ -1,4 +1,5 @@
 #include "RGBStatusManager.h"
+#include <Arduino.h>
 
 void RGBStatusManager::updateStatusColor(){
     switch (currentStatus){
