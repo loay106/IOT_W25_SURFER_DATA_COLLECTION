@@ -1,5 +1,6 @@
 #include "ESPNowSyncManager.h"
 #include "../Exceptions/UnitExceptions.h"
+#include "../Utils/Adresses.h"
 #include <sstream>
 
 Logger ESPNowSyncManager::logger = Logger(9600);
@@ -96,7 +97,7 @@ void ESPNowSyncManager::initialize(uint8_t samplingUnits[][6], int samplingUnits
         if (esp_now_add_peer(&peerInfo) != ESP_OK) {
             ESPNowSyncManager::logger.error("Failed to add peer");
         } else {
-            ESPNowSyncManager::logger.info("Added peer " macToString(peerInfo.peer_addr) + " successfully!");
+            ESPNowSyncManager::logger.info("Added peer " + macToString(peerInfo.peer_addr) + " successfully!");
         }
     }
 
@@ -115,7 +116,7 @@ void ESPNowSyncManager::sendCommand(ControlUnitCommand command, uint8_t sampling
             break;
         }
         default:{
-            logger.error("Unknown command to send!")
+            logger.error("Unknown command to send!");
             return;
         }
     }
@@ -138,7 +139,7 @@ void ESPNowSyncManager::broadcastCommand(ControlUnitCommand command){
             break;
         }
         default:{
-            logger.error("Unknown command to broadcast!")
+            logger.error("Unknown command to broadcast!");
             return;
         }
     }

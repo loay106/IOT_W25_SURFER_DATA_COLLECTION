@@ -16,6 +16,8 @@ int RGBRedPin = 26;
 int RGBGreenPin = 25;
 int RGBBluePin = 27;
 
+int buttonPin = 32;
+
 // globals
 ControlUnitManager controlUnit;
 uint8_t samplingUnitsMacAddresses[1][6] =  {
@@ -23,7 +25,7 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 };
 
 void setup() {
-    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate, RGBRedPin, RGBGreenPin, RGBBluePin); 
+    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate, RGBRedPin, RGBGreenPin, RGBBluePin, buttonPin); 
     controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t));
 }
 

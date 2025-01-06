@@ -10,6 +10,7 @@ class SamplingButtonManager{
         static bool buttonPressed;
         static void onButtonPress();
     public:
+        SamplingButtonManager(){};
         SamplingButtonManager(Logger logger, int buttonPin);
         void initialize();
         bool wasPressed();
