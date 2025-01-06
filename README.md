@@ -21,9 +21,11 @@ The project includes two main folders:
    The sampling unit's properties, descriptions, and features can be found below.
 
 # Arduino/ESP libraries used for the project:
-1. RTClib (by Adafruit) - version 2.1.4
-2. HX711 (by Rob Tillaart) - version 0.5.2
-3. SparkFun BNO080 Cortex Based IMU (by SparkFun) - version 1.1.12
+1. SurfboardControlUnit:
+   RTClib (by Adafruit) - version 2.1.4
+2. SurfboardSamplingUnit:
+   HX711 (by Rob Tillaart) - version 0.5.2
+   SparkFun BNO080 Cortex Based IMU (by SparkFun) - version 1.1.12
 
 # Project Poster:
 // to be edited later - saved for template use
