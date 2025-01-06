@@ -8,6 +8,7 @@ class SamplingButtonManager{
         static Logger logger;
         int buttonPin;
         static bool buttonPressed;
+        static int lastPressedAt;
         static void onButtonPress();
     public:
         SamplingButtonManager(){};

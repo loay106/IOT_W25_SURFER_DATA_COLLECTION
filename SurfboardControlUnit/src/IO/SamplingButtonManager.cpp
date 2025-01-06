@@ -3,11 +3,13 @@
 
 Logger SamplingButtonManager::logger = Logger(9600);
 bool SamplingButtonManager::buttonPressed = false;
+int SamplingButtonManager::lastPressedAt = 0;
 
 SamplingButtonManager::SamplingButtonManager(Logger logger, int buttonPin){
     SamplingButtonManager::logger = logger;
     SamplingButtonManager::buttonPressed = false;
     this->buttonPin = buttonPin;
+    SamplingButtonManager::lastPressedAt = 0;
 }
 
 void SamplingButtonManager::initialize(){
@@ -22,6 +24,11 @@ bool SamplingButtonManager::wasPressed(){
 }
 
 void IRAM_ATTR SamplingButtonManager::onButtonPress(){
-    SamplingButtonManager::buttonPressed = true;
+    int currentMillis = millis();
+    if(currentMillis - SamplingButtonManager::lastPressedAt >= 500){ // Only one press is considered every 0.5 seconds!
+        SamplingButtonManager::buttonPressed = true;
+        SamplingButtonManager::lastPressedAt = currentMillis;
+    }
+    
 }
 
