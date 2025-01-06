@@ -19,6 +19,7 @@ void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samp
     status = SystemStatus::SYSTEM_INITIALIZING;
     try{
         logger.initialize();
+        logger.info("System initalizing...");
         statusLightManager.initialize(status);
         espSyncManager.initialize(samplingUnitsAdresses,samplingUnitsNum);
         samplingDataWriter.initialize();
@@ -33,6 +34,7 @@ void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samp
             samplingUnits[macString] = samplingUnit;
         }
         status = SystemStatus::SYSTEM_STAND_BY;
+        logger.info("System initalization complete!");
         statusLightManager.updateStatus(status);
     }catch(InitError& e){
         status = SystemStatus::SYSTEM_ERROR;
@@ -45,20 +47,27 @@ void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samp
 
 void ControlUnitManager::startSampling(){
     if(status == SystemStatus::SYSTEM_STAND_BY){
+        try{
+            string fileName = samplingDataWriter.createSamplingFile(timeManager.getCurrentTimestamp());
+            *samplingFileName = fileName;
+        }catch(SDCardError& error){
+            logger.error("Failed to create sampling file!");
+            return;
+        }
         espSyncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING);
-        string fileName = samplingDataWriter.createSamplingFile(timeManager.getCurrentTimestamp());
-        *samplingFileName = fileName;
         status = SystemStatus::SYSTEM_SAMPLING;
         statusLightManager.updateStatus(status);
+        logger.info("Sampling started...");
     }
 }
 
 void ControlUnitManager::stopSampling(){
     if(status == SystemStatus::SYSTEM_SAMPLING){
         espSyncManager.broadcastCommand(ControlUnitCommand::STOP_SAMPLING);
-        samplingFileName = NULL;
         status = SystemStatus::SYSTEM_STAND_BY;
+        samplingFileName = NULL;
         statusLightManager.updateStatus(status);
+        logger.info("Sampling stopped!");
     }
 
 }
@@ -73,12 +82,12 @@ void ControlUnitManager::updateSystem(){
             samplingUnit.status = statusMessage.status;
         }
         catch(const std::out_of_range& ex){
-            logger.error("Status update message received from unknown unit");
+            logger.error("Status update message received from unknown unit " + unitID);
         }
     };
     while(espSyncManager.hasSamplingUpdateMessages()){
-        if(status == SystemStatus::SYSTEM_SAMPLING){
-            SamplingSyncMessage samplingUpdate = espSyncManager.popSamplingUpdateMessage();
+        SamplingSyncMessage samplingUpdate = espSyncManager.popSamplingUpdateMessage();
+        if(status == SystemStatus::SYSTEM_SAMPLING){  
             samplingDataWriter.writeSamples(*samplingFileName, macToString(samplingUpdate.from), samplingUpdate.sensorID, samplingUpdate.samplingData, samplingUpdate.units);
         }
     };
@@ -87,21 +96,19 @@ void ControlUnitManager::updateSystem(){
         switch(status){
             case SystemStatus::SYSTEM_SAMPLING:{
                 stopSampling();
-                buttonManager.consumePress();
-                return;
+                break;
             }
             case SystemStatus::SYSTEM_STAND_BY:{
                 startSampling();
-                buttonManager.consumePress();
-                return;
+                break;
             }
             default:{
                 // ignore the press
                 logger.info("Pressed button was ignored because system is not in a ready state");
-                buttonManager.consumePress();
-                return;
             }
         }
+        buttonManager.consumePress();
+        return;
     }
 
     std::map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();

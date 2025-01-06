@@ -81,10 +81,10 @@ void ESPNowSyncManager::initialize(uint8_t samplingUnits[][6], int samplingUnits
     WiFi.mode(WIFI_STA); // Then set to station mode
 
     if (esp_now_init() == ESP_OK) {
-        ESPNowSyncManager::logger.info("ESPNow Init success");
+        ESPNowSyncManager::logger.info("ESPNow Init success!");
     }else {
-        ESPNowSyncManager::logger.error("ESPNow Init fail");
-        throw InitError();;
+        ESPNowSyncManager::logger.error("ESPNow Init failed!");
+        throw InitError();
     }
 
     for (int i = 0; i < samplingUnitsNum; i++) {
@@ -95,9 +95,8 @@ void ESPNowSyncManager::initialize(uint8_t samplingUnits[][6], int samplingUnits
 
         if (esp_now_add_peer(&peerInfo) != ESP_OK) {
             ESPNowSyncManager::logger.error("Failed to add peer");
-            return;
         } else {
-            ESPNowSyncManager::logger.info("Added peer successfully!");
+            ESPNowSyncManager::logger.info("Added peer " macToString(peerInfo.peer_addr) + " successfully!");
         }
     }
 
@@ -116,7 +115,7 @@ void ESPNowSyncManager::sendCommand(ControlUnitCommand command, uint8_t sampling
             break;
         }
         default:{
-            // todo: throw an error here
+            logger.error("Unknown command to send!")
             return;
         }
     }
@@ -139,14 +138,14 @@ void ESPNowSyncManager::broadcastCommand(ControlUnitCommand command){
             break;
         }
         default:{
-            // todo: throw an error here
+            logger.error("Unknown command to broadcast!")
             return;
         }
     }
 
     esp_err_t result = esp_now_send(NULL, (uint8_t *) messageToSend.c_str(), sizeof(messageToSend));
     if (result != ESP_OK) {
-        //ESPNowSyncManager::logger.error("Failed to send command");
+        ESPNowSyncManager::logger.error("Failed to broadcast command!");
         return;
     }
 }

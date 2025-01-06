@@ -19,7 +19,9 @@ bool SamplingButtonManager::wasPressed(){
 }
 
 void SamplingButtonManager::onButtonPress(){
+    SamplingButtonManager::logger.info("Button was just pressed");
     SamplingButtonManager::buttonPressed = true;
+    delay(10); // added for stability
 }
 
 void SamplingButtonManager::consumePress(){

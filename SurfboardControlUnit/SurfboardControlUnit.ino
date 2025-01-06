@@ -2,14 +2,10 @@
 
 /*
     Missing for now:
-        1. start/stop button for sampling
-        2. better edge cases handling
-        3. testing the code
-        4. status light
-        5. Wifi connection
-        6. a way to download files wirelessly...
-        7. a user interface....
-        8. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
+        1. better edge cases handling
+        2. Wifi connection + a way to download files wirelessly...
+        3. a user interface....
+        4. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
 */
 
 // constants
@@ -29,7 +25,6 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 void setup() {
     controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate, RGBRedPin, RGBGreenPin, RGBBluePin); 
     controlUnit.initialize(samplingUnitsMacAddresses, sizeof(samplingUnitsMacAddresses)/sizeof(uint8_t));
-    controlUnit.startSampling(); 
 }
 
 void loop() {
