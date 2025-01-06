@@ -49,7 +49,7 @@ void ControlUnitManager::startSampling(){
     if(status == SystemStatus::SYSTEM_STAND_BY){
         try{
             string fileName = samplingDataWriter.createSamplingFile(timeManager.getCurrentTimestamp());
-            *samplingFileName = fileName;
+            samplingFileName = new string(fileName);
         }catch(SDCardError& error){
             logger.error("Failed to create sampling file!");
             return;
@@ -65,6 +65,7 @@ void ControlUnitManager::stopSampling(){
     if(status == SystemStatus::SYSTEM_SAMPLING){
         espSyncManager.broadcastCommand(ControlUnitCommand::STOP_SAMPLING);
         status = SystemStatus::SYSTEM_STAND_BY;
+        delete samplingFileName;
         samplingFileName = NULL;
         statusLightManager.updateStatus(status);
         logger.info("Sampling stopped!");
