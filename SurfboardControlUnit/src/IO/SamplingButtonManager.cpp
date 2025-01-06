@@ -29,6 +29,5 @@ void IRAM_ATTR SamplingButtonManager::onButtonPress(){
         SamplingButtonManager::buttonPressed = true;
         SamplingButtonManager::lastPressedAt = currentMillis;
     }
-    
 }
 
