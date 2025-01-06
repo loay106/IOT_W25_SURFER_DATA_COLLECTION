@@ -47,7 +47,6 @@ std::string IMU_BNO080::getSample(){
             return dataString.c_str();
         }
         else{
-            status = IMUStatus::ERROR;
             Serial.println("IMU data not available");
             return "error";
         }
@@ -71,7 +70,6 @@ std::string IMU_BNO080::getSample(){
             return dataString.c_str();
         }
         else{
-            status = IMUStatus::ERROR;
             Serial.println("IMU data not available");
             return "error";
         }

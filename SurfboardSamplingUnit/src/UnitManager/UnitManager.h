@@ -33,6 +33,7 @@ class UnitManager {
         ESPNowControlUnitSyncManager* syncManager;
         std::list<IMUBase*> imuSensors;
 //        std::list<IMUBase> strainSensors;
+        UnitManager(){status = UnitManagerStatus::STANDBY; };
         UnitManager(ESPNowControlUnitSyncManager* syncManager);
         void addIMUSensor(IMUBase* sensor);
         void startSampling();

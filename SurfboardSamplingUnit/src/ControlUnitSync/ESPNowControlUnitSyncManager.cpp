@@ -2,40 +2,28 @@
 
 ESPNowControlUnitSyncManager* ESPNowControlUnitSyncManager::instance = nullptr;
 
-ESPNowControlUnitSyncManager::ESPNowControlUnitSyncManager(uint8_t controlUnitDeviceMac[])
-{
-    memcpy(controlUnitMac, controlUnitDeviceMac, 6);
+void ESPNowControlUnitSyncManager::initialize(uint8_t controlUnitDeviceMac[]){
+    instance = this;
+    memcpy(instance->controlUnitMac, controlUnitDeviceMac, 6);
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect(true);
-    delay(100);
-    esp_err_t result = esp_now_init();
-    if (result != ESP_OK) {
-        Serial.print("ESPNow initialization failed! Error code: ");
-        Serial.println(result);
+    if (esp_now_init() != ESP_OK) {
+        Serial.println("Error initializing ESP-NOW");
         return;
     }
-    else
-    {
-        Serial.println("ESPNow initialized successfully!");
-        return;
-    }
-
-    // Set callback for received data
     esp_now_register_recv_cb(onDataReceivedCallback);
-    // Add the peer control unit for communication
-    esp_now_peer_info_t peerInfo;
-    memcpy(peerInfo.peer_addr, controlUnitMac, 6);
+    esp_now_peer_info_t peerInfo = {};
+    memcpy(peerInfo.peer_addr, controlUnitDeviceMac, 6);
     peerInfo.channel = 0; // default channel
     peerInfo.encrypt = false;
 
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
         Serial.println("Failed to add peer!");
     }
-    instance = this;
+    Serial.println("peering successful!");
 }
 
 void ESPNowControlUnitSyncManager::sendData(const uint8_t *data, size_t len) {
-    esp_err_t result = esp_now_send(controlUnitMac, data, len);
+    esp_err_t result = esp_now_send(instance->controlUnitMac, data, len);
     if (result == ESP_OK) {
         Serial.println("Data sent successfully!");
     } 
@@ -47,22 +35,21 @@ void ESPNowControlUnitSyncManager::sendData(const uint8_t *data, size_t len) {
 
 void ESPNowControlUnitSyncManager::sendSamples(const string sample , const string pattern , const string id)
 {
-
     std::string message = id + "|" + pattern + "|" + sample;
-    vector<uint8_t> messageData(message.begin(), message.end());
-    sendData(messageData.data() , messageData.size());
+    sendData((uint8_t *) message.c_str(),sizeof(message));
 }
 
 
 void ESPNowControlUnitSyncManager::onDataReceived(const uint8_t* mac, const uint8_t* data, int len)
 {
-    Serial.print("Received data: ");
-    int min_len = min(len ,MAX_SIZE);
-    memcpy(buffer , data , static_cast<size_t>(min_len));
-    for(int i=0 ; i<min_len ; i++)
-    {
-        commands.push(static_cast<ControlUnitCommand>(buffer[i]));
-    }
+    Serial.println("data recieved:");
+    char charData[len + 1]; // Create a buffer with space for null-terminator
+    memcpy(charData, data, len); // Copy the data
+    charData[len] = '\0'; // Null-terminate the string
+    std::string command = charData;
+    Serial.println(charData);
+    commands.push(command);
+
 }
 
 void ESPNowControlUnitSyncManager::onDataReceivedCallback(const uint8_t* mac, const uint8_t* data, int len) {
@@ -77,23 +64,38 @@ void ESPNowControlUnitSyncManager::onDataReceivedCallback(const uint8_t* mac, co
 
 }
 
-
+//a8:42:e3:45:94:68
 ControlUnitCommand ESPNowControlUnitSyncManager::getNextCommand()
 {
     if(commands.empty())
     {
         Serial.println("NO_COMMAND");
-        return NO_COMMAND;
+        return ControlUnitCommand::NO_COMMAND;
     }
-    ControlUnitCommand cmd = commands.front();
+    std::string cmd = commands.front();
     commands.pop();
-    return cmd;
+    if(cmd == "START_SAMPLING" ){
+        return ControlUnitCommand::START_SAMPLING;
+    }
+    if(cmd == "STOP_SAMPLING" ){
+        return ControlUnitCommand::STOP_SAMPLING;
+    }
+    Serial.println("undetected command");
 }
 
-
 void ESPNowControlUnitSyncManager::reportStatus(UnitManagerStatus status) {
+    std::string stat;
+    if(status == UnitManagerStatus::STANDBY){
+        stat = "STAND_BY";
+    }
+    if (status == UnitManagerStatus::SAMPLING){
+        stat = "SAMPLING";
+    }
+    if (status == UnitManagerStatus::ERROR){
+        stat = "ERROR";
+    }
+    std::string message = "STATUS_UPDATE|" + stat;
+    sendData((uint8_t *) message.c_str(),sizeof(message));
 
-    uint8_t statusData[1] = {static_cast<uint8_t>(status)};
-    sendData(statusData, sizeof(statusData));
 }
 

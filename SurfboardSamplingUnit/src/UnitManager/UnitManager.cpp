@@ -7,20 +7,22 @@ UnitManager::UnitManager(ESPNowControlUnitSyncManager* syncManager): status(Unit
 }
 void UnitManager::addIMUSensor(IMUBase* sensor){
     sensor->setup();
+    if(!sensor->sensorEnabled){
+        sensor->enableSensor();
+        sensor->sensorEnabled = true;
+    }
     imuSensors.push_back(sensor);
 
 }
 
 void UnitManager::startSampling(){
 
-    for(auto &imuSensor : imuSensors){
-
-        if(!imuSensor->sensorEnabled){
-            imuSensor->enableSensor();
-            imuSensor->sensorEnabled = true;
-        }
+    for(auto imuSensor : imuSensors){
         std::string sampleString = imuSensor->getSample();
-//        syncManager.sendSamples(sampleString,imuSensor.pattern,imuSensor.id);
+        while(sampleString == "error"){
+            sampleString = imuSensor->getSample();
+        }
+        syncManager->sendSamples(sampleString,imuSensor->pattern,imuSensor->id);
         if(imuSensor->status == IMUStatus::ERROR ){
             status = UnitManagerStatus::ERROR;
         }
