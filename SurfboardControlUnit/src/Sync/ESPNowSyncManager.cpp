@@ -130,6 +130,7 @@ void ESPNowSyncManager::broadcastCommand(ControlUnitCommand command){
     string messageToSend;
     switch (command){
         case ControlUnitCommand::START_SAMPLING:{
+            // todo: change to START_SAMPLING|IMU_RATE:[INT]|STRAIN_GAUGE_RATE:[INT]
             messageToSend="START_SAMPLING";
             break;
         }
