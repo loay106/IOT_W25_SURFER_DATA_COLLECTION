@@ -25,7 +25,6 @@
         3. Device is agnostic to time and timestamp! This is handled in the Control Unit when commands are sent
 
 */
-//shada MAC : 08:b6:1f:33:49:e4
 
 class UnitManager {
     public:

@@ -35,8 +35,9 @@ void ESPNowControlUnitSyncManager::sendData(const uint8_t *data, size_t len) {
 
 void ESPNowControlUnitSyncManager::sendSamples(const string sample , const string pattern , const string id)
 {
-    std::string message = id + "|" + pattern + "|" + sample;
-    sendData((uint8_t *) message.c_str(),sizeof(message));
+    std::string message = "SAMPLE_SYNC|"+id + "|" + pattern + "|" + sample;
+    Serial.println(message.c_str());
+    sendData((uint8_t *) message.c_str(),message.length());
 }
 
 
@@ -75,9 +76,11 @@ ControlUnitCommand ESPNowControlUnitSyncManager::getNextCommand()
     std::string cmd = commands.front();
     commands.pop();
     if(cmd == "START_SAMPLING" ){
+        Serial.println("START_SAMPLING");
         return ControlUnitCommand::START_SAMPLING;
     }
     if(cmd == "STOP_SAMPLING" ){
+        Serial.println("STOP_SAMPLING");
         return ControlUnitCommand::STOP_SAMPLING;
     }
     Serial.println("undetected command");
@@ -95,7 +98,8 @@ void ESPNowControlUnitSyncManager::reportStatus(UnitManagerStatus status) {
         stat = "ERROR";
     }
     std::string message = "STATUS_UPDATE|" + stat;
-    sendData((uint8_t *) message.c_str(),sizeof(message));
+    Serial.println(message.c_str());
+    sendData((uint8_t *) message.c_str(),message.length());
 
 }
 

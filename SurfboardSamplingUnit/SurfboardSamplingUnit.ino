@@ -6,10 +6,10 @@
 #include <WiFi.h>
 #include <esp_now.h>
 
-uint8_t CONTROL_UNIT_DEVICE_MAC[] = {0xA8, 0x42, 0xE3, 0x45, 0x94, 0x68}; // todo: change to control unit device's MAC..
+uint8_t CONTROL_UNIT_DEVICE_MAC[] = {0xA8, 0x42, 0xE3, 0x46, 0xE0, 0x64}; // todo: change to control unit device's MAC..
 
 // global objects
-int SamplingDelayTime = 800;
+int SamplingDelayTime = 300;
 UnitManager unitManager;
 ESPNowControlUnitSyncManager syncManager;
 IMU_BNO080 sensor_1(SamplingModes::ACCELEROMETER,SamplingDelayTime);
@@ -32,11 +32,20 @@ void loop() {
                 unitManager.status = UnitManagerStatus::SAMPLING;
                 syncManager.reportStatus(unitManager.status);
             }
+            else if(command == ControlUnitCommand::STOP_SAMPLING){
+                syncManager.reportStatus(unitManager.status);
+            }
+
             delay(SamplingDelayTime);
             break;
 
         case UnitManagerStatus::SAMPLING:
-            if(command == ControlUnitCommand::STOP_SAMPLING){
+            if(command == ControlUnitCommand::START_SAMPLING){
+                syncManager.reportStatus(unitManager.status);
+                unitManager.startSampling();
+
+            }
+            else if(command == ControlUnitCommand::STOP_SAMPLING){
                 unitManager.status = UnitManagerStatus::STANDBY;
                 syncManager.reportStatus(unitManager.status);
             }
