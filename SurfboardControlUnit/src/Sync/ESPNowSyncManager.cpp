@@ -9,7 +9,7 @@ std::queue<SamplingSyncMessage> ESPNowSyncManager::samplingSyncQueue;
 
 void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len){
     string message(reinterpret_cast<const char *>(incomingData), len); // Convert incoming data to string
-    //ESPNowSyncManager::logger.info("MESSAGE RECEIVED: " + message);
+    ESPNowSyncManager::logger.info("MESSAGE RECEIVED: " + message);
     vector<string> tokens;
     stringstream ss(message);
     string token;
@@ -41,7 +41,7 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
         } else if (tokens[1].compare("ERROR") == 0) {
             status = SamplingUnitStatus::UNIT_ERROR;
         } else {
-            //ESPNowSyncManager::logger.error("Unknown STATUS_UPDATE status: " + tokens[1]);
+            ESPNowSyncManager::logger.error("Unknown STATUS_UPDATE status: " + tokens[1]);
             return;
         }
 
@@ -70,7 +70,7 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
         ESPNowSyncManager::samplingSyncQueue.push(syncMessage);
         //logger.info("Added sampling sync message with " + to_string(syncMessage.samplingData.size()) + " samples");
     } else {
-        // ESPNowSyncManager::logger.error("Unknown message received: " + message);
+        //ESPNowSyncManager::logger.error("Unknown message received: " + message);
     }
 }
 

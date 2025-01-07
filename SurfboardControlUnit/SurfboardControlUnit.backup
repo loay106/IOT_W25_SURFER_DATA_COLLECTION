@@ -2,10 +2,8 @@
 
 /*
     Missing for now:
-        1. better edge cases handling
-        2. Wifi connection + a way to download files wirelessly...
-        3. a user interface....
-        4. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
+        1. Wifi connection + user interface
+        2. having sampling rates as a parameter...maybe add it to user interface + send rates in start_sampling command?
 */
 
 // constants

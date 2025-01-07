@@ -60,7 +60,7 @@ class ESPNowSyncManager{
         static queue<StatusUpdateMessage> statusUpdateQueue;
         static queue<SamplingSyncMessage> samplingSyncQueue;
 
-        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);        
+               
     public:
         static const char DELIMETER = '|';
 
@@ -74,6 +74,8 @@ class ESPNowSyncManager{
 
         bool hasStatusUpdateMessages();
         bool hasSamplingUpdateMessages();
+
+        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len); 
 
         StatusUpdateMessage popStatusUpdateMessage();
         SamplingSyncMessage popSamplingUpdateMessage();
