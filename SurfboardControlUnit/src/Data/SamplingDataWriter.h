@@ -12,17 +12,17 @@ using namespace std;
 /*
     Log samples to a file in an SD card.
     Constraints:
-        1. file name is unique that includes the timestamp in which the sampling started at
-        2. file csv header is shown in the example
-        3. sample coordinates are seperated by a comma ','
+        1. files are written in /samplings directory
+        2. file name is sampling_[TIMESTAMP].csv
+        3. file csv header is shown in the example
 
         example file:
             ----------------------------------------------------------------------------------------------------------------
             |        sample_data          |          sample_units                           | sampling_unit_id | sensor_id | 
             ----------------------------------------------------------------------------------------------------------------
-            |(-0.13,0.67,-0.71,0.13,3.14) | (quatI,quatJ,quatK,quatReal,quatRadianAccuracy) |         123      |   1547    | 
+            | -0.13 0.67 -0.71 0.13 3.14  |  quatI quatJ quatK quatReal quatRadianAccuracy  |         123      |   1547    | 
             ----------------------------------------------------------------------------------------------------------------
-            |(0.23,-9.77,-1.57)           | (AccX,AccY,AccZ)                                |         547      |   1747    | 
+            | 0.23 -9.77 -1.57            |   AccX AccY AccZ                                |         547      |   1747    | 
             ----------------------------------------------------------------------------------------------------------------
 
 */

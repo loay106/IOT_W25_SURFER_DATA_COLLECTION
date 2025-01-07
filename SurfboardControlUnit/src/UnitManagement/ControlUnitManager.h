@@ -21,7 +21,8 @@ using namespace std;
         1. ESP controller with WIFI compatibility
         2. SD Card
         3. RTC 
-        4. RGB light (status updates)
+        4. RGB analong light
+        5. Press button
  */
 
 typedef struct SamplingUnitRep{

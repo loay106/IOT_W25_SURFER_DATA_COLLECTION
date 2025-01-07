@@ -61,7 +61,6 @@ void SamplingDataWriter::writeSamples(string fileName, string samplingUnitID, st
     
     for(const string& sampleData : sampleDataVec){
         string logEntry = sampleData + "," + sampleUnits + "," + samplingUnitID + "," + sensorID;
-        logger.info(logEntry);
         logFile.println(logEntry.c_str());
     }
     logFile.flush();
