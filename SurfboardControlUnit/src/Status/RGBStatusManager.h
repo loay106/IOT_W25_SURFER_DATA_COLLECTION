@@ -11,14 +11,11 @@ class RGBStatusManager{
     private:
         SystemStatus currentStatus;
         Logger logger;
-        int redPin;
-        int greenPin;
-        int bluePin;
         void updateStatusColor();
     public:
         RGBStatusManager(){};
-        RGBStatusManager(Logger logger, int redPin, int greenPin, int bluePin);
-        void initialize(SystemStatus currentSystemStatus);
+        RGBStatusManager(Logger logger);
+        void initialize(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin);
         void updateStatus(SystemStatus newStatus); 
 };
 

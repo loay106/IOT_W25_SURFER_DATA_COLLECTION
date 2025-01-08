@@ -45,11 +45,11 @@ void RGBStatusManager::updateStatusColor(){
     }
 }
 
-RGBStatusManager::RGBStatusManager(Logger logger, int redPin, int greenPin, int bluePin) : logger(logger), redPin(redPin), greenPin(greenPin), bluePin(bluePin){
+RGBStatusManager::RGBStatusManager(Logger logger) : logger(logger){
     currentStatus = SystemStatus::SYSTEM_STARTING;
 }
 
-void RGBStatusManager::initialize(SystemStatus currentSystemStatus) {
+void RGBStatusManager::initialize(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin) {
     ledcSetup(0, 5000, 8); // Channel 0, 5kHz, 8-bit resolution
     ledcSetup(1, 5000, 8); // Channel 1, 5kHz, 8-bit resolution
     ledcSetup(2, 5000, 8); // Channel 2, 5kHz, 8-bit resolution

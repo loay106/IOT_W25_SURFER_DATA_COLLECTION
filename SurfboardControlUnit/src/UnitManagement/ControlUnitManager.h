@@ -42,11 +42,12 @@ class ControlUnitManager{
 
         SystemStatus status;
         string* samplingFileName;
+        int samplesCount; // samples count in a sampling session
 
     public:
         ControlUnitManager(){};
-        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin, int buttonPin);
-        void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum);
+        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int buttonPin);
+        void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
         
         void startSampling();
         void stopSampling();

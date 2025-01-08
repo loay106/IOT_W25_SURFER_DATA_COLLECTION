@@ -24,8 +24,8 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 };
 
 void setup() {
-    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate, RGBRedPin, RGBGreenPin, RGBBluePin, buttonPin); 
-    controlUnit.initialize(samplingUnitsMacAddresses, 1);
+    controlUnit = ControlUnitManager(SDCardChipSelectPin, serialBaudRate, buttonPin); 
+    controlUnit.initialize(samplingUnitsMacAddresses, 1, RGBRedPin, RGBGreenPin, RGBBluePin);
 }
 
 void loop() {

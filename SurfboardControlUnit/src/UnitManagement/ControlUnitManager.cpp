@@ -2,24 +2,25 @@
 #include "../Utils/Adresses.h"
 #include "../Exceptions/UnitExceptions.h"
 
-ControlUnitManager::ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int RGBRedPin, int RGBGreenPin, int RGBBluePin, int buttonPin)
+ControlUnitManager::ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int buttonPin)
 {
     this->logger = Logger(serialBaudRate);
     this->espSyncManager = ESPNowSyncManager(logger);
     this->samplingDataWriter = SamplingDataWriter(SDCardChipSelectPin, logger);
     this->timeManager = TimeManager(logger);
-    this->statusLightManager = RGBStatusManager(logger, RGBRedPin, RGBGreenPin, RGBBluePin);
+    this->statusLightManager = RGBStatusManager(logger);
     this->buttonManager = SamplingButtonManager(logger, buttonPin);
+    this->samplesCount = 0;
 
     this->samplingFileName = NULL;
     this->status = SystemStatus::SYSTEM_STARTING;
 }
 
-void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum){
+void ControlUnitManager::initialize(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin){
     status = SystemStatus::SYSTEM_INITIALIZING;
     try{
         logger.initialize();
-        statusLightManager.initialize(status);
+        statusLightManager.initialize(status, RGBRedPin, RGBGreenPin, RGBBluePin);
         espSyncManager.initialize(samplingUnitsAdresses,samplingUnitsNum);
         samplingDataWriter.initialize();
         buttonManager.initialize();
@@ -76,8 +77,14 @@ void ControlUnitManager::stopSampling(){
         status = SystemStatus::SYSTEM_STAND_BY;
         delete samplingFileName;
         samplingFileName = NULL;
+        // todo: get samplingStartTime...
+        int elapsedSeconds = (timeManager.getCurrentTimestamp() - samplingStartTime) / 1000;
+        int rate = elapsedSeconds > 0 ? samplesCount / elapsedSeconds : 0;
+        logger.info("Sampling stopped! Sampling rate is: " + to_string(rate) + "Hz");
+        samplesCount = 0;
+        
         statusLightManager.updateStatus(status);
-        logger.info("Sampling stopped!");
+
     }
 
 }
@@ -98,6 +105,7 @@ void ControlUnitManager::updateSystem(){
         SamplingSyncMessage samplingUpdate = espSyncManager.popSamplingUpdateMessage();
         if(status == SystemStatus::SYSTEM_SAMPLING){  
             samplingDataWriter.writeSamples(*samplingFileName, macToString(samplingUpdate.from), samplingUpdate.sensorID, samplingUpdate.samplingData, samplingUpdate.units);
+            samplesCount+=samplingUpdate.samplingData.size();
             //logger.info("Wrote " + to_string(samplingUpdate.samplingData.size()) + " samples to SD card!");
         }
     };
