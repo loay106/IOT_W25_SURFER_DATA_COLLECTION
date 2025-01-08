@@ -19,6 +19,6 @@ void loop() {
     if(buttonManager.wasPressed()){
         logger.info("BUTTON WAS PRESSED!");
     }
-    delay(2000);
+    delay(50);
 }
 

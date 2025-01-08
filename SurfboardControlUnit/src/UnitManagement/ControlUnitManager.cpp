@@ -98,7 +98,7 @@ void ControlUnitManager::updateSystem(){
         SamplingSyncMessage samplingUpdate = espSyncManager.popSamplingUpdateMessage();
         if(status == SystemStatus::SYSTEM_SAMPLING){  
             samplingDataWriter.writeSamples(*samplingFileName, macToString(samplingUpdate.from), samplingUpdate.sensorID, samplingUpdate.samplingData, samplingUpdate.units);
-            logger.info("Wrote " + to_string(samplingUpdate.samplingData.size()) + " samples to SD card!");
+            //logger.info("Wrote " + to_string(samplingUpdate.samplingData.size()) + " samples to SD card!");
         }
     };
 

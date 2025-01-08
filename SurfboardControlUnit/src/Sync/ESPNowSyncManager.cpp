@@ -9,7 +9,7 @@ std::queue<SamplingSyncMessage> ESPNowSyncManager::samplingSyncQueue;
 
 void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len){
     string message(reinterpret_cast<const char *>(incomingData), len); // Convert incoming data to string
-    ESPNowSyncManager::logger.info("MESSAGE RECEIVED: " + message);
+    // ESPNowSyncManager::logger.info("MESSAGE RECEIVED: " + message);
     vector<string> tokens;
     stringstream ss(message);
     string token;
