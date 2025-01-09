@@ -4,9 +4,14 @@
 using namespace std;
 #include <map>
 #include <string>
-#include <src/SamplingUnitSync/ESPNowSyncManager.h>
-#include <src/DataManagement/SDCardSampleLogger.h>
-#include <SamplingUnit.h>
+
+#include "../Sync/ESPNowSyncManager.h"
+#include "../Status/SystemStatus.h"
+#include "../Data/SamplingDataWriter.h"
+#include "../Data/Logger.h"
+#include "../Time/TimeManager.h"
+#include "../Status/RGBStatusManager.h"
+#include "../IO/SamplingButtonManager.h"
 
 /*
     Class handling the logic of the device. Only one instance is needed
@@ -16,42 +21,38 @@ using namespace std;
         1. ESP controller with WIFI compatibility
         2. SD Card
         3. RTC 
-        4. RGB light (status updates)
+        4. RGB analong light
+        5. Press button
  */
+
+typedef struct SamplingUnitRep{
+    uint8_t mac[6];
+    SamplingUnitStatus status;    
+} SamplingUnitRep;
 
 class ControlUnitManager{
     private:
-        map<string, SamplingUnit> samplingUnits; // id to instance mapping
+        std::map<string, SamplingUnitRep> samplingUnits; // id to instance mapping
         ESPNowSyncManager espSyncManager;
-        SDCardSampleLogger sampleLogger;
+        SamplingDataWriter samplingDataWriter;
+        TimeManager timeManager;
+        RGBStatusManager statusLightManager;
+        SamplingButtonManager buttonManager;
+        Logger logger;
+
         SystemStatus status;
+        string* samplingFileName;
+        int samplesCount; // samples count in a sampling session
 
     public:
-        ControlUnitManager();
+        ControlUnitManager(){};
+        ControlUnitManager(uint8_t SDCardChipSelectPin, int serialBaudRate, int buttonPin);
+        void initialize(uint8_t samplingUnits[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
+        
+        void startSampling();
+        void stopSampling();
 
-        string addSamplingUnit();
-        void updateSamplingUnitStatus(string unitID, SamplingUnitStatus status);
-
-        void handleSyncMessages();
-        void sendCommand(ControlUnitCommand command, string samplingUnitID); // send to specific unit   
-        void broadcastCommand(ControlUnitCommand command); // send to all units
+        void updateSystem();
 };
-
-enum SystemStatus{
-    INITILAZING,
-    STAND_BY,
-    SAMPLING,
-    FILE_UPLOAD,
-    ERROR
-    // add more ass needed
-};
-
-enum ControlUnitCommand{
-    START_SAMPLING, // send timestamp here
-    STOP_SAMPLING,
-    START_SAMPLE_FILE_TRANSFER,
-    STOP_SAMPLE_FILE_TRANSFER
-};
-
 
 #endif /* CONTROL_UNIT_MANAGER_H */
