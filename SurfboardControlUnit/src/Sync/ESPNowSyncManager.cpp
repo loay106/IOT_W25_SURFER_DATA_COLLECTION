@@ -5,7 +5,7 @@
 
 Logger ESPNowSyncManager::logger = Logger(57600);
 std::queue<StatusUpdateMessage> ESPNowSyncManager::statusUpdateQueue;
-std::queue<SamplingSyncMessage> ESPNowSyncManager::samplingSyncQueue;
+std::queue<string> ESPNowSyncManager::samplingSyncQueue;
 
 void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len){
     string message(reinterpret_cast<const char *>(incomingData), len); // Convert incoming data to string
@@ -56,18 +56,11 @@ void ESPNowSyncManager::processReceivedMessages(const uint8_t *mac_addr, const u
             //ESPNowSyncManager::logger.error("Invalid SAMPLE_SYNC message format.");
             return;
         }
-
-        // Parse SAMPLE_SYNC
-        SamplingSyncMessage syncMessage;
-        memcpy(syncMessage.from, mac_addr, 6); // Copy sender MAC address
-        syncMessage.sensorID = tokens[1];
-        syncMessage.units = tokens[2];
-
         // Parse sampling data (remaining tokens tokens starting from index 3)
         for (size_t i = 3; i < tokens.size(); i++) {
-            syncMessage.samplingData.push_back(tokens[i]);
+            string sample = tokens[i] + "," + tokens[2] + "," + macToString(mac_addr) + "," + tokens[1];
+            ESPNowSyncManager::samplingSyncQueue.push(sample);
         }
-        ESPNowSyncManager::samplingSyncQueue.push(syncMessage);
         //logger.info("Added sampling sync message with " + to_string(syncMessage.samplingData.size()) + " samples");
     } else {
         //ESPNowSyncManager::logger.error("Unknown message received: " + message);
@@ -166,8 +159,8 @@ StatusUpdateMessage ESPNowSyncManager::popStatusUpdateMessage(){
     return item;
 }
 
-SamplingSyncMessage ESPNowSyncManager::popSamplingUpdateMessage(){
-    SamplingSyncMessage item = ESPNowSyncManager::samplingSyncQueue.front();
+string ESPNowSyncManager::popSamplingUpdateMessage(){
+    string item = ESPNowSyncManager::samplingSyncQueue.front();
     ESPNowSyncManager::samplingSyncQueue.pop();
     return item;
 }

@@ -58,9 +58,8 @@ class ESPNowSyncManager{
     private:
         static Logger logger;
         static queue<StatusUpdateMessage> statusUpdateQueue;
-        static queue<SamplingSyncMessage> samplingSyncQueue;
-
-               
+        static queue<SamplingSyncMessage> samplingSyncQueue; // todo: change to <string>
+           
     public:
         static const char DELIMETER = '|';
 
@@ -77,8 +76,11 @@ class ESPNowSyncManager{
 
         static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len); 
 
-        StatusUpdateMessage popStatusUpdateMessage();
-        SamplingSyncMessage popSamplingUpdateMessage();
+        static addSamplingUpdateMessage(SamplingSyncMessage msg); // todo: add mutex A here
+        static addStatusUpdateMessage(StatusUpdateMessage msg); // todo: add mutex B here
+        StatusUpdateMessage popStatusUpdateMessage(); // todo: add mutex B here
+        SamplingSyncMessage popSamplingUpdateMessage(); // todo: add mutex A here
+
 };
 
 
