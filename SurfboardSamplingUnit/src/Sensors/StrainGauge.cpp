@@ -74,7 +74,7 @@ string StrainGuage::getSamples()
 }
 
 
-int StrainGuage::calcuateDelayTime(int sampling_rate);
+int StrainGuage::calculateDelayTime(int sampling_rate);
 {
     double delay_time = 1000.0/sampling_rate;
     return ceil(delay_time);
