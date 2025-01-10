@@ -4,6 +4,7 @@
 #include <string>
 #include "ForceBase.h"
 #include "HX711.h"
+#include <cmath>
 using namespace std;
 
 #define CALIBRATION_FACTOR 430
@@ -20,7 +21,10 @@ class StrainGuage : public ForceBase {
         StrainGuage(ForceModel Model);
         void enableSensor() override;
         void disableSensor() override;
+        bool getSensorStatus() override;
         string getSamples() override;
+        void setup() override;
+        int calcuateDelayTime(int sampling_rate);// HZ
         //void stopSampling() override;
 };
 

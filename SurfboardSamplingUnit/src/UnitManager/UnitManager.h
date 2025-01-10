@@ -2,9 +2,10 @@
 #define UNIT_MANAGER_H
 
 #include "../Sensors/IMUBase.h"
+#include "../Sensors/ForceBase.h"
+#include "../ControlUnitSync/ESPNowControlUnitSyncManager.h"
 #include <string>
 #include <list>
-#include "../ControlUnitSync/ESPNowControlUnitSyncManager.h"
 
 /* 
     This class handles the logic for the sampling unit device.
@@ -31,10 +32,11 @@ class UnitManager {
         UnitManagerStatus status;
         ESPNowControlUnitSyncManager* syncManager;
         std::list<IMUBase*> imuSensors;
-//        std::list<IMUBase> strainSensors;
+        std::list<ForceBase*> forceSensors;
         UnitManager(){status = UnitManagerStatus::STANDBY; };
         UnitManager(ESPNowControlUnitSyncManager* syncManager);
         void addIMUSensor(IMUBase* sensor);
+        void addForceSensor(ForceBase* sensor);
         void startSampling();
 };
 

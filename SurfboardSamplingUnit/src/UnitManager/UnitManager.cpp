@@ -1,10 +1,10 @@
 #include "UnitManager.h"
-#include "../Sensors/IMUBase.h"
 #include "../Sensors/IMU_BNO080.h"
 
 UnitManager::UnitManager(ESPNowControlUnitSyncManager* syncManager): status(UnitManagerStatus::STANDBY){
    this->syncManager = syncManager;
 }
+
 void UnitManager::addIMUSensor(IMUBase* sensor){
     sensor->setup();
     if(!sensor->sensorEnabled){
@@ -13,6 +13,16 @@ void UnitManager::addIMUSensor(IMUBase* sensor){
     }
     imuSensors.push_back(sensor);
 
+}
+
+void UnitManager::addForceSensor(ForceBase* sensor)
+{
+    sensor->setup()
+    if(!sensor->getSensorStatus())
+    {
+        sensor->enableSensor();
+    }
+    forceSensors.push_back(sensor);
 }
 
 void UnitManager::startSampling(){
@@ -27,7 +37,6 @@ void UnitManager::startSampling(){
             status = UnitManagerStatus::ERROR;
         }
     }
-
 
 }
 

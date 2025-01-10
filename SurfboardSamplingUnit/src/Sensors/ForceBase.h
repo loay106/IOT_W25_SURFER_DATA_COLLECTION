@@ -40,6 +40,7 @@ class ForceBase {
         virtual void stopSampling()=0;
         virtual void enableSensor()=0;
         virtual void disableSensor()=0;
+        virtual bool getSensorStatus()=0;
         virtual ~ForceBase() = default;
 };
 
