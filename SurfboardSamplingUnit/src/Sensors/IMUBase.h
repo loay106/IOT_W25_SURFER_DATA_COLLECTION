@@ -31,6 +31,7 @@ class IMUBase {
         IMUBase(SupportedIMUModels model, SamplingModes mode, int samplingRate);
         virtual void setup() = 0;
         virtual void enableSensor() = 0;
+        virtual void enableSensor() = 0;
         virtual std::string getSample() = 0;
 
 };

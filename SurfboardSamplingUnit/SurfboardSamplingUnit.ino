@@ -1,92 +1,139 @@
 
+/*#include "HX711.h"
 
-#include "src/UnitManager/UnitManager.h"
-#include "src/ControlUnitSync/ESPNowControlUnitSyncManager.h"
-#include "src/Sensors/IMU_BNO080.h"
-#include <WiFi.h>
-#include <esp_now.h>
+#define DOUT_PIN 12
+#define CLK_PIN 13
 
-uint8_t CONTROL_UNIT_DEVICE_MAC[] = {0xA8, 0x42, 0xE3, 0x46, 0xE0, 0x64}; // todo: change to control unit device's MAC..
+HX711 scale;
+float data_loss_percentage = 0;
+static int total = 0;
+static int data_loss = 0;
 
-// global objects
-int SamplingDelayTime = 300;
-UnitManager unitManager;
-ESPNowControlUnitSyncManager syncManager;
-IMU_BNO080 sensor_1(SamplingModes::ACCELEROMETER,SamplingDelayTime);
+// Calibration factor (adjust this based on your calibration)
+float calibration_factor = 438;
+
+// Gravity constant (m/s^2)
+const float GRAVITY = 9.81;
 
 void setup() {
-    Serial.begin(115200);
-    syncManager.initialize(CONTROL_UNIT_DEVICE_MAC);
-    unitManager = UnitManager(&syncManager);
-    // add sensors here
-    unitManager.addIMUSensor(&sensor_1);
+  Serial.begin(115200);
+  Serial.println("HX711 Force Measurement Test");
+
+  scale.begin(DOUT_PIN, CLK_PIN);
+  scale.set_scale(calibration_factor);
+  scale.tare(); // Reset scale to zero
+
+  delay(5000);
 }
 
 void loop() {
-     UnitManagerStatus status = unitManager.status;
-    ControlUnitCommand command = syncManager.getNextCommand();
-    switch (status)
-    {
-        case UnitManagerStatus::STANDBY:
-            if(command == ControlUnitCommand::START_SAMPLING){
-                unitManager.status = UnitManagerStatus::SAMPLING;
-                syncManager.reportStatus(unitManager.status);
-            }
-            else if(command == ControlUnitCommand::STOP_SAMPLING){
-                syncManager.reportStatus(unitManager.status);
-            }
+  
+  unsigned long startTime = millis();
+  unsigned long currentTime;
+  int sampleCount = 0; 
+  // Count samples for exactly one second
+  do {
+    if (scale.is_ready()) {
+    sampleCount++;
+    float mass_kg = scale.get_units() / 1000;
 
-            delay(SamplingDelayTime);
-            break;
+    /*float force_N = mass_kg * GRAVITY;
+    Serial.print("Mass: ");
+    Serial.print(mass_kg, 3);
+    Serial.print(" kg, Force: ");
+    Serial.print(force_N, 2);
+    Serial.println(" N");
+  } 
+  else 
+  {
+    Serial.println("HX711 not found.");
+  }
 
-        case UnitManagerStatus::SAMPLING:
-            if(command == ControlUnitCommand::START_SAMPLING){
-                syncManager.reportStatus(unitManager.status);
-                unitManager.startSampling();
+    delay(13);
+    currentTime = millis();
+  } while (currentTime - startTime < 1000);  // Run for 1 second
+  
+  // The sampling rate is equal to the number of samples taken in one second
+  float samplingRate = sampleCount;
+  if (scale.is_ready()) {
+    float mass_kg = scale.get_units() / 1000;
 
-            }
-            else if(command == ControlUnitCommand::STOP_SAMPLING){
-                unitManager.status = UnitManagerStatus::STANDBY;
-                syncManager.reportStatus(unitManager.status);
-            }
-            else{
-                unitManager.startSampling();
-            }
-            delay(SamplingDelayTime);
-            break;
+    float force_N = mass_kg * GRAVITY;
+    Serial.print("Mass: ");
+    Serial.print(mass_kg, 3);
+    Serial.print(" kg, Force: ");
+    Serial.print(force_N, 2);
+    Serial.println(" N");
+  } 
+  else {
+    Serial.println("HX711 not found.");
+  }
+  Serial.print("Sample Count : ");
+  Serial.println(sampleCount);
+  //delay(20);
+}*/
 
-        case UnitManagerStatus::ERROR:
-            syncManager.reportStatus(unitManager.status);
-            while(1);
-            break;
 
-        default:
-            break;
-    }
+#include "HX711.h"
+
+#define DOUT_PIN 12
+#define CLK_PIN 13
+
+HX711 scale;
+
+// Make these static to maintain their values across loop iterations
+static int total = 0;
+static int data_loss = 0;
+
+// Calibration factor (adjust this based on your calibration)
+float calibration_factor = 438;
+
+// Gravity constant (m/s^2)
+const float GRAVITY = 9.81;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("HX711 Force Measurement Test");
+
+  scale.begin(DOUT_PIN, CLK_PIN);
+  scale.set_scale(calibration_factor);
+  scale.tare(); // Reset scale to zero
+
+  Serial.println("Place known mass on scale to calculate force");
+  delay(5000);
 }
 
-// #include "src/Sensors/IMU_BNO080.h"
-// #include "src/UnitManager/UnitManager.h"
-// #include <WiFi.h>
-// #include <esp_now.h>
+void loop() {
+  unsigned long startTime = millis();
+  unsigned long currentTime;
+  int sampleCount = 0;
 
-//  uint8_t CONTROL_UNIT_DEVICE_MAC[] = {0xA8, 0x42, 0xE3, 0x46, 0xE0, 0x64};
-// UnitManager unitManager;
-// ESPNowControlUnitSyncManager syncManager;
+  // Count samples for exactly one second
+  do {
+    if (scale.is_ready()) {
+      sampleCount++;
+      // Your measurement code here
+    } else {
+      Serial.println("HX711 not found.");
+      data_loss++;
+    }
+    total++;
+    delay(13);
+    currentTime = millis();
+  } while (currentTime - startTime < 1000);  // Run for 1 second
 
-// std::string messageToSend="STATUS_UPDATE|STAND_BY";
+  // Calculate and print data loss percentage every 100 samples
+  if (total >= 100) {
+    float data_loss_percentage = (float)data_loss / total * 100;
+    Serial.print("Data loss percentage: ");
+    Serial.print(data_loss_percentage);
+    Serial.println("%");
 
-// void setup() {
-//   Serial.begin(115200);
-//   syncManager.initialize(CONTROL_UNIT_DEVICE_MAC);
-//    unitManager = UnitManager(&syncManager);
-// }
+    // Reset counters
+    total = 0;
+    data_loss = 0;
+  }
 
-// void loop(){
-//   unitManager.syncManager->sendData((uint8_t *) messageToSend.c_str(),sizeof(messageToSend));
-//   delay(500);
-
-// }
-
-
-
+  Serial.print("Sample Count: ");
+  Serial.println(sampleCount);
+}
