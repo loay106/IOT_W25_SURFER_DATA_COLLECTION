@@ -24,7 +24,7 @@ class StrainGuage : public ForceBase {
         bool getSensorStatus() override;
         string getSamples() override;
         void setup() override;
-        int calcuateDelayTime(int sampling_rate);// HZ
+        int calculateDelayTime(int sampling_rate);// HZ
         //void stopSampling() override;
 };
 
