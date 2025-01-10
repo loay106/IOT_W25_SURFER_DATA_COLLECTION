@@ -1,7 +1,7 @@
 # IOT Winter 2024/2025 Surfer Data Collector by:
 1. Loay
 2. Shada
-3. Mosa
+3. Mousa
 
 # Details about the project
 // to be added later
