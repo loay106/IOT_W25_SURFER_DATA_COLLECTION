@@ -1,10 +1,11 @@
 #ifndef UNIT_MANAGER_H
 #define UNIT_MANAGER_H
 
-#include <../Sensors/IMUBase.h>
+#include "../Sensors/IMUBase.h"
+#include "../Sensors/ForceBase.h"
+#include "../ControlUnitSync/ESPNowControlUnitSyncManager.h"
 #include <string>
 #include <list>
-#include <src/ControlUnitSync/ESPNowControlUnitSyncManager.h>
 
 /* 
     This class handles the logic for the sampling unit device.
@@ -25,41 +26,21 @@
         3. Device is agnostic to time and timestamp! This is handled in the Control Unit when commands are sent
 
 */
+
 class UnitManager {
-    private:
-        UnitManagerStatus status;
-        int samplingDelayTime; 
-        ESPNowControlUnitSyncManager syncManager;
-    
     public:
-        std::list<IMUBase> imuSensors;
-
-        UnitManager(ESPNowControlUnitSyncManager syncManager);
-        void configure(int currentTimeStamp);
-        void addIMUSensor(SupportedIMUModels model, int samplingRatio);
-        UnitManagerStatus getStatus();
-
+        UnitManagerStatus status;
+        ESPNowControlUnitSyncManager* syncManager;
+        std::list<IMUBase*> imuSensors;
+        std::list<ForceBase*> forceSensors;
+        UnitManager(){status = UnitManagerStatus::STANDBY; };
+        UnitManager(ESPNowControlUnitSyncManager* syncManager);
+        void addIMUSensor(IMUBase* sensor);
+        void addForceSensor(ForceBase* sensor);
         void startSampling();
-        int getSamplingDelayTime();
-        void logSamples();
-        void stopSampling();
-
 };
 
-enum UnitManagerStatus{
-    CONFIGURING,
-    STANDBY,
-    SAMPLING,
-    ERROR,
-};
 
-enum ControlUnitCommand{
-    START_SAMPLING,
-    STOP_SAMPLING
-};
 
-enum SupportedIMUModels{
-    BNO085,
-};
 
 #endif // UNIT_MANAGER_H

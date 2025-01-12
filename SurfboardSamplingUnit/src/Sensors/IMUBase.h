@@ -2,40 +2,40 @@
 #define IMU_BASE_H
 
 #include <string>
+#include <Arduino.h>
+#include <SparkFun_BNO080_Arduino_Library.h>
 
-class IMUBase {
-    protected:
-        std::string id;
-        std::string model;
-        IMUStatus status;
-        int samplingRate;
-
-        virtual void enableAccelerometer() = 0;
-        virtual void disableAccelerometer() = 0;
-
-        virtual void enableRotationVector() = 0;
-        virtual void disableRotationVector() = 0;
-
-        virtual std::string getgAccelerometerSample() = 0;
-        virtual std::string getgRotationVectorSample() = 0;
-
-    private:
-        FILE* accelerometerDataFile;
-        FILE* rotationVectorDataFile;
-        bool accelerometerEnabled;
-        bool rotationVectorEnabled;
-    
-    public:
-        IMUBase(const std::string id, const std::string model, int samplingRate);
-        void startSampling(bool accelerometereSampling, bool rotationVectorSampling);
-        void getSamples();
-        void stopSampling();
-};
-
-enum IMUStatus{
+enum class IMUStatus{
     STANDBY,
     SAMPLING,
     ERROR,
 };
+
+enum SupportedIMUModels{
+    BNO0800,
+};
+enum SamplingModes{
+    ACCELEROMETER,
+    ROTATION_VECTOR
+};
+
+class IMUBase {
+    public:
+        std::string id;
+        SupportedIMUModels model;
+        IMUStatus status;
+        SamplingModes mode;
+        std::string pattern;
+        int samplingRate;
+        bool sensorEnabled;
+        IMUBase(SupportedIMUModels model, SamplingModes mode, int samplingRate);
+        virtual void setup() = 0;
+        virtual void enableSensor() = 0;
+        virtual void enableSensor() = 0;
+        virtual std::string getSample() = 0;
+
+};
+
+
 
 #endif // IMU_BASE_H

@@ -1,18 +1,48 @@
 #include <cstdint>
-#include <src/UnitManager/UnitManager.h>
+#include <WiFi.h>
+#include <esp_now.h>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <queue>
+#include <Arduino.h>
 #ifndef CONTROL_UNIT_SYNC_MANAGER_H
 #define CONTROL_UNIT_SYNC_MANAGER_H
 
+using namespace std;
+
+#define MAX_SIZE 250
+
+enum ControlUnitCommand{
+    START_SAMPLING, // send timestamp here
+    STOP_SAMPLING,
+    NO_COMMAND
+
+};
+
+enum class UnitManagerStatus{
+    STANDBY,
+    SAMPLING,
+    ERROR,
+};
+
+
 class ESPNowControlUnitSyncManager {
     private:
-        // todo: handle messaging between this device and the control unit...
-        // save in a buffer, or an array etc....
-        // different messages have differnet formats and data! handle this too!
+        uint8_t buffer[MAX_SIZE];
+        uint8_t controlUnitMac[6];
     public:
-        ESPNowControlUnitSyncManager(uint8_t controlUnitDeviceMac[]);
+        queue<std::string> commands;
+        void sendData(const uint8_t *data, size_t len);
+        static ESPNowControlUnitSyncManager* instance;
+        void initialize(uint8_t controlUnitDeviceMac[]);
+        ESPNowControlUnitSyncManager(){};
         void reportStatus(UnitManagerStatus status);
-        void sendSamples(); // todo: add params (see format of how they're sent in ControlUnit!)
+        void sendSamples(const string sample , const string pattern , const string id);
         ControlUnitCommand getNextCommand();
+        static void onDataReceivedCallback(const uint8_t* mac, const uint8_t* data, int len);
+        void onDataReceived(const uint8_t* mac, const uint8_t* data, int len);
+
 };
 
 #endif // CONTROL_UNIT_SYNC_MANAGER_H
