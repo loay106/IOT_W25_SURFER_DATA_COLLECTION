@@ -1,101 +1,87 @@
 #include "StrainGauge.h"
 
-StrainGuage::StrainGuage(ForceModel Model): ForceBase(Model),force_calibration_enabled(false),
- force_weight_enabled(false) {}
+
+StrainGuage::StrainGuage(ForceModel Model): ForceBase(Model),mode(FORCE_IN_NEWTONS) {}
 
 
-void StrainGuage::enableForceCalibrationMeasurement()
+void StrainGuage::enableSensor()
 {
-    force_calibration_enabled = true;
+    sensorEnabled = true;
 }
 
-void StrainGuage::disableForceCalibrationMeasurement()
+void StrainGuage::disableSensor()
 {
-    force_calibration_enabled = false;
+    sensorEnabled = false;
 }
 
-void StrainGuage::enableForceWeightMeasurement()
+bool StrainGuage::getSensorStatus()
 {
-    force_weight_enabled = true;
+    return sensorEnabled;
 }
 
-void StrainGuage::disableForceWeightMeasurement()
+void StrainGuage::setup()
 {
-    force_weight_enabled = false;
-}
-
-string StrainGuage::getForceCalibrationSample()
-{
-    
-    String result = "";  // To store the result as a string
-    if (sensor.is_ready()) {
-        sensor.set_scale();    
-        Serial.println("Tare... remove any weights from the scale.");
-        delay(3000);  // Wait for 3 seconds to remove any weights
-
-        sensor.tare();  // Zero the scale
-        Serial.println("Tare done...");
-
-        Serial.print("Place a known weight on the scale...");
-        delay(3000);  // Wait for 3 seconds to place the known weight
-
-        long reading = sensor.get_units(10);  // Get the average reading from 10 samples
-
-        Serial.print("Result: ");
-        Serial.println(reading);
-
-        // Store the result in the string
-        result = String(reading);
-    } 
-    
-    else {
-        Serial.println("HX711 not found.");
-        result = "HX711 not found.";  // Error message if sensor is not ready
-    }
-
-    delay(100);  // Short delay before the function ends
-
-    return result;  // Return the result as a string 
-}
-
-
-string StrainGuage::getForceWeightSample()
-{
-    float reading = scale.get_units();  // Get the current weight reading
-    float average = scale.get_units(10);  // Get average of 10 readings
-    // Create a message string with the reading and average
-    String message = "one reading:\t" + String(reading, 1) + "\t| average:\t" + String(average, 5);
-    // Power down the scale to save energy
-    scale.power_down();  
-    delay(5000);  // Wait for 5 seconds
-    scale.power_up();
-    return message;
+    Serial.begin(115200);
+    Serial.println("HX711 Force Measurement Test");
+    scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+    scale.set_scale(CALIBRATION_FACTOR);
+    scale.tare(); // Reset scale to zero
+    Serial.println("Place known mass on scale to calculate force");
+    delay(5000);
 }
 
 
 string StrainGuage::getSamples()
 {
-    if(force_calibration_enabled)
+    if(mode==FORCE_IN_NEWTONS)
     {
-        return getForceCalibrationSample();
-    }
+        if(sensorEnabled)
+        {
+            status = SAMPLING;
+            if (scale.is_ready()) 
+            {
+                float mass_kg = scale.get_units() / 1000;
 
-    else if(force_weight_enabled)
+                float force_N = mass_kg * GRAVITY;
+                Serial.print("Mass: ");
+                Serial.print(mass_kg, 3);
+                Serial.print(" kg, Force: ");
+                Serial.print(force_N, 2);
+                Serial.println(" N");
+                String force_str = String(force_N, 2);
+                return force_str;
+
+            } 
+            else 
+            {
+                Serial.println("HX711 not found.");
+                return "Error";
+            }
+            //delay(13);
+        }
+        else{
+            Serial.println("No Samples Available...");
+            return "Error";
+        }
+    }
+    
+    else
     {
-        return getForceWeightSample();
-    }
-
-    else{
         status = ERROR;
-        Serial.println("No Samples Available...");
-        return "error";
+        Serial.println("Mode Unsupported...");
+        return "Error";
     }
 }
 
 
-void  StrainGuage::stopSampling()
+int StrainGuage::calculateDelayTime(int sampling_rate);
 {
-    force_calibration_enabled = false;
-    force_weight_enabled = false;
-    status = STANDBY;
+    double delay_time = 1000.0/sampling_rate;
+    return ceil(delay_time);
 }
+
+/*void  StrainGuage::stopSampling()
+{
+    sensorEnabled = false;
+    status = STANDBY;
+}*/

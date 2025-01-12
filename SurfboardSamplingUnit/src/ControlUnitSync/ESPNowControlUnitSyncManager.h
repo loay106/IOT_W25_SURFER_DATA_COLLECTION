@@ -31,11 +31,12 @@ class ESPNowControlUnitSyncManager {
     private:
         uint8_t buffer[MAX_SIZE];
         uint8_t controlUnitMac[6];
-        queue<ControlUnitCommand> commands;
-        void sendData(const uint8_t *data, size_t len);
     public:
+        queue<std::string> commands;
+        void sendData(const uint8_t *data, size_t len);
         static ESPNowControlUnitSyncManager* instance;
-        ESPNowControlUnitSyncManager(uint8_t controlUnitDeviceMac[]);
+        void initialize(uint8_t controlUnitDeviceMac[]);
+        ESPNowControlUnitSyncManager(){};
         void reportStatus(UnitManagerStatus status);
         void sendSamples(const string sample , const string pattern , const string id);
         ControlUnitCommand getNextCommand();

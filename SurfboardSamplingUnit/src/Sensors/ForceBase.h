@@ -6,23 +6,8 @@
 #include <ctime>
 using namespace std;
 
-class ForceBase {
-    protected:
-        string id;
-        ForceModel model;
-        ForceStatus status;
-        //int samplingRate;
-    
-    public:
-        ForceBase(ForceModel Model) : model(Model), status(STANDBY)
-        {
-            srand(time(0));
-            id = to_string(rand());
-        }
-       // void startSampling();
-        virtual string getSamples()=0;
-        virtual void stopSampling()=0;
-        virtual ~ForceBase() = default;
+enum ForceSamplingModes{
+    FORCE_IN_NEWTONS
 };
 
 enum ForceStatus{
@@ -35,5 +20,29 @@ enum ForceStatus{
 enum ForceModel{
     STRAIN_GUAGE
 };
+
+class ForceBase {
+    protected:
+        string id;
+        ForceModel model;
+        ForceStatus status;
+        bool sensorEnabled;
+        ForceSamplingModes mode;
+    
+    public:
+        ForceBase(ForceModel Model) : model(Model), status(STANDBY) , sensorEnabled(false)
+        {
+            srand(time(0));
+            id = to_string(rand());
+        }
+        virtual void setup()=0;
+        virtual string getSamples()=0;
+        virtual void stopSampling()=0;
+        virtual void enableSensor()=0;
+        virtual void disableSensor()=0;
+        virtual bool getSensorStatus()=0;
+        virtual ~ForceBase() = default;
+};
+
 
 #endif // FORCE_BASE_H

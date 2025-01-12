@@ -40,14 +40,13 @@ std::string IMU_BNO080::getSample(){
             float accZ = sensor.getAccelZ();
 
             // Create a string to store the data
-            String dataString = String(accX, 2) + "," +
-                                String(accY, 2) + "," +
+            String dataString = String(accX, 2) + " " +
+                                String(accY, 2) + " " +
                                 String(accZ, 2);
             Serial.println(dataString);
             return dataString.c_str();
         }
         else{
-            status = IMUStatus::ERROR;
             Serial.println("IMU data not available");
             return "error";
         }
@@ -62,16 +61,15 @@ std::string IMU_BNO080::getSample(){
             float quatRadianAccuracy = sensor.getQuatRadianAccuracy();
 
             // Create a string to store the data
-            String dataString = String(quatI, 2) + "," +
-                                String(quatJ, 2) + "," +
-                                String(quatK, 2) + "," +
-                                String(quatReal, 2) + "," +
+            String dataString = String(quatI, 2) + " " +
+                                String(quatJ, 2) + " " +
+                                String(quatK, 2) + " " +
+                                String(quatReal, 2) + " " +
                                 String(quatRadianAccuracy, 2);
             Serial.println(dataString);
             return dataString.c_str();
         }
         else{
-            status = IMUStatus::ERROR;
             Serial.println("IMU data not available");
             return "error";
         }

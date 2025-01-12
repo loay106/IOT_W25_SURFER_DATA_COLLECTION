@@ -1,11 +1,11 @@
 #include "HX711.h"
-const int LOADCELL_DOUT_PIN = 32;
-const int LOADCELL_SCK_PIN = 25;
+const int LOADCELL_DOUT_PIN = 12;
+const int LOADCELL_SCK_PIN = 13;
 HX711 scale;
 
 void setup() {
   // put your setup code here, to run once:
-Serial.begin(57600);
+Serial.begin(115200);
 scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
 delay(100);
 Serial.println("Before setting up the scale:");

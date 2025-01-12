@@ -2,9 +2,10 @@
 #define UNIT_MANAGER_H
 
 #include "../Sensors/IMUBase.h"
+#include "../Sensors/ForceBase.h"
+#include "../ControlUnitSync/ESPNowControlUnitSyncManager.h"
 #include <string>
 #include <list>
-#include "../ControlUnitSync/ESPNowControlUnitSyncManager.h"
 
 /* 
     This class handles the logic for the sampling unit device.
@@ -25,16 +26,17 @@
         3. Device is agnostic to time and timestamp! This is handled in the Control Unit when commands are sent
 
 */
-//shada MAC : 08:b6:1f:33:49:e4
 
 class UnitManager {
     public:
         UnitManagerStatus status;
         ESPNowControlUnitSyncManager* syncManager;
         std::list<IMUBase*> imuSensors;
-//        std::list<IMUBase> strainSensors;
+        std::list<ForceBase*> forceSensors;
+        UnitManager(){status = UnitManagerStatus::STANDBY; };
         UnitManager(ESPNowControlUnitSyncManager* syncManager);
         void addIMUSensor(IMUBase* sensor);
+        void addForceSensor(ForceBase* sensor);
         void startSampling();
 };
 
