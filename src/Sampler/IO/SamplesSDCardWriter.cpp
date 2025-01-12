@@ -1,11 +1,8 @@
 #include "SamplesSDCardWriter.h";
-#include "../Exceptions/UnitExceptions.h";
+#include "../../Utils/Exceptions.h"
+
 #include "SPI.h";
 #include "Wire.h";
-
-string generateUniqueFileName(int timestamp){
-    return "sampling_" + std::to_string(timestamp) + ".csv";
-}
 
 SamplesSDCardWriter::SamplesSDCardWriter(const uint8_t SDCardChipSelectPin, Logger logger): SDCardChipSelectPin(SDCardChipSelectPin), logger(logger){}
 
@@ -33,8 +30,8 @@ void SamplesSDCardWriter::initialize(){
     }
 }
 
-string SamplesSDCardWriter::createSamplingFile(int timestamp){
-    string fileName = generateUniqueFileName(timestamp);
+string SamplesSDCardWriter::createSamplingFile(int timestamp, int sensorID){
+    string fileName = "sampling_" + std::to_string(timestamp) + "_" + to_string(sensorID) + ".txt";
     string filePath = "/samplings/" + fileName;
     File logFile = SD.open(filePath.c_str(), FILE_WRITE);
     if (!logFile) {
@@ -51,19 +48,14 @@ string SamplesSDCardWriter::createSamplingFile(int timestamp){
     return fileName;
 }
 
-void SamplesSDCardWriter::writeSamples(string fileName, string samplingUnitID, string sensorID, vector<string> sampleDataVec, string sampleUnits){
+void SamplesSDCardWriter::writeSamples(string fileName, string samples){
     string filePath = "/samplings/" + fileName;
     File logFile = SD.open(filePath.c_str(), FILE_APPEND);
     if (!logFile) {
         logger.error("Failed to open file: " + fileName);
         return;
     }
-    
-    for(const string& sampleData : sampleDataVec){
-        string logEntry = sampleData + "," + sampleUnits + "," + samplingUnitID + "," + sensorID;
-        logFile.println(logEntry.c_str());
-    }
+    logFile.println(samples.c_str());
     logFile.flush();
     logFile.close();
-    //logger.info("Sample written!!");
 }

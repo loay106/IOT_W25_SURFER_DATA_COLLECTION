@@ -6,9 +6,8 @@ using namespace std;
 
 
 class InitError : public exception {};
-
 class SDCardError: public exception {};
-
+class NotReadyError: public exception {};
 class ESPNowSyncError: public exception {};
 
 

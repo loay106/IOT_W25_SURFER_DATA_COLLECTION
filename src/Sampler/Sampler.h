@@ -1,46 +1,40 @@
-#ifndef UNIT_MANAGER_H
-#define UNIT_MANAGER_H
+#ifndef SAMPLER_H
+#define SAMPLER_H
 
-#include "../Sensors/IMUBase.h"
-#include "../Sensors/ForceBase.h"
-#include "../ControlUnitSync/ESPNowControlUnitSyncManager.h"
+#include <vector>
 #include <string>
-#include <list>
+using namespace std;
 
-/* 
-    This class handles the logic for the sampling unit device.
-    The device consists of the following hardware:
-        1. ESP controller with WiFi compatibility
-        2. Sensors (as needed, IMU, Strain gauge etc...)
+#include "../Utils/Status.h"
+#include "Sensors/SensorBase.h"
 
-    Workflow:
-        1. Device initializes and tries to connect to the control unit (CONFIGURING)
-        2. Once connected, device stays on STAND_BY status until a command is received (STAND_BY)
-        3. If START_SAMPLING command was received, the devices starts sampling (SAMPLING)
-        4. If STOP_SAMPLING command was received, the devices stops sampling and moves to STAND_BY status (STAND_BY)
-        5. if an error occurs that stops the unit from working, the units stays on ERROR status (ERROR)
-
-    Notes and constraints:
-        1. Samples are sent in bulks and not seperately and are limited in size (see ControlUnit docs for format) 
-        2. Devices handles the ID's of all its sensors (unique ones)
-        3. Device is agnostic to time and timestamp! This is handled in the Control Unit when commands are sent
-
-*/
 
 class Sampler {
+    private:
+        vector<SensorBase> sensors; // change to pointer?
+        SamplerStatus status;
+        Logger logger;
     public:
-        UnitManagerStatus status;
-        ESPNowControlUnitSyncManager* syncManager;
-        std::list<IMUBase*> imuSensors;
-        std::list<ForceBase*> forceSensors;
-        Sampler(){status = UnitManagerStatus::STANDBY; };
-        Sampler(ESPNowControlUnitSyncManager* syncManager);
-        void addIMUSensor(IMUBase* sensor);
-        void addForceSensor(ForceBase* sensor);
-        void startSampling();
+        Sampler(){};
+        Sampler(Logger logger): logger(logger), status(SamplerStatus::UNIT_STAND_BY){}};
+        void addSensor(SensorBase sensor){
+            sensor.init();
+            sensors.push_back(sensor);
+        }
+        void startSampling(int timeStamp){
+            status = SamplerStatus::UNIT_SAMPLING;
+            for(SensorBase& sensor: sensors){
+                // todo: add file name for the sensor here
+                sensor.startSampling(timeStamp);
+            }
+        }
+        void stopSampling(){
+            for(SensorBase& sensor: sensors){
+                sensor.stopSampling();
+            }
+            status = SamplerStatus::UNIT_STAND_BY;
+        }
+        void uploadSampleFiles(); // upload to the cloud
 };
 
-
-
-
-#endif // UNIT_MANAGER_H
+#endif // SAMPLER_H

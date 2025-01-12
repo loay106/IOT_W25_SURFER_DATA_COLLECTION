@@ -12,7 +12,7 @@ class Logger{
     public:
         Logger(){};
         Logger(int serialBaudRate): serialBaudRate(serialBaudRate){};
-        void initialize(){
+        void init(){
             Serial.begin(serialBaudRate);
         };
         void info(string message){

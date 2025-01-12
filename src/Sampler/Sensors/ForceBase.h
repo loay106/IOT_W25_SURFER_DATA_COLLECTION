@@ -21,9 +21,8 @@ enum ForceModel{
     STRAIN_GUAGE
 };
 
-class ForceBase {
+class ForceBase: public SensorBase {
     protected:
-        string id;
         ForceModel model;
         ForceStatus status;
         bool sensorEnabled;
@@ -38,7 +37,6 @@ class ForceBase {
         virtual void setup()=0;
         virtual string getSamples()=0;
         virtual void stopSampling()=0;
-        virtual void enableSensor()=0;
         virtual void disableSensor()=0;
         virtual bool getSensorStatus()=0;
         virtual ~ForceBase() = default;

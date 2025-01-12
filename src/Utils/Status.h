@@ -9,10 +9,9 @@ enum SystemStatus {
     SYSTEM_ERROR
 };
 
-enum SamplingUnitStatus {
+enum SamplerStatus {
     UNIT_STAND_BY,
     UNIT_SAMPLING,
-    UNIT_DISCONNECTED,
     UNIT_ERROR  
 };
 
