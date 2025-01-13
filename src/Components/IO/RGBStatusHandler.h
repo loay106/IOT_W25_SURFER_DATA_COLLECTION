@@ -15,7 +15,7 @@ class RGBStatusHandler{
     public:
         RGBStatusHandler(){};
         RGBStatusHandler(Logger logger);
-        void initialize(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin);
+        void init(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin);
         void updateStatus(SystemStatus newStatus); 
 };
 

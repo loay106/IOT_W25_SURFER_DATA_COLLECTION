@@ -49,7 +49,7 @@ RGBStatusHandler::RGBStatusHandler(Logger logger) : logger(logger){
     currentStatus = SystemStatus::SYSTEM_STARTING;
 }
 
-void RGBStatusHandler::initialize(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin) {
+void RGBStatusHandler::init(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin) {
     ledcSetup(0, 5000, 8); // Channel 0, 5kHz, 8-bit resolution
     ledcSetup(1, 5000, 8); // Channel 1, 5kHz, 8-bit resolution
     ledcSetup(2, 5000, 8); // Channel 2, 5kHz, 8-bit resolution

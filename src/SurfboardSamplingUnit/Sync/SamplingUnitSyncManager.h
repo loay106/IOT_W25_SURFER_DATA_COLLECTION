@@ -1,5 +1,5 @@
-#ifndef CONTROLLER_SYNC_MANAGER_H
-#define CONTROLLER_SYNC_MANAGER_H
+#ifndef SAMPLING_UNIT_SYNC_MANAGER_H
+#define SAMPLING_UNIT_SYNC_MANAGER_H
 
 #include <WiFi.h>
 #include <esp_now.h>
@@ -12,14 +12,8 @@
 
 using namespace std;
 
-enum class UnitManagerStatus{
-    STANDBY,
-    SAMPLING,
-    ERROR,
-};
 
-
-class ControllerSyncManager {
+class SamplingUnitSyncManager {
     private:
         CommandMessage* nextCommand;
         uint8_t controlUnitMac[6];
@@ -35,7 +29,7 @@ class ControllerSyncManager {
         }
     public:
 
-        ControllerSyncManager(Logger logger, uint8_t controlUnitMac[]): logger(logger){
+        SamplingUnitSyncManager(Logger logger, uint8_t controlUnitMac[]): logger(logger){
             nextCommand=nullptr;
             memcpy(this->controlUnitMac, controlUnitMac, 6);
         };
@@ -59,15 +53,7 @@ class ControllerSyncManager {
         }
 
         void reportStatus(SamplerStatus status){
-            std::string stat;
-            if(status == SamplerStatus::UNIT_STAND_BY){
-                stat = "STAND_BY";
-            }else if (status == SamplerStatus::UNIT_SAMPLING){
-                stat = "SAMPLING";
-            }else{
-                stat = "ERROR";
-            }
-            string message = "STATUS_UPDATE|" + stat;
+            string message = serializeStatusUpdateMsg(status);
             esp_err_t result = esp_now_send(controlUnitMac, (uint8_t *) message.c_str(), message.length());
             if (result != ESP_OK) {
                 logger.error("Failed to report status!");
@@ -82,4 +68,4 @@ class ControllerSyncManager {
 
 };
 
-#endif // CONTROLLER_SYNC_MANAGER_H
+#endif // SAMPLING_UNIT_SYNC_MANAGER_H

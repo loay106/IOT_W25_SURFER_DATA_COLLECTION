@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "Status.h"
 #include "Exceptions.h"
 
 using namespace std;
@@ -31,8 +32,52 @@ typedef struct CommandMessage {
     map<string, string> params;    
 } CommandMessage;
 
+string serializeStatusUpdateMsg(SamplerStatus status){
+    string stat = "STATUS_UPDATE|";
+    if(status == SamplerStatus::UNIT_STAND_BY){
+        stat.append("UNIT_STAND_BY");
+    }else if (status == SamplerStatus::UNIT_SAMPLING){
+        stat.append("UNIT_SAMPLING");
+    }else if(status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+        stat.append("UNIT_SAMPLE_FILES_UPLOAD");
+    }else{
+        stat.append("ERROR");
+    }
+    return stat;
+}
+
+SamplerStatus deserializeStatusUpdateMsg(const uint8_t* msg, int len) {
+    if (msg == nullptr || len <= 0) {
+        throw InvalidSyncMessage();
+    }
+
+    // Convert the message to a string
+    string rawMsg(reinterpret_cast<const char*>(msg), len);
+
+    // Check the message prefix
+    const string prefix = "STATUS_UPDATE|";
+    if (rawMsg.find(prefix) != 0) {
+        throw InvalidSyncMessage();
+    }
+
+    // Extract the status part
+    string statusStr = rawMsg.substr(prefix.length());
+
+    // Match the status string to the enum
+    if (statusStr == "UNIT_STAND_BY") {
+        return SamplerStatus::UNIT_STAND_BY;
+    } else if (statusStr == "UNIT_SAMPLING") {
+        return SamplerStatus::UNIT_SAMPLING;
+    } else if (statusStr == "UNIT_SAMPLE_FILES_UPLOAD") {
+        return SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
+    } else {
+        return SamplerStatus::UNIT_ERROR;
+    }
+}
+
+
 // Convert CommandMessage to a message string
-string serializeCommand(const CommandMessage& commandMsg) {
+string serializeCommand(const ControlUnitCommand& command, const map<string,string>& params) {
     /*
         Parse ControlUnitCommand object to a string:
         Format: [command]|[param_key_1]:[param_value_1];[param_key_2]:[param_value_2]...
@@ -40,13 +85,15 @@ string serializeCommand(const CommandMessage& commandMsg) {
     stringstream ss;
 
     // Add the command
-    ss << commandMsg.command << "|";
-
-    // Add the parameters
-    for (const auto& param : commandMsg.params) {
-        ss << param.first << ":" << param.second << ";";
+    ss << command;
+    if(!params.empty()){
+        ss << "|";
+        // Add the parameters
+        for (const auto& param : params) {
+            ss << param.first << ":" << param.second << ";";
+        }
     }
-
+    
     // Remove trailing semicolon (if any)
     string result = ss.str();
     if (result.back() == ';') {
@@ -101,12 +148,5 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
 
     return commandMsg;
 }
-
-// Enum for sampler statuses
-enum SamplerStatus {
-    UNIT_STAND_BY,
-    UNIT_SAMPLING,
-    UNIT_ERROR  
-};
 
 #endif /* SYNC_MESSAGES_H */

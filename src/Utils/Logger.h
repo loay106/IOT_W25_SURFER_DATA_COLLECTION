@@ -6,14 +6,13 @@
 using namespace std;
 #include <string>
 
+const int SERIAL_BAUD_RATE = 57600;
+
 class Logger{
-    private:
-        int serialBaudRate;
     public:
         Logger(){};
-        Logger(int serialBaudRate): serialBaudRate(serialBaudRate){};
         void init(){
-            Serial.begin(serialBaudRate);
+            Serial.begin(SERIAL_BAUD_RATE);
         };
         void info(string message){
             string fmessage = "[INFO] " + message;

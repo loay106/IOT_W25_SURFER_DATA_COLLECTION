@@ -12,7 +12,8 @@ enum SystemStatus {
 enum SamplerStatus {
     UNIT_STAND_BY,
     UNIT_SAMPLING,
-    UNIT_ERROR  
+    UNIT_ERROR,
+    UNIT_SAMPLE_FILES_UPLOAD
 };
 
 #endif /* SYSTEM_STATUS_H */
