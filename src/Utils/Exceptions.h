@@ -9,6 +9,7 @@ class InitError : public exception {};
 class SDCardError: public exception {};
 class NotReadyError: public exception {};
 class ESPNowSyncError: public exception {};
+class InvalidSyncMessage: public exception {};
 
 
 #endif /* UNIT_EXCEPTIONS_H */

@@ -62,6 +62,30 @@ class SDCardHandler{
             logFile.flush();
             logFile.close();
         }
+
+        vector<string> listFilesInDir(string dirName) {
+            vector<string> fileList;
+            // Open the directory
+            File dir = SD.open(dirName.c_str());
+            if (!dir || !dir.isDirectory()) {
+                Serial.println("Error: Directory does not exist or could not be opened.");
+                throw SDCardError();
+            }
+
+            // Iterate through the files in the directory
+            File entry;
+            while ((entry = dir.openNextFile())) {
+                if (!entry.isDirectory()) {
+                    // If it's a file, add the full path to the vector
+                    string filePath = dirName + "/" + string(entry.name());
+                    fileList.push_back(filePath);
+                }
+                entry.close(); // Close the current file to avoid resource leaks
+            }
+
+            dir.close(); // Close the directory
+            return fileList;
+        }
 };
 
 
