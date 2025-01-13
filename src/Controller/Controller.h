@@ -13,18 +13,6 @@ using namespace std;
 #include "../Status/RGBStatusManager.h"
 #include "../IO/SamplingButtonManager.h"
 
-/*
-    Class handling the logic of the device. Only one instance is needed
-    // todo: change to singleton maybe...
-
-    This device consits of the following parts:
-        1. ESP controller with WIFI compatibility
-        2. SD Card
-        3. RTC 
-        4. RGB analong light
-        5. Press button
- */
-
 typedef struct SamplingUnitRep{
     uint8_t mac[6];
     SamplingUnitStatus status;    
