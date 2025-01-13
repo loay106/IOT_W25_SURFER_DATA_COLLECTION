@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 #include "../../Utils/Logger.h"
-#include "../../Utils/SyncMessages.h"
+#include "SyncMessages.h"
 
 
 using namespace std;

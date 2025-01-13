@@ -5,20 +5,20 @@
 #include <string>
 using namespace std;
 
-#include "../Sampler/Sampler.h"
-#include "Sync/ControllerSyncManager.h"
+#include "../Components/Sampler.h"
+#include "../Sync/SamplingUnitSyncManager.h"
 
 
 class SurfboardSamplingUnit {
     private:
         Sampler sampler;
-        ControllerSyncManager syncManager;
+        SamplingUnitSyncManager syncManager;
         Logger logger;
         int lastStatusReportTime;
     public:
         SurfboardSamplingUnit(){};
         SurfboardSamplingUnit(Logger logger, uint8_t controlUnitMac[]): logger(logger){
-            syncManager = ControllerSyncManager(logger, controlUnitMac);
+            syncManager = SamplingUnitSyncManager(logger, controlUnitMac);
             sampler = Sampler(logger);
         };
 

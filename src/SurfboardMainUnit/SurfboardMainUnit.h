@@ -5,8 +5,8 @@
 #include <string>
 using namespace std;
 
-#include "../Sampler/Sampler.h"
-#include "Sync/ControlUnitSyncManager.h"
+#include "../Components/Sampler.h"
+#include "../Sync/ControlUnitSyncManager.h"
 #include "../Utils/Logger.h"
 #include "../Utils/Status.h"
 #include "../Components/IO/RTCTimeHandler.h"

@@ -12,7 +12,7 @@ using namespace std;
 
 #include "../../Utils/Status.h"
 #include "../../Utils/Logger.h"
-#include "../../Utils/SyncMessages.h"
+#include "SyncMessages.h"
 
 
 typedef struct StatusUpdateMessage{
