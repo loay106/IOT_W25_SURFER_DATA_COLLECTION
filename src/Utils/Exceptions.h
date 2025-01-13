@@ -4,12 +4,12 @@
 using namespace std;
 #include <exception>
 
-
-class InitError : public exception {};
-class SDCardError: public exception {};
-class NotReadyError: public exception {};
-class ESPNowSyncError: public exception {};
-class InvalidSyncMessage: public exception {};
+class BaseError: public exception {};
+class InitError : public BaseError {};
+class SDCardError: public BaseError {};
+class NotReadyError: public BaseError {};
+class ESPNowSyncError: public BaseError {};
+class InvalidSyncMessage: public BaseError {};
 
 
 #endif /* UNIT_EXCEPTIONS_H */

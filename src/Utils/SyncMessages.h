@@ -18,6 +18,8 @@ const char* TIMESTAMP = "TIMESTAMP";
 const char* WIFI_SSID = "WIFI_SSID";
 const char* WIFI_PASSWORD = "WIFI_PASSWORD";
 
+const int STATUS_REPORT_DELAY_SECONDS = 3;
+
 enum ControlUnitCommand {
     START_SAMPLING, // attached IMU_RATE, TIMESTAMP params
     STOP_SAMPLING,
@@ -61,7 +63,7 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
         Expected Format: [command]|[param_key_1]:[param_value_1];[param_key_2]:[param_value_2]...
     */
     if (len <= 0 || msg == nullptr) {
-        throw invalid_argument("Invalid message length or null message.");
+        throw InvalidSyncMessage();
     }
 
     string rawMsg(reinterpret_cast<const char*>(msg), len);
@@ -70,14 +72,14 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
     // Split by '|' to separate command and parameters
     size_t delimiterPos = rawMsg.find('|');
     if (delimiterPos == string::npos) {
-        throw invalid_argument("Malformed message: Missing '|'.");
+        throw InvalidSyncMessage();
     }
 
     // Extract and parse the command
     string commandPart = rawMsg.substr(0, delimiterPos);
     int commandValue = stoi(commandPart);
     if (commandValue < START_SAMPLING || commandValue > STOP_SAMPLING) {
-        throw invalid_argument("Invalid command value.");
+        throw InvalidSyncMessage();
     }
     commandMsg.command = static_cast<ControlUnitCommand>(commandValue);
 
@@ -89,7 +91,7 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
     while (getline(paramsStream, param, ';')) {
         size_t colonPos = param.find(':');
         if (colonPos == string::npos) {
-            throw invalid_argument("Malformed parameter: Missing ':'.");
+            throw InvalidSyncMessage();
         }
 
         string key = param.substr(0, colonPos);

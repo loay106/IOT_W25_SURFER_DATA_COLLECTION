@@ -14,12 +14,13 @@ class SurfboardSamplingUnit {
         Sampler sampler;
         ControllerSyncManager syncManager;
         Logger logger;
+        int lastStatusReportTime;
     public:
         SurfboardSamplingUnit(){};
         SurfboardSamplingUnit(Logger logger, uint8_t controlUnitMac[]): logger(logger){
             syncManager = ControllerSyncManager(logger, controlUnitMac);
             sampler = Sampler(logger);
-        }};
+        };
 
         void init(){
             syncManager.init();
@@ -36,19 +37,38 @@ class SurfboardSamplingUnit {
         }
 
         void updateSystem(){
-            ControlUnitCommand command = syncManager.getNextCommand();
-            // todo: change and update status here accordingly
-            switch(command){
-                case ControlUnitCommand::NO_COMMAND:
-                    return;
-                case ControlUnitCommand::START_SAMPLING:
-                    sampler.startSampling(); // todo: get timestamp as a parameter here
-                case ControlUnitCommand::STOP_SAMPLING:
-                    sampler.stopSampling();
-                case ControlUnitCommand::UPLOAD_FILES:
-                    sampler.uploadSampleFiles();
+            // command handling
+            CommandMessage* command = syncManager.getNextCommand();
+            if(command){
+                switch(command->command){
+                    case ControlUnitCommand::START_SAMPLING:
+                        try{
+                            int timestamp = stoi(command->params[TIMESTAMP]);
+                            int imuRate = stoi(command->params[IMU_RATE]);
+                            sampler.startSampling(timestamp, imuRate);
+                        }catch(const exception& ex){
+                            logger.error("Invalid command params");
+                            return;
+                        }    
+                    case ControlUnitCommand::STOP_SAMPLING:
+                        sampler.stopSampling();
+                    case ControlUnitCommand::UPLOAD_SAMPLE_FILES:
+                        try{
+                            // todo: get wifi params here....
+                            sampler.uploadSampleFiles();
+                        }catch(exception& err){
+                            // todo: complete handling here....
+                        }
+                }
+                delete command;
             }
 
+            // status report
+            int elapsedSeconds = (millis() - lastStatusReportTime) / 1000; 
+            if(elapsedSeconds >= STATUS_REPORT_DELAY_SECONDS){
+                syncManager.reportStatus(sampler.getStatus());
+                lastStatusReportTime = millis();
+            }
         }
 };
 

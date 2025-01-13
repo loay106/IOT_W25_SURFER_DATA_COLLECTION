@@ -7,16 +7,10 @@
 #include <Arduino.h>
 
 #include "../../Utils/Logger.h"
+#include "../../Utils/SyncMessages.h"
 
 
 using namespace std;
-
-enum ControlUnitCommand{
-    START_SAMPLING, // send timestamp here
-    STOP_SAMPLING,
-    UPLOAD_FILES,
-    NO_COMMAND
-};
 
 enum class UnitManagerStatus{
     STANDBY,
@@ -27,25 +21,22 @@ enum class UnitManagerStatus{
 
 class ControllerSyncManager {
     private:
-        ControlUnitCommand nextCommand;
+        CommandMessage* nextCommand;
         uint8_t controlUnitMac[6];
         Logger logger;
 
         void onDataReceivedCallback(const uint8_t* mac, const uint8_t* incomingData, int len){
-            string message(reinterpret_cast<const char *>(incomingData), len);
-            // todo: add parameters to commands....
-            if(message == "START_SAMPLING"){
-                nextCommand = ControlUnitCommand::START_SAMPLING;
-            }else if(message == "STOP_SAMPLING"){
-                nextCommand = ControlUnitCommand::STOP_SAMPLING;
-            }else if(message == "UPLOAD_FILES"){
-                nextCommand == ControlUnitCommand::UPLOAD_FILES;
+            try{
+                nextCommand = deserializeCommand(incomingData, len); // todo: copy object here...
+            }catch(InvalidSyncMessage& err){
+                logger.error("Invalid command message received!");
+                return;
             }
         }
     public:
 
         ControllerSyncManager(Logger logger, uint8_t controlUnitMac[]): logger(logger){
-            nextCommand=ControlUnitCommand::NO_COMMAND
+            nextCommand=nullptr;
             memcpy(this->controlUnitMac, controlUnitMac, 6);
         };
 
@@ -83,11 +74,10 @@ class ControllerSyncManager {
             } 
         }
 
-        ControlUnitCommand getNextCommand(){
-            ControlUnitCommand command = nextCommand; // does this copy effectively? Is there a need for a mutex?
-            nextCommand = ControlUnitCommand::NO_COMMAND;
+        CommandMessage* getNextCommand(){
+            CommandMessage* command = nextCommand;
+            nextCommand = nullptr;
             return command;
-
         }
 
 };
