@@ -6,7 +6,7 @@
 using namespace std;
 
 #include "../Utils/Status.h"
-#include "Sensors/SensorBase.h"
+#include "../Components/Sensors/SensorBase.h"
 
 
 class Sampler {
@@ -16,7 +16,7 @@ class Sampler {
         Logger logger;
     public:
         Sampler(){};
-        Sampler(Logger logger): logger(logger), status(SamplerStatus::UNIT_STAND_BY){}};
+        Sampler(Logger logger): logger(logger), status(SamplerStatus::UNIT_STAND_BY){};
         void addSensor(SensorBase sensor){
             sensor.init();
             sensors.push_back(sensor);

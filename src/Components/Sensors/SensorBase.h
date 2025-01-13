@@ -2,11 +2,12 @@
 #define SENSOR_BASE_H
 
 #include <Arduino.h>
-#include "../IO/SamplesSDCardWriter.h"
-#include "../../Utils/Logger.h"
-#include "../../Utils/Exceptions.h"
 #include <string>
 #include <sstream>
+
+#include "../SDCardHandler.h"
+#include "../../Utils/Logger.h"
+#include "../../Utils/Exceptions.h"
 
 using namespace std;
 
@@ -20,7 +21,7 @@ enum class SensorStatus{
 class SensorBase{
     private:
         static int INSTANCE_COUNT = 0;
-        SamplesSDCardWriter samplesWriter;
+        SDCardHandler sdcardHandler;
         SemaphoreHandle_t bufferMutex;
         ostringstream sampleBuffer;
 
@@ -43,11 +44,11 @@ class SensorBase{
 
     public:
         SensorBase(){};
-        SensorBase(Logger logger, SamplesSDCardWriter samplesWriter, string sensorType, int dataPin){
+        SensorBase(Logger logger, SDCardHandler sdcardHandler, string sensorType, int dataPin){
             bufferMutex = xSemaphoreCreateMutex();
             this-> dataPin = dataPin;
             this->logger = logger;
-            this->samplesWriter = samplesWriter;
+            this->sdcardHandler = sdcardHandler;
             this->sensorType = sensorType;
             samplingFileName = nullptr;
             id = SensorBase::INSTANCE_COUNT;
@@ -58,14 +59,9 @@ class SensorBase{
             return id;
         }
 
-        void startSampling(int timestamp){
-            try{
-                samplingFileName = new string(samplesWriter.createSamplingFile(timestamp, id));
-                attachInterrupt(digitalPinToInterrupt(dataPin), this->appendSample, FALLING);
-            }catch(SDCardError& error){
-                logger.error("Failed to create sampling file!");
-                return;
-            }
+        void startSampling(int timestamp, string outputFilePath){
+            samplingFileName = new string(outputFilePath);
+            attachInterrupt(digitalPinToInterrupt(dataPin), this->appendSample, FALLING);
             enableSensor();
         }
 
@@ -80,7 +76,7 @@ class SensorBase{
             string samples = sampleBuffer.str();
             sampleBuffer.clear();
             xSemaphoreGive(bufferMutex);
-            samplesWriter.writeSamples(*samplingFileName, samples);
+            sdcardHandler.writeData(*samplingFileName, samples.c_str());
         }
     
         virtual void enableSensor() = 0;

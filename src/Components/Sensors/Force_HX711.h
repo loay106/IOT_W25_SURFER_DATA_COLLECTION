@@ -1,5 +1,5 @@
-#ifndef STRAING_GUAGE_H
-#define STRAIN_GUAGE_H
+#ifndef FORCE_HX711_H
+#define FORCE_HX711_H
 
 #include "SensorBase.h"
 #include "HX711.h"
@@ -13,14 +13,14 @@ using namespace std;
 const float GRAVITY = 9.81;
 
 
-class StrainGuage : public SensorBase { 
+class Force_HX711 : public SensorBase { 
     private:
         HX711 sensor;
         int calibrationFactor;
         int doutPin;
         int sckPin;
     public:
-        StrainGuage(Logger logger, SamplesSDCardWriter samplesWriter, int calibrationFactor, int doutPin, int sckPin): SensorBase(logger, samplesWriter, "HX711", doutPin){
+        Force_HX711(Logger logger, SamplesSDCardWriter samplesWriter, int calibrationFactor, int doutPin, int sckPin): SensorBase(logger, samplesWriter, "HX711", doutPin){
             this->calibrationFactor = calibrationFactor;
             this->doutPin = doutPin;
             this->sckPin = sckPin;
@@ -55,4 +55,4 @@ class StrainGuage : public SensorBase {
 };
 
 
-#endif // STRAIN_GUAGE_H
+#endif // FORCE_HX711_H

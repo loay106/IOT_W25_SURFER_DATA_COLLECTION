@@ -1,8 +1,8 @@
 #ifndef RGB_STATUS_HANDLER_H 
 #define RGB_STATUS_HANDLER_H
 
-#include "SystemStatus.h"
-#include "../Data/Logger.h"
+#include "../../Utils/Status.h"
+#include "../../Utils/Logger.h"
 
 /*
     This class is responsible for the RGB status light to show the unit's current status
