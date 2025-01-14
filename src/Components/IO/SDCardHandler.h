@@ -63,6 +63,34 @@ class SDCardHandler{
             logFile.close();
         }
 
+        map<string, string> readConfigFile(string filePath) {
+            map<string, string> configMap; // Map to store parameter name and value
+
+            File configFile = SD.open(filePath.c_str(), FILE_READ); // Open the file in read mode
+            if (!configFile) {
+                throw SDCardError();
+            }
+
+            while (configFile.available()) {
+                string line = configFile.readStringUntil('\n').c_str(); // Read a line from the file
+                line.erase(line.find_last_not_of(" \n\r\t") + 1); // Trim trailing whitespace
+
+                if (!line.empty()) {
+                    size_t delimiterPos = line.find(':'); // Find the ':' delimiter
+                    if (delimiterPos != string::npos) {
+                        string paramName = line.substr(0, delimiterPos);        // Extract parameter name
+                        string paramValue = line.substr(delimiterPos + 1);     // Extract parameter value
+                        configMap[paramName] = paramValue;                     // Insert into map
+                    } else {
+                        logger.error("invalid line in config file: " + line.c_str());
+                    }
+                }
+            }
+
+            configFile.close(); // Close the file
+            return configMap;
+        }
+
         vector<string> listFilesInDir(string dirName) {
             vector<string> fileList;
             // Open the directory

@@ -16,6 +16,8 @@ using namespace std;
 #include "../Status/RGBStatusManager.h"
 #include "../IO/SamplingButtonManager.h"
 
+const string CONFIG_FILE_NAME = "device.config";
+
 typedef struct SamplingUnitRep{
     uint8_t mac[6];
     SamplerStatus status;
@@ -31,6 +33,8 @@ class SurfboardMainUnit {
         Logger logger;
         Sampler sampler; // internal sampler
         SystemStatus status;
+
+        SDCardHandler sdCardHandler; // todo: add as a param...
         map<string,string> WIFI_PARAMS;
         map<string,string> SAMPLING_PARAMS;
 

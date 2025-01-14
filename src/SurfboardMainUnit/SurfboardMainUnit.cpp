@@ -26,14 +26,21 @@ void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUni
             string macString = macToString(samplingUnit.mac);
             samplingUnits[macString] = samplingUnit;
         }
-
-        SAMPLING_PARAMS[TIMESTAMP] = to_string(timeHandler.getCurrentTimestamp());
-        // todo: read from config file in sd card here and get wifi+imu rate params
-        SAMPLING_PARAMS[IMU_RATE] = to_string(100);
-        WIFI_PARAMS[WIFI_SSID] = "WIFI_SSID_VAL";
-        WIFI_PARAMS[WIFI_PASSWORD] = "WIFI_PASSWORD_VAL";
-
     }catch(exception& e){
+        updateStatus(SystemStatus::SYSTEM_ERROR);
+        return;
+    }
+
+    map<string,string> configParams;
+    try{
+        // set system parameters
+        SAMPLING_PARAMS[TIMESTAMP] = to_string(timeHandler.getCurrentTimestamp());
+        configParams = sdCardHandler.readConfigFile(CONFIG_FILE_NAME);
+        SAMPLING_PARAMS[IMU_RATE] = configParams[IMU_RATE];
+        WIFI_PARAMS[WIFI_SSID] = configParams[WIFI_SSID];
+        WIFI_PARAMS[WIFI_PASSWORD] = configParams[WIFI_PASSWORD];
+    }catch(exception& err){
+        logger.error("Failed to read config file from SD card");
         updateStatus(SystemStatus::SYSTEM_ERROR);
         return;
     }
