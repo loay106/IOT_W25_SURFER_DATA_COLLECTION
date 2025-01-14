@@ -20,7 +20,6 @@ enum class SensorStatus{
 
 class SensorBase{
     private:
-        static int INSTANCE_COUNT = 0;
         SDCardHandler sdcardHandler;
         SemaphoreHandle_t bufferMutex;
         ostringstream sampleBuffer;
@@ -36,50 +35,53 @@ class SensorBase{
         }
 
     protected:
-        int id; // This should be incremental
         Logger logger;
-        string sensorType;
+        string model;
         int dataPin;
         string* samplingFileName;
 
     public:
         SensorBase(){};
-        SensorBase(Logger logger, SDCardHandler sdcardHandler, string sensorType, int dataPin){
+        SensorBase(Logger logger, SDCardHandler sdcardHandler, string model, int dataPin){
             bufferMutex = xSemaphoreCreateMutex();
             this-> dataPin = dataPin;
             this->logger = logger;
             this->sdcardHandler = sdcardHandler;
-            this->sensorType = sensorType;
+            this->model = model;
             samplingFileName = nullptr;
-            id = SensorBase::INSTANCE_COUNT;
-            SensorBase::INSTANCE_COUNT++;
         };
 
-        int getId(){
-            return id;
+        string getModel(){
+            return model;
         }
 
-        void startSampling(int timestamp, string outputFilePath){
+        void startSampling(string outputFilePath, int rate){
             samplingFileName = new string(outputFilePath);
             attachInterrupt(digitalPinToInterrupt(dataPin), this->appendSample, FALLING);
-            enableSensor();
+            enableSensor(rate);
         }
 
         void stopSampling(){
+            delete samplingFileName;
             samplingFileName = nullptr;
             detachInterrupt(dataPin);
             disableSensor();
         }
 
         void writeSamples(){
+            if(!samplingFileName){
+                logger.error("samplingFileName is empty!");
+                return;
+            }
             xSemaphoreTake(bufferMutex, portMAX_DELAY);
             string samples = sampleBuffer.str();
-            sampleBuffer.clear();
+            sampleBuffer.str(""); // clear the buffer
+            sampleBuffer.clear(); // reset state flags
             xSemaphoreGive(bufferMutex);
             sdcardHandler.writeData(*samplingFileName, samples.c_str());
         }
     
-        virtual void enableSensor() = 0;
+        virtual void enableSensor(int rate) = 0;
         virtual void disableSensor() = 0;
         virtual string getSample() = 0;
         virtual void init() = 0;

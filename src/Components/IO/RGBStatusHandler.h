@@ -1,22 +1,30 @@
 #ifndef RGB_STATUS_HANDLER_H 
 #define RGB_STATUS_HANDLER_H
 
-#include "../../Utils/Status.h"
 #include "../../Utils/Logger.h"
 
-/*
-    This class is responsible for the RGB status light to show the unit's current status
-*/
+const int FLICKERING_RATE = 100;
+
+enum RGBColors{
+    NO_COLOR,
+    RED,
+    BLUE, 
+    GREEN
+}
 class RGBStatusHandler{
     private:
-        SystemStatus currentStatus;
+        RGBColors firstColor;
+        RGBColors secondColor;
         Logger logger;
-        void updateStatusColor();
+        int lastFlickerMillis;
+
+        void showColor();
     public:
         RGBStatusHandler(){};
         RGBStatusHandler(Logger logger);
-        void init(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin);
-        void updateStatus(SystemStatus newStatus); 
+        void init(int redPin, int greenPin, int bluePin);
+        void updateColors(RGBColors first, RGBColors second);
+        void flicker();
 };
 
 

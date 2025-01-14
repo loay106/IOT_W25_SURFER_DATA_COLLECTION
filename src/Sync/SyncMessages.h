@@ -19,11 +19,10 @@ const char* TIMESTAMP = "TIMESTAMP";
 const char* WIFI_SSID = "WIFI_SSID";
 const char* WIFI_PASSWORD = "WIFI_PASSWORD";
 
-const int STATUS_REPORT_DELAY_SECONDS = 3;
+const int STATUS_REPORT_DELAY_MILLIS = 500;
 
 enum ControlUnitCommand {
     START_SAMPLING, // attached IMU_RATE, TIMESTAMP params
-    STOP_SAMPLING,
     UPLOAD_SAMPLE_FILES // attached WIFI params
 };
 

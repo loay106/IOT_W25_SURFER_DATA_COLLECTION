@@ -7,17 +7,15 @@
 class IMU_BNO080: public SensorBase {
     private:
         BNO080 sensor;
-        int samplingRate;
     public:
-    // todo: add dout pin for SensorBase param
-        IMU_BNO080(Logger logger, SamplesSDCardWriter samplesWriter, string sensorType, int samplingRate): SensorBase(logger, samplesWriter, "IMU_BNO080") {
-            this->samplingRate = samplingRate;
-        }
-        void enableSensor() override{
-            sensor.enableAccelerometer(samplingRate);
+        IMU_BNO080(Logger logger, SamplesSDCardWriter samplesWriter, int INTPin): SensorBase(logger, samplesWriter, "IMU_BNO080", INTPin) {}
+        void enableSensor(int IMURate) override{
+            sensor.enableAccelerometer(IMURate);
         }
 
-        void disableSensor() override;
+        void disableSensor() override{
+            sensor.enableAccelerometer(0);
+        }
 
         void init() override{
             Wire.begin(21, 22); // SDA, SCL for ESP32

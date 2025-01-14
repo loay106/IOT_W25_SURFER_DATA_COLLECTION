@@ -17,7 +17,8 @@ class SurfboardSamplingUnit {
         int lastStatusReportTime;
     public:
         SurfboardSamplingUnit(){};
-        SurfboardSamplingUnit(Logger logger, uint8_t controlUnitMac[]): logger(logger){
+        SurfboardSamplingUnit(uint8_t controlUnitMac[]){
+            logger = Logger();
             syncManager = SamplingUnitSyncManager(logger, controlUnitMac);
             sampler = Sampler(logger);
         };
@@ -31,7 +32,7 @@ class SurfboardSamplingUnit {
                 sampler.addSensor(sensor);
             }catch(InitError& err){
                 logger.error("Failed to add sensor");
-                // todo: report error status here...
+                sampler.enterErrorState();
             }
             
         }
@@ -50,24 +51,23 @@ class SurfboardSamplingUnit {
                             logger.error("Invalid command params");
                             return;
                         }    
-                    case ControlUnitCommand::STOP_SAMPLING:
-                        sampler.stopSampling();
                     case ControlUnitCommand::UPLOAD_SAMPLE_FILES:
                         try{
-                            // todo: get wifi params here....
-                            sampler.uploadSampleFiles();
+                            sampler.stopSampling();
+                            sampler.uploadSampleFiles(command->params[WIFI_SSID], command->params[WIFI_PASSWORD]);
                         }catch(exception& err){
-                            // todo: complete handling here....
+                            logger.error("Invalid command params");
+                            return;
                         }
                 }
                 delete command;
             }
 
-            // status report
-            int elapsedSeconds = (millis() - lastStatusReportTime) / 1000; 
-            if(elapsedSeconds >= STATUS_REPORT_DELAY_SECONDS){
+            // status report - update every STATUS_REPORT_DELAY_MILLIS
+            int current = millis();
+            if((current - lastStatusReportTime) >= STATUS_REPORT_DELAY_MILLIS){
                 syncManager.reportStatus(sampler.getStatus());
-                lastStatusReportTime = millis();
+                lastStatusReportTime = current;
             }
         }
 };

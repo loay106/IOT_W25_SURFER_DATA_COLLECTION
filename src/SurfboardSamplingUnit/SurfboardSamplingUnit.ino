@@ -1,15 +1,16 @@
 #include "SurfboardSamplingUnit.h"
 
 SurfboardSamplingUnit samplingUnit; 
+uint8_t CONTROL_UNIT_MAC[6] = {0xCC, 0xDB, 0xA7, 0x5A, 0x7F, 0xC0};
 
 void setup() {
-    samplingUnit = SurfboardSamplingUnit(); // todo: add params....
+    samplingUnit = SurfboardSamplingUnit(CONTROL_UNIT_MAC);
     samplingUnit.init();
 
-    // todo: add sensors here....
+    // add sensors here....
 }
 
 void loop() {
     samplingUnit.updateSystem();
-    delay(5); // is this needed?
+    delay(10); // update delay as needed
 }

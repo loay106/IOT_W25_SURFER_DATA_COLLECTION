@@ -1,6 +1,6 @@
 #include "SurfboardMainUnit.h"
 
-SurfboardMainUnit::SurfboardMainUnit(int buttonPin): logger(logger){
+SurfboardMainUnit::SurfboardMainUnit(int buttonPin) : logger(logger){
     logger = Logger();
     syncManager = ControlUnitSyncManager(logger);
     timeHandler = RTCTimeHandler(logger);
@@ -10,10 +10,7 @@ SurfboardMainUnit::SurfboardMainUnit(int buttonPin): logger(logger){
     sampler = Sampler(logger);
 }
 
-
 void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin) {
-
-    status = SystemStatus::SYSTEM_INITIALIZING;
     try{
         logger.init();
         syncManager.init(samplingUnitsAdresses, samplingUnitsNum);
@@ -30,60 +27,83 @@ void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUni
             samplingUnits[macString] = samplingUnit;
         }
 
-        // add internal sampling unit
-        SamplingUnitRep samplingUnit;
-        samplingUnit.mac = INTERNAL_SAMPLING_MAC;
-        samplingUnit.status = SamplerStatus::UNIT_STAND_BY;
-        string macString = macToString(samplingUnit.mac);
-        samplingUnits[macString] = samplingUnit;
+        SAMPLING_PARAMS[TIMESTAMP] = to_string(timeHandler.getCurrentTimestamp());
+        // todo: read from config file in sd card here and get wifi+imu rate params
+        SAMPLING_PARAMS[IMU_RATE] = to_string(100);
+        WIFI_PARAMS[WIFI_SSID] = "WIFI_SSID_VAL";
+        WIFI_PARAMS[WIFI_PASSWORD] = "WIFI_PASSWORD_VAL";
 
-        status = SystemStatus::SYSTEM_STAND_BY;
-        logger.info("System initalization complete!");
-        statusLighthandler.updateStatus(status);
     }catch(exception& e){
-        status = SystemStatus::SYSTEM_ERROR;
-        statusLighthandler.updateStatus(status);
+        updateStatus(SystemStatus::SYSTEM_ERROR);
+        return;
+    }
+    logger.info("System initalization complete!");
+    updateStatus(SystemStatus::SYSTEM_STAND_BY);
+}
+
+void SurfboardMainUnit::updateStatus(SystemStatus newStatus){
+    if(status == newStatus){
+        return;
+    }
+    status = newStatus;
+    switch (status){
+        case SystemStatus::SYSTEM_STARTING:
+            statusLighthandler.updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
+            break;
+        case SystemStatus::SYSTEM_STAND_BY:
+            statusLighthandler.updateColors(RGBColors::GREEN, RGBColors::GREEN);
+            break;  
+        case SystemStatus::SYSTEM_SAMPLING:
+            statusLighthandler.updateColors(RGBColors::GREEN, RGBColors::NO_COLOR);
+            break;     
+        case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
+            statusLighthandler.updateColors(RGBColors::GREEN, RGBColors::RED);
+            break;    
+        case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
+            statusLighthandler.updateColors(RGBColors::BLUE, RGBColors::NO_COLOR);
+            break;
+        case SystemStatus::SYSTEM_ERROR:
+            statusLighthandler.updateColors(RGBColors::RED, RGBColors::RED);
+            break;              
+        default:
+            statusLighthandler.updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
+            break;
     }
 }
+
 void SurfboardMainUnit::addSensor(SensorBase sensor) {
     try{
         sampler.addSensor(sensor);
     }catch(InitError& err){
         logger.error("Failed to add sensor");
-        // todo: report error status here...
+        updateStatus(SystemStatus::SYSTEM_ERROR);
     }
 }
+
 void SurfboardMainUnit::startSampling() {
-    if(status == SystemStatus::SYSTEM_STAND_BY){
-        map<string,string> params;
-        int timestamp = timeHandler.getCurrentTimestamp();
-        params[TIMESTAMP] = timestamp;
-        params[IMU_RATE] = 100; // todo: change???
-        try{
-            syncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING, params);
-            sampler.startSampling(timestamp, IMU_RATE);
-        }catch(ESPNowSyncError& error){
-            logger.error("Failed to send command to sampling units!");
-            return;
-        }
-        status = SystemStatus::SYSTEM_SAMPLING;
-        statusLighthandler.updateStatus(status);
-        logger.info("Sampling started...");
+    SAMPLING_PARAMS[TIMESTAMP] = to_string(timeHandler.getCurrentTimestamp());
+    try{
+        syncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS);
+        sampler.startSampling(SAMPLING_PARAMS.at(TIMESTAMP), SAMPLING_PARAMS.at(IMU_RATE));
+    }catch(ESPNowSyncError& error){
+        logger.error("Failed to send command to sampling units! Try again!");
+        return;
     }
+    updateStatus(SystemStatus::SYSTEM_SAMPLING);
+    logger.info("Sampling started...");
 }
+
 void SurfboardMainUnit::stopSampling() {
-    if(status == SystemStatus::SYSTEM_SAMPLING){
-        try{
-            map<string,string> params;
-            syncManager.broadcastCommand(ControlUnitCommand::STOP_SAMPLING, params);
-            sampler.stopSampling();
-        }catch(ESPNowSyncError& error){
-            logger.error("Failed to send command to sampling units!");
-            return;
-        }
-        status = SystemStatus::SYSTEM_STAND_BY;        
-        statusLightManager.updateStatus(status);
+    try{
+        syncManager.broadcastCommand(ControlUnitCommand::UPLOAD_SAMPLE_FILES, WIFI_PARAMS);
+        sampler.stopSampling();
+        sampler.uploadSampleFiles();
+        updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
+    }catch(ESPNowSyncError& error){
+        logger.error("Failed to send command to sampling units! Try again!");
+        return;
     }
+    updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
 void SurfboardMainUnit::updateSystem() {
     // status update
@@ -93,21 +113,12 @@ void SurfboardMainUnit::updateSystem() {
         try{
             SamplingUnitRep& samplingUnit = samplingUnits.at(unitID);
             samplingUnit.status = statusMessage.status;
+            samplingUnit.lastStatusUpdate = millis();
         }
         catch(const std::out_of_range& ex){
             logger.error("Status update message received from unknown unit " + unitID);
         }
     };
-
-    // internal unit status update
-    string unitID = macToString(INTERNAL_SAMPLING_MAC);
-    try{
-        SamplingUnitRep& samplingUnit = samplingUnits.at(unitID);
-        samplingUnit.status = sampler.getStatus();
-    }
-    catch(const std::out_of_range& ex){
-        logger.error("Status update message received from unknown unit " + unitID);
-    }
 
     if(buttonManager.wasPressed()){
         switch(status){
@@ -115,8 +126,19 @@ void SurfboardMainUnit::updateSystem() {
                 stopSampling();
                 return;
             }
+            case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:{
+                stopSampling();
+                return;
+            }
+            case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:{
+                // file upload must be completed first to start another session
+                return;
+            }
             case SystemStatus::SYSTEM_STAND_BY:{
                 startSampling();
+                return;
+            }
+            case SystemStatus::SYSTEM_ERROR:{
                 return;
             }
             default:{
@@ -126,23 +148,34 @@ void SurfboardMainUnit::updateSystem() {
         }
     }
 
-    std::map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();
+    map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();
     while (it != samplingUnits.end()) {
         if(it->second.mac == INTERNAL_SAMPLING_MAC){
             continue;
-        }else if(status == SystemStatus::SYSTEM_SAMPLING && it->second.status != SamplerStatus::UNIT_SAMPLING){
-            try{
-                espSyncManager.sendCommand(ControlUnitCommand::START_SAMPLING, it->second.mac);
-            }catch(ESPNowSyncError& error){
-                it->second.status = SamplerStatus::UNIT_ERROR;
-            }  
-        }else if(status != SystemStatus::SYSTEM_SAMPLING && it->second.status == SamplerStatus::UNIT_SAMPLING){
-            try{
-                espSyncManager.sendCommand(ControlUnitCommand::STOP_SAMPLING, it->second.mac);
-            }catch(ESPNowSyncError& error){
-                it->second.status = SamplerStatus::UNIT_ERROR;
-            }    
         }
-        it++;
+        if(status == SystemStatus::SYSTEM_SAMPLING || status == SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR){
+            if(it->second.status == SamplerStatus::UNIT_SAMPLING){
+                continue;
+            }else if(it->second.status == SamplerStatus::UNIT_ERROR){
+                numUnitsInError++;
+                updateStatus(SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR);
+            }else{
+                try{
+                    espSyncManager.sendCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS, ->second.mac);
+                }catch(ESPNowSyncError& error){
+                    // try again next iteration...maybe unit is not nearby
+                    continue;
+                } 
+            }
+        }else if(status == SystemStatus::SYSTEM_STAND_BY){
+            // nothing to do, maybe connect to cloud to retrieve params? (calibration etc...)
+        }else if(status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD){
+            if(it->second.status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD || it->second.status == SamplerStatus::UNIT_ERROR){
+                continue;
+            }else{
+                espSyncManager.sendCommand(ControlUnitCommand::UPLOAD_SAMPLE_FILES, WIFI_PARAMS, it->second.mac);
+            }
+        }
+        it++;        
     }
 };

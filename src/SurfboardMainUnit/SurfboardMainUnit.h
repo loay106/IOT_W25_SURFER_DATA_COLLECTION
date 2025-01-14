@@ -16,15 +16,10 @@ using namespace std;
 #include "../Status/RGBStatusManager.h"
 #include "../IO/SamplingButtonManager.h"
 
-// todo: merge Controller to this class and remove Controller...
-// add is_internal to SamplingUnitRep
-
 typedef struct SamplingUnitRep{
     uint8_t mac[6];
-    SamplerStatus status;    
+    SamplerStatus status;
 } SamplingUnitRep;
-
-const uint8_t[6] INTERNAL_SAMPLING_MAC = {0x0,0x0,0x0,0x0,0x0,0x0};
 
 class SurfboardMainUnit {
     private:
@@ -34,8 +29,12 @@ class SurfboardMainUnit {
         RGBStatusHandler statusLighthandler;
         ButtonHandler buttonHandler;
         Logger logger;
-        Sampler sampler;
+        Sampler sampler; // internal sampler
         SystemStatus status;
+        map<string,string> WIFI_PARAMS;
+        map<string,string> SAMPLING_PARAMS;
+
+        void updateStatus(SystemStatus newStatus);
     public:
         SurfboardMainUnit(){};
         SurfboardMainUnit(int buttonPin);

@@ -1,55 +1,13 @@
 #include "RGBStatusHandler.h"
 #include <Arduino.h>
 
-void RGBStatusHandler::updateStatusColor(){
-    switch (currentStatus){
-        case SystemStatus::SYSTEM_STARTING:{
-            // yellow
-            ledcWrite(0, 255);
-            ledcWrite(1, 255); 
-            ledcWrite(2, 0); 
-            break;
-        }
-        case SystemStatus::SYSTEM_INITIALIZING:{
-            // yellow
-            ledcWrite(0, 255);
-            ledcWrite(1, 255); 
-            ledcWrite(2, 0); 
-            break;
-        }
-        case SystemStatus::SYSTEM_STAND_BY:{
-            // green
-            ledcWrite(0, 0); 
-            ledcWrite(1, 255);
-            ledcWrite(2, 0); 
-            break;
-        }
-        case SystemStatus::SYSTEM_SAMPLING:{
-            // blue
-            ledcWrite(0, 0);
-            ledcWrite(1, 0); 
-            ledcWrite(2, 255); 
-            break;
-        }
-        case SystemStatus::SYSTEM_ERROR:{
-            // red
-            ledcWrite(0, 255); 
-            ledcWrite(1, 0); 
-            ledcWrite(2, 0);
-            break;
-        }
-        default:{
-            // todo: throw an error here
-            return;
-        }
-    }
-}
-
 RGBStatusHandler::RGBStatusHandler(Logger logger) : logger(logger){
-    currentStatus = SystemStatus::SYSTEM_STARTING;
+    firstColor = RGBColors::NO_COLOR;
+    secondColor = RGBColors::NO_COLOR;
+    lastFlickerMillis=0;
 }
 
-void RGBStatusHandler::init(SystemStatus currentSystemStatus, int redPin, int greenPin, int bluePin) {
+void RGBStatusHandler::init(int redPin, int greenPin, int bluePin) {
     ledcSetup(0, 5000, 8); // Channel 0, 5kHz, 8-bit resolution
     ledcSetup(1, 5000, 8); // Channel 1, 5kHz, 8-bit resolution
     ledcSetup(2, 5000, 8); // Channel 2, 5kHz, 8-bit resolution
@@ -57,11 +15,58 @@ void RGBStatusHandler::init(SystemStatus currentSystemStatus, int redPin, int gr
     ledcAttachPin(redPin, 0);
     ledcAttachPin(greenPin, 1);
     ledcAttachPin(bluePin, 2);
-
-    currentStatus = SystemStatus::SYSTEM_INITIALIZING;
-    updateStatusColor();
 }
-void RGBStatusHandler::updateStatus(SystemStatus newStatus) {
-    currentStatus = newStatus;
-    updateStatusColor();
-};
+
+void RGBStatusHandler::updateColors(RGBColors first, RGBColors second){
+    firstColor = first;
+    secondColor = second;
+    lastFlickerMillis=0;
+}
+
+void RGBStatusHandler::flicker(){
+    if(firstColor == secondColor){
+        // nothing to do...
+        return;
+    }
+    int current = millis();
+    int elapsedMillis = (current - lastFlickerMillis); 
+    if(elapsedMillis >= FLICKERING_RATE){
+        RGBColors temp = firstColor;
+        firstColor = secondColor;
+        secondColor = temp;
+        lastFlickerMillis = current;
+        showColor();
+    }
+}
+
+void RGBStatusHandler::showColor(){
+    switch (firstColor)
+    {
+        case RGBColors::RED:
+            ledcWrite(0, 255); 
+            ledcWrite(1, 0); 
+            ledcWrite(2, 0);
+            break;
+        case RGBColors::GREEN:
+            ledcWrite(0, 0); 
+            ledcWrite(1, 255);
+            ledcWrite(2, 0); 
+            break;
+        case RGBColors::BLUE:
+            ledcWrite(0, 0); 
+            ledcWrite(1, 0);
+            ledcWrite(2, 255); 
+            break;
+        case RGBColors::ORANGE:
+            ledcWrite(0, 255); 
+            ledcWrite(1, 140);
+            ledcWrite(2, 0); 
+            break;
+        default:
+            // defaulting to NO_COLOR
+            ledcWrite(0, 0); 
+            ledcWrite(1, 0);
+            ledcWrite(2, 0); 
+            break;
+    }
+}
