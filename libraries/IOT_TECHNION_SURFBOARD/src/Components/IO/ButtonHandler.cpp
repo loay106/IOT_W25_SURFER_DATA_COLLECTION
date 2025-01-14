@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "ButtonHandler.h"
 
-Logger ButtonHandler::logger = Logger(57600);
+Logger ButtonHandler::logger = Logger();
 bool ButtonHandler::buttonPressed = false;
 int ButtonHandler::lastPressedAt = 0;
 

@@ -12,13 +12,12 @@
 
 using namespace std;
 
-
 class SamplingUnitSyncManager {
     // todo: change class to singleton
     private:
         static CommandMessage* nextCommand;
         uint8_t controlUnitMac[6];
-        Logger logger;
+        static Logger logger;
 
         static void onDataReceivedCallback(const uint8_t* mac, const uint8_t* incomingData, int len);
     public:

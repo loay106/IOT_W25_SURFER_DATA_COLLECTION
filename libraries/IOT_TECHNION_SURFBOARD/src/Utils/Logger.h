@@ -9,6 +9,7 @@ using namespace std;
 const int SERIAL_BAUD_RATE = 57600;
 
 class Logger{
+    // todo: change to singleton
     public:
         Logger(){};
         void init(){

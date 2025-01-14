@@ -13,6 +13,7 @@ using namespace std;
 
 #include "../Utils/Status.h"
 #include "../Utils/Logger.h"
+#include "../Utils/Adresses.h"
 #include "SyncMessages.h"
 
 

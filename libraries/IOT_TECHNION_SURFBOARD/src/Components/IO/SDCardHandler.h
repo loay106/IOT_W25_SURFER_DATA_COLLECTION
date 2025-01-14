@@ -8,6 +8,7 @@ using namespace std;
 #include <map>
 #include <SD.h>
 #include <Arduino.h>
+#include <Wire.h>
 
 #include "../../Utils/Exceptions.h"
 #include "../../Utils/Logger.h"
@@ -24,6 +25,7 @@ class SDCardHandler{
         void init(){
             SPI.begin(18,19,23,SDCardChipSelectPin);
             if (!SD.begin(SDCardChipSelectPin)) {
+                logger.error("Failed to init SD card!");
                 throw InitError();
             }
             Wire.begin(21,22);
@@ -61,8 +63,8 @@ class SDCardHandler{
                 throw SDCardError();
             }
             file.println(data);
-            logFile.flush();
-            logFile.close();
+            file.flush();
+            file.close();
         }
 
         std::map<string, string> readConfigFile(string filePath) {

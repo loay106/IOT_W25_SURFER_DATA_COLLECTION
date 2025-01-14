@@ -61,11 +61,6 @@ void RGBStatusHandler::showColor(){
             ledcWrite(1, 0);
             ledcWrite(2, 255); 
             break;
-        case RGBColors::ORANGE:
-            ledcWrite(0, 255); 
-            ledcWrite(1, 140);
-            ledcWrite(2, 0); 
-            break;
         default:
             // defaulting to NO_COLOR
             ledcWrite(0, 0); 
