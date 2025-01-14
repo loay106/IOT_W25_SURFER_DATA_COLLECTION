@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <Arduino.h>
 using namespace std;
 
 #include "../Utils/Status.h"
@@ -62,7 +63,11 @@ class Sampler {
             status = SamplerStatus::UNIT_ERROR;
         }
 
-        void uploadSampleFiles(string wifi_ssid, string wifi_password); // upload to the cloud
+        void uploadSampleFiles(string wifi_ssid, string wifi_password){
+            // upload to the cloud
+            // todo: implement...
+            status = SamplerStatus::UNIT_STAND_BY;
+        }; 
 };
 
 #endif // SAMPLER_H

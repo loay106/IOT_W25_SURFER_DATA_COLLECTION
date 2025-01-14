@@ -1,22 +1,24 @@
 #include "SurfboardMainUnit.h"
 
-SurfboardMainUnit::SurfboardMainUnit(int buttonPin) : logger(logger){
+SurfboardMainUnit::SurfboardMainUnit(int buttonPin, int SDCardChipSelectPin){
     logger = Logger();
+    sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
     syncManager = ControlUnitSyncManager(logger);
     timeHandler = RTCTimeHandler(logger);
     statusLighthandler = RGBStatusHandler(logger);
     buttonHandler = ButtonHandler(logger, buttonPin);
     status = SystemStatus::SYSTEM_STARTING;
-    sampler = Sampler(logger);
+    sampler = Sampler(logger, sdCardHandler);
 }
 
 void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin) {
     try{
         logger.init();
         syncManager.init(samplingUnitsAdresses, samplingUnitsNum);
-        statusLighthandler.init(); // todo: update so it receives a light....
+        statusLighthandler.init(RGBRedPin, RGBGreenPin, RGBBluePin);
         timeHandler.init();
         buttonHandler.init();
+        sdCardHandler.init();
 
         // add external sampling units
         for(int i=0;i<samplingUnitsNum;i++){

@@ -7,11 +7,12 @@ using namespace std;
 #include <queue>
 #include <vector>
 
+#include <Arduino.h>
 #include <esp_now.h>
 #include <WiFi.h>
 
-#include "../../Utils/Status.h"
-#include "../../Utils/Logger.h"
+#include "../Utils/Status.h"
+#include "../Utils/Logger.h"
 #include "SyncMessages.h"
 
 
@@ -33,8 +34,8 @@ class ControlUnitSyncManager{
         ControlUnitSyncManager(){};
         ControlUnitSyncManager(Logger logger);
         void init(uint8_t samplingUnits[][6], int samplingUnitsNum);
-        void sendCommand(const ControlUnitCommand& command,const map<string,string>& params, uint8_t samplingUnitMac[6]);
-        void broadcastCommand(const ControlUnitCommand& command,const map<string,string>& params); 
+        void sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]);
+        void broadcastCommand(const ControlUnitCommand& command,const std::map<string,string>& params); 
         bool hasStatusUpdateMessages();
 };
 

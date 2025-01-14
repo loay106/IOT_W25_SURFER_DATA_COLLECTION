@@ -8,8 +8,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "Status.h"
-#include "Exceptions.h"
+#include "../Utils/Status.h"
+#include "../Utils/Exceptions.h"
 
 using namespace std;
 
@@ -28,7 +28,7 @@ enum ControlUnitCommand {
 
 typedef struct CommandMessage {
     ControlUnitCommand command;
-    map<string, string> params;    
+    std::map<string, string> params;    
 } CommandMessage;
 
 string serializeStatusUpdateMsg(SamplerStatus status){
@@ -76,7 +76,7 @@ SamplerStatus deserializeStatusUpdateMsg(const uint8_t* msg, int len) {
 
 
 // Convert CommandMessage to a message string
-string serializeCommand(const ControlUnitCommand& command, const map<string,string>& params) {
+string serializeCommand(const ControlUnitCommand& command, const std::map<string,string>& params) {
     /*
         Parse ControlUnitCommand object to a string:
         Format: [command]|[param_key_1]:[param_value_1];[param_key_2]:[param_value_2]...

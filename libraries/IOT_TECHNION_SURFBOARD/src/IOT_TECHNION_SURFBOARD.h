@@ -11,5 +11,7 @@
 #include "Sync/ControlUnitSyncManager.h"
 #include "Sync/SamplingUnitSyncManager.h"
 #include "Sync/SyncMessages.h"
+#include "Utils/Adresses.h"
+#include "Utils/Exceptions.h"
 
 #endif

@@ -2,6 +2,7 @@
 #define BUTTON_HANDLER_H
 
 #include "../../Utils/Logger.h"
+#include <Arduino.h>
 
 class ButtonHandler{
     private:

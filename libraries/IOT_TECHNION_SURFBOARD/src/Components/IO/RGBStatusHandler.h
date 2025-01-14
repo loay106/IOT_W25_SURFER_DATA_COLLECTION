@@ -2,6 +2,7 @@
 #define RGB_STATUS_HANDLER_H
 
 #include "../../Utils/Logger.h"
+#include <Arduino.h>
 
 const int FLICKERING_RATE = 100;
 

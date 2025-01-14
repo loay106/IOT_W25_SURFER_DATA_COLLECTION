@@ -5,8 +5,7 @@
 #include <string>
 using namespace std;
 
-#include "../Components/Sampler.h"
-#include "../Sync/SamplingUnitSyncManager.h"
+#include <IOT_TECHNION_SURFBOARD.h>
 
 
 class SurfboardSamplingUnit {

@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "SamplingButtonHandler.h"
+#include "ButtonHandler.h"
 
 Logger ButtonHandler::logger = Logger(57600);
 bool ButtonHandler::buttonPressed = false;

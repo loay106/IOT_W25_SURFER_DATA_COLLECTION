@@ -3,6 +3,7 @@
 
 #include "RTClib.h"
 #include "../../Utils/Logger.h"
+#include <Arduino.h>
 
 class RTCTimeHandler{
     private:

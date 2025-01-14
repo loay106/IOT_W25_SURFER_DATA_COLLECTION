@@ -6,7 +6,7 @@
 #include <string>
 #include <Arduino.h>
 
-#include "../../Utils/Logger.h"
+#include "../Utils/Logger.h"
 #include "SyncMessages.h"
 
 

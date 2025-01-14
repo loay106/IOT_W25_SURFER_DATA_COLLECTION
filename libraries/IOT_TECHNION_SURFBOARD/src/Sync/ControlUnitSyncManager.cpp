@@ -35,7 +35,7 @@ void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsN
     esp_now_register_recv_cb(ControlUnitSyncManager::processReceivedMessages);
 }
 
-void ControlUnitSyncManager::sendCommand(const ControlUnitCommand& command,const map<string,string>& params, uint8_t samplingUnitMac[6]){
+void ControlUnitSyncManager::sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]){
     string message = serializeCommand(command, params);
     esp_err_t result = esp_now_send(samplingUnitMac, (uint8_t *) messageToSend.c_str(), messageToSend.length());
     if (result != ESP_OK) {
@@ -44,7 +44,7 @@ void ControlUnitSyncManager::sendCommand(const ControlUnitCommand& command,const
     }
 }
 
-void ControlUnitSyncManager::broadcastCommand(const ControlUnitCommand& command,const map<string,string>& params){
+void ControlUnitSyncManager::broadcastCommand(const ControlUnitCommand& command,const std::map<string,string>& params){
     string message = serializeCommand(command, params);
     esp_err_t result = esp_now_send(nullptr, (uint8_t *) messageToSend.c_str(), messageToSend.length());
     if (result != ESP_OK) {

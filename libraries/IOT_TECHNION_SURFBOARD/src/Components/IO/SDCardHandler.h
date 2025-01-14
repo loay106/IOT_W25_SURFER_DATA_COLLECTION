@@ -5,7 +5,9 @@ using namespace std;
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <map>
 #include <SD.h>
+#include <Arduino.h>
 
 #include "../../Utils/Exceptions.h"
 #include "../../Utils/Logger.h"
@@ -63,8 +65,8 @@ class SDCardHandler{
             logFile.close();
         }
 
-        map<string, string> readConfigFile(string filePath) {
-            map<string, string> configMap; // Map to store parameter name and value
+        std::map<string, string> readConfigFile(string filePath) {
+            std::map<string, string> configMap; // Map to store parameter name and value
 
             File configFile = SD.open(filePath.c_str(), FILE_READ); // Open the file in read mode
             if (!configFile) {

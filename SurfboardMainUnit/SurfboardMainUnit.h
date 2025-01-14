@@ -2,19 +2,12 @@
 #define SURFBOARD_MAIN_UNIT_H
 
 #include <vector>
+#include <map>
 #include <string>
 using namespace std;
 
-#include "../Components/Sampler.h"
-#include "../Sync/ControlUnitSyncManager.h"
-#include "../Utils/Logger.h"
-#include "../Utils/Status.h"
-#include "../Components/IO/RTCTimeHandler.h"
-#include "../Components/IO/RGBStatusHandler.h"
-#include "../Components/IO/ButtonHandler.h"
+#include <IOT_TECHNION_SURFBOARD.h>
 
-#include "../Status/RGBStatusManager.h"
-#include "../IO/SamplingButtonManager.h"
 
 const string CONFIG_FILE_NAME = "device.config";
 
@@ -35,8 +28,8 @@ class SurfboardMainUnit {
         SystemStatus status;
 
         SDCardHandler sdCardHandler; // todo: add as a param...
-        map<string,string> WIFI_PARAMS;
-        map<string,string> SAMPLING_PARAMS;
+        std::map<string,string> WIFI_PARAMS;
+        std::map<string,string> SAMPLING_PARAMS;
 
         void updateStatus(SystemStatus newStatus);
 
@@ -44,7 +37,7 @@ class SurfboardMainUnit {
         void stopSampling();
     public:
         SurfboardMainUnit(){};
-        SurfboardMainUnit(int buttonPin);
+        SurfboardMainUnit(int buttonPin,int SDCardChipSelectPin);
 
         void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
 
