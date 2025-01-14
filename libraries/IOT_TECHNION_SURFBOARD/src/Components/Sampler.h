@@ -22,48 +22,19 @@ class Sampler {
     public:
         Sampler(){};
         
-        Sampler(Logger logger, SDCardHandler sdCardHandler): logger(logger), sdCardHandler(sdCardHandler), status(SamplerStatus::UNIT_STAND_BY){};
+        Sampler(Logger logger, SDCardHandler sdCardHandler);
 
-        void addSensor(SensorBase* sensor){
-            sensor->init();
-            sensors.push_back(sensor);
-        }
+        void addSensor(SensorBase* sensor);
 
-        void init(){
-            try{
-                sdCardHandler.createFolder("samplings");
-            }catch(SDCardError& err){
-                logger.error("Failed to create samplings folder");
-                status = SamplerStatus::UNIT_ERROR;
-                throw InitError();
-            }
-        }
+        void init();
 
-        void startSampling(int timestamp, int IMURate){
-            status = SamplerStatus::UNIT_SAMPLING;
-            for(int i=0;i<sensors.size(); i++){
-                // sample files have this format:
-                // [TIMESTAMP]_[SENSOR_ID]_[SENSOR_MODEL]
-                string filePath = "samplings/" + to_string(timestamp) + "_" + to_string(i) + "_" + sensors[i]->getModel();
-                sensors[i]->startSampling(filePath, IMURate);
-            }
-        }
+        void startSampling(int timestamp, int IMURate);
+        void stopSampling();
 
-        void stopSampling(){
-            for(SensorBase* sensor: sensors){
-                sensor->stopSampling();
-            }
-            status = SamplerStatus::UNIT_STAND_BY;
-        }
+        SamplerStatus getStatus();
 
-        SamplerStatus getStatus(){
-            return status;
-        }
-
-        void enterErrorState(){
-            // use this when you want the unit to enter error state for external reasons
-            status = SamplerStatus::UNIT_ERROR;
-        }
+        // use this when you want the unit to enter error state for external reasons
+        void enterErrorState();
 
         void uploadSampleFiles(string wifi_ssid, string wifi_password){
             // upload to the cloud
@@ -71,11 +42,7 @@ class Sampler {
             status = SamplerStatus::UNIT_STAND_BY;
         }; 
 
-        void writeSensorsData(){
-            for(int i= 0; i< Sampler::sensors.size(); i++){
-                sensors[i]->writeSamples();
-            }
-        }
+        void writeSensorsData();
 };
 
 #endif // SAMPLER_H

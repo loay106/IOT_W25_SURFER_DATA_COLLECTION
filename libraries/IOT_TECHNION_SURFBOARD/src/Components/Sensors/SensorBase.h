@@ -32,55 +32,14 @@ class SensorBase{
 
     public:
         SensorBase(){};
-        SensorBase(Logger logger, SDCardHandler sdcardHandler, string model, int dataPin){
-            this-> dataPin = dataPin;
-            this->logger = logger;
-            this->sdcardHandler = sdcardHandler;
-            this->model = model;
-            samplingFileName = nullptr;
-            sampleBuffer = new string("");
-        };
+        SensorBase(Logger logger, SDCardHandler sdcardHandler, string model, int dataPin);
 
-        int getDataPin(){
-            return dataPin;
-        }
+        int getDataPin();
+        string getModel();
+        void startSampling(string outputFilePath, int rate);
+        void stopSampling();
+        void writeSamples();
 
-        string getModel(){
-            return model;
-        }
-
-        void startSampling(string outputFilePath, int rate){
-            samplingFileName = new string(outputFilePath);
-            enableSensor(rate);
-        }
-
-        void stopSampling(){
-            delete samplingFileName;
-            samplingFileName = nullptr;
-            disableSensor();
-        }
-
-        void writeSamples(){
-            if(!samplingFileName){
-                logger.error("samplingFileName is empty!");
-                return;
-            }
-            try{
-                string sample = getSample();
-                sampleBuffer->append(sample);
-                if(sampleBuffer->length() >= MAX_SAMPLES_BUFFER_LENGTH){
-                    string* temp = sampleBuffer;
-                    sampleBuffer = new string();
-                    sdcardHandler.writeData(*samplingFileName, temp->c_str());
-                    delete temp;
-                }else{
-                    sampleBuffer->append("|");
-                }
-            }catch(NotReadyError& err){
-                return;
-            }
-        }
-    
         virtual void enableSensor(int rate) = 0;
         virtual void disableSensor() = 0;
         virtual string getSample() = 0;
