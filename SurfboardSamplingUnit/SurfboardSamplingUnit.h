@@ -13,20 +13,30 @@ class SurfboardSamplingUnit {
         Sampler sampler;
         SamplingUnitSyncManager syncManager;
         Logger logger;
+        SDCardHandler sdCardHandler;
         int lastStatusReportTime;
     public:
         SurfboardSamplingUnit(){};
-        SurfboardSamplingUnit(uint8_t controlUnitMac[]){
+        SurfboardSamplingUnit(uint8_t controlUnitMac[], int SDCardChipSelectPin){
             logger = Logger();
+            sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
             syncManager = SamplingUnitSyncManager(logger, controlUnitMac);
-            sampler = Sampler(logger);
+            sampler = Sampler(logger, sdCardHandler);
         };
 
         void init(){
+          try{
+            logger.init();
             syncManager.init();
+            sdCardHandler.init();
+            sampler.init();
+          }catch(exception& e){
+            sampler.enterErrorState();
+            return;
+          }   
         }
 
-        void addSensor(SensorBase sensor){
+        void addSensor(SensorBase* sensor){
             try{
                 sampler.addSensor(sensor);
             }catch(InitError& err){
@@ -38,8 +48,8 @@ class SurfboardSamplingUnit {
 
         void updateSystem(){
             // command handling
-            CommandMessage command = syncManager.getNextCommand();
-            if(command){
+            try{
+                CommandMessage command = syncManager.getNextCommand();
                 switch(command.command){
                     case ControlUnitCommand::START_SAMPLING:
                         try{
@@ -59,6 +69,8 @@ class SurfboardSamplingUnit {
                             return;
                         }
                 }
+            }catch(NotReadyError& err){
+
             }
 
             // status report - update every STATUS_REPORT_DELAY_MILLIS

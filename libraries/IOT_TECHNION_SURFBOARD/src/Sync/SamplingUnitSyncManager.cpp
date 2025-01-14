@@ -45,10 +45,15 @@ void SamplingUnitSyncManager::reportStatus(SamplerStatus status) {
     } 
 }
 CommandMessage SamplingUnitSyncManager::getNextCommand(){
-    CommandMessage command;
-    command.command = SamplingUnitSyncManager::nextCommand->command;
-    command.params = SamplingUnitSyncManager::nextCommand->params;
-    delete SamplingUnitSyncManager::nextCommand;
-    SamplingUnitSyncManager::nextCommand = nullptr;
-    return command;
+    if(SamplingUnitSyncManager::nextCommand){
+        CommandMessage command;
+        command.command = SamplingUnitSyncManager::nextCommand->command;
+        command.params = SamplingUnitSyncManager::nextCommand->params;
+        delete SamplingUnitSyncManager::nextCommand;
+        SamplingUnitSyncManager::nextCommand = nullptr;
+        return command;
+    }else{
+        throw NotReadyError();
+    }
+
 }

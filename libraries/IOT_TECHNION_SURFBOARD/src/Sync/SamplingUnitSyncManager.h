@@ -21,7 +21,7 @@ class SamplingUnitSyncManager {
 
         static void onDataReceivedCallback(const uint8_t* mac, const uint8_t* incomingData, int len);
     public:
-
+        SamplingUnitSyncManager(){};
         SamplingUnitSyncManager(Logger logger, uint8_t controlUnitMac[]);
         void init();
         void reportStatus(SamplerStatus status);
