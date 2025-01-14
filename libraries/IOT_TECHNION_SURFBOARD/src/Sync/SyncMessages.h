@@ -124,7 +124,7 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
     // Extract and parse the command
     string commandPart = rawMsg.substr(0, delimiterPos);
     int commandValue = stoi(commandPart);
-    if (commandValue < START_SAMPLING || commandValue > STOP_SAMPLING) {
+    if (commandValue < START_SAMPLING || commandValue > UPLOAD_SAMPLE_FILES) {
         throw InvalidSyncMessage();
     }
     commandMsg.command = static_cast<ControlUnitCommand>(commandValue);

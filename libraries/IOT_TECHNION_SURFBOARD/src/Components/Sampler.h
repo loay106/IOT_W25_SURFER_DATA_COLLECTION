@@ -12,18 +12,20 @@ using namespace std;
 
 
 class Sampler {
+    // todo: change class to singleton
     private:
-        vector<SensorBase> sensors; // change to pointer?
+        vector<SensorBase*> sensors;
         SamplerStatus status;
         Logger logger;
         SDCardHandler sdCardHandler;
+
     public:
         Sampler(){};
         
         Sampler(Logger logger, SDCardHandler sdCardHandler): logger(logger), sdCardHandler(sdCardHandler), status(SamplerStatus::UNIT_STAND_BY){};
 
-        void addSensor(SensorBase sensor){
-            sensor.init();
+        void addSensor(SensorBase* sensor){
+            sensor->init();
             sensors.push_back(sensor);
         }
 
@@ -42,14 +44,14 @@ class Sampler {
             for(int i=0;i<sensors.size(); i++){
                 // sample files have this format:
                 // [TIMESTAMP]_[SENSOR_ID]_[SENSOR_MODEL]
-                string filePath = "samplings/" + to_string(timestamp) + "_" + to_string(i) "_" + sensors[i].getModel();
-                sensors[i].startSampling(filePath, IMURate);
+                string filePath = "samplings/" + to_string(timestamp) + "_" + to_string(i) + "_" + sensors[i]->getModel();
+                sensors[i]->startSampling(filePath, IMURate);
             }
         }
 
         void stopSampling(){
-            for(SensorBase& sensor: sensors){
-                sensor.stopSampling();
+            for(SensorBase* sensor: sensors){
+                sensor->stopSampling();
             }
             status = SamplerStatus::UNIT_STAND_BY;
         }
@@ -68,6 +70,12 @@ class Sampler {
             // todo: implement...
             status = SamplerStatus::UNIT_STAND_BY;
         }; 
+
+        void writeSensorsData(){
+            for(int i= 0; i< Sampler::sensors.size(); i++){
+                sensors[i]->writeSamples();
+            }
+        }
 };
 
 #endif // SAMPLER_H

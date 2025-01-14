@@ -17,7 +17,7 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 };
 
 void setup() {
-    mainUnit = SurfboardMainUnit(buttonPin); 
+    mainUnit = SurfboardMainUnit(buttonPin, SDCardChipSelectPin); 
     mainUnit.init(samplingUnitsMacAddresses,0, RGBRedPin, RGBGreenPin, RGBBluePin);
 
     // add sensors here...

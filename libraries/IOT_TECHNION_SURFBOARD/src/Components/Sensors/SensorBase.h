@@ -17,22 +17,12 @@ enum class SensorStatus{
     ERROR,
 };
 
+const int MAX_SAMPLES_BUFFER_LENGTH = 400;
 
 class SensorBase{
     private:
         SDCardHandler sdcardHandler;
-        SemaphoreHandle_t bufferMutex;
-        ostringstream sampleBuffer;
-
-        void appendSample(){
-            try{
-                xSemaphoreTake(bufferMutex, portMAX_DELAY);
-                sampleBuffer << getSample() << "|";
-                xSemaphoreGive(bufferMutex);
-            }catch(NotReadyError& err){
-                return;
-            }
-        }
+        string* sampleBuffer;
 
     protected:
         Logger logger;
@@ -43,13 +33,17 @@ class SensorBase{
     public:
         SensorBase(){};
         SensorBase(Logger logger, SDCardHandler sdcardHandler, string model, int dataPin){
-            bufferMutex = xSemaphoreCreateMutex();
             this-> dataPin = dataPin;
             this->logger = logger;
             this->sdcardHandler = sdcardHandler;
             this->model = model;
             samplingFileName = nullptr;
+            sampleBuffer = new string("");
         };
+
+        int getDataPin(){
+            return dataPin;
+        }
 
         string getModel(){
             return model;
@@ -57,14 +51,12 @@ class SensorBase{
 
         void startSampling(string outputFilePath, int rate){
             samplingFileName = new string(outputFilePath);
-            attachInterrupt(digitalPinToInterrupt(dataPin), this->appendSample, FALLING);
             enableSensor(rate);
         }
 
         void stopSampling(){
             delete samplingFileName;
             samplingFileName = nullptr;
-            detachInterrupt(dataPin);
             disableSensor();
         }
 
@@ -73,12 +65,20 @@ class SensorBase{
                 logger.error("samplingFileName is empty!");
                 return;
             }
-            xSemaphoreTake(bufferMutex, portMAX_DELAY);
-            string samples = sampleBuffer.str();
-            sampleBuffer.str(""); // clear the buffer
-            sampleBuffer.clear(); // reset state flags
-            xSemaphoreGive(bufferMutex);
-            sdcardHandler.writeData(*samplingFileName, samples.c_str());
+            try{
+                string sample = getSample();
+                sampleBuffer->append(sample);
+                if(sampleBuffer->length() >= MAX_SAMPLES_BUFFER_LENGTH){
+                    string* temp = sampleBuffer;
+                    sampleBuffer = new string();
+                    sdcardHandler.writeData(*samplingFileName, temp->c_str());
+                    delete temp;
+                }else{
+                    sampleBuffer->append("|");
+                }
+            }catch(NotReadyError& err){
+                return;
+            }
         }
     
         virtual void enableSensor(int rate) = 0;

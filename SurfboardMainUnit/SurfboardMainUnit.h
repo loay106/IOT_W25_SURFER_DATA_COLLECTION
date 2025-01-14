@@ -6,6 +6,8 @@
 #include <string>
 using namespace std;
 
+#include <Arduino.h>
+
 #include <IOT_TECHNION_SURFBOARD.h>
 
 
@@ -27,7 +29,7 @@ class SurfboardMainUnit {
         Sampler sampler; // internal sampler
         SystemStatus status;
 
-        SDCardHandler sdCardHandler; // todo: add as a param...
+        SDCardHandler sdCardHandler;
         std::map<string,string> WIFI_PARAMS;
         std::map<string,string> SAMPLING_PARAMS;
 
@@ -41,7 +43,7 @@ class SurfboardMainUnit {
 
         void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
 
-        void addSensor(SensorBase sensor);
+        void addSensor(SensorBase* sensor);
 
         void updateSystem(); // update system periodically (i.e call this method every 20 ms..)
 

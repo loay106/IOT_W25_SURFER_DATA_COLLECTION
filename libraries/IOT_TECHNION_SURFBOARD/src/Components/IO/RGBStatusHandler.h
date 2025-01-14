@@ -11,7 +11,8 @@ enum RGBColors{
     RED,
     BLUE, 
     GREEN
-}
+};
+
 class RGBStatusHandler{
     private:
         RGBColors firstColor;

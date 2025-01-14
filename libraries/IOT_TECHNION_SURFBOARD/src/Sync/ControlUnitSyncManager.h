@@ -22,13 +22,13 @@ typedef struct StatusUpdateMessage{
 } StatusUpdateMessage;
 
 class ControlUnitSyncManager{
+    // todo: change class to singleton
     private:
         static Logger logger;
         static queue<StatusUpdateMessage> statusUpdateQueue;
         static SemaphoreHandle_t queueMutex;
 
         static void addStatusUpdateMessage(StatusUpdateMessage msg); 
-        static StatusUpdateMessage popStatusUpdateMessage(); 
         static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);   
     public:
         ControlUnitSyncManager(){};
@@ -37,6 +37,7 @@ class ControlUnitSyncManager{
         void sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]);
         void broadcastCommand(const ControlUnitCommand& command,const std::map<string,string>& params); 
         bool hasStatusUpdateMessages();
+        static StatusUpdateMessage popStatusUpdateMessage(); 
 };
 
 

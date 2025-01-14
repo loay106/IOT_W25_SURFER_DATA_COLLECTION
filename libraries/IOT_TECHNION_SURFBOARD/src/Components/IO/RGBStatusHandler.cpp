@@ -18,9 +18,13 @@ void RGBStatusHandler::init(int redPin, int greenPin, int bluePin) {
 }
 
 void RGBStatusHandler::updateColors(RGBColors first, RGBColors second){
-    firstColor = first;
-    secondColor = second;
-    lastFlickerMillis=0;
+    if(firstColor != first || secondColor != second){
+        firstColor = first;
+        secondColor = second;
+        lastFlickerMillis=0;
+        showColor();
+    }
+
 }
 
 void RGBStatusHandler::flicker(){

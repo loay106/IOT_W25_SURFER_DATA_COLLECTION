@@ -28,14 +28,13 @@ class IMU_BNO080: public SensorBase {
 
         string getSample() override{
             if (sensor.dataAvailable()) {
-                status = IMUStatus::SAMPLING;
                 float accX = sensor.getAccelX();
                 float accY = sensor.getAccelY();
                 float accZ = sensor.getAccelZ();
 
                 // Create a string to store the data
-                String dataString = String(accX, 2) + " " +
-                                    String(accY, 2) + " " +
+                String dataString = String(accX, 2) + "," +
+                                    String(accY, 2) + "," +
                                     String(accZ, 2);
                 Serial.println(dataString);
                 return dataString.c_str();

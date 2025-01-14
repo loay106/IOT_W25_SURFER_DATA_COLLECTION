@@ -54,7 +54,7 @@ class SDCardHandler{
             file.close();
         }
 
-        void writeData(string filePath, char* data){
+        void writeData(string filePath,const char* data){
             File file = SD.open(filePath.c_str(), FILE_APPEND);
             if (!file) {
                 logger.error("Failed to open file: " + filePath);
@@ -84,7 +84,8 @@ class SDCardHandler{
                         string paramValue = line.substr(delimiterPos + 1);     // Extract parameter value
                         configMap[paramName] = paramValue;                     // Insert into map
                     } else {
-                        logger.error("invalid line in config file: " + line.c_str());
+                        logger.error("invalid line in config file");
+                        throw SDCardError();
                     }
                 }
             }

@@ -38,13 +38,13 @@ class SurfboardSamplingUnit {
 
         void updateSystem(){
             // command handling
-            CommandMessage* command = syncManager.getNextCommand();
+            CommandMessage command = syncManager.getNextCommand();
             if(command){
-                switch(command->command){
+                switch(command.command){
                     case ControlUnitCommand::START_SAMPLING:
                         try{
-                            int timestamp = stoi(command->params[TIMESTAMP]);
-                            int imuRate = stoi(command->params[IMU_RATE]);
+                            int timestamp = stoi(command.params[TIMESTAMP]);
+                            int imuRate = stoi(command.params[IMU_RATE]);
                             sampler.startSampling(timestamp, imuRate);
                         }catch(const exception& ex){
                             logger.error("Invalid command params");
@@ -53,13 +53,12 @@ class SurfboardSamplingUnit {
                     case ControlUnitCommand::UPLOAD_SAMPLE_FILES:
                         try{
                             sampler.stopSampling();
-                            sampler.uploadSampleFiles(command->params[WIFI_SSID], command->params[WIFI_PASSWORD]);
+                            sampler.uploadSampleFiles(command.params[WIFI_SSID], command.params[WIFI_PASSWORD]);
                         }catch(exception& err){
                             logger.error("Invalid command params");
                             return;
                         }
                 }
-                delete command;
             }
 
             // status report - update every STATUS_REPORT_DELAY_MILLIS
