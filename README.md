@@ -32,8 +32,9 @@
 # Installation:
 1. Wire the necessary hardware as seen in the diagram below and assemble your main and sampling units boxes
 2. Move the libraries/IOT_TECHNION_SURFBOARD to your Arduino libraries folder (Documents\Arduino\libraries folder in Windows)
-3. Open SurfboardMainUnit/SurfboardMainUnit.ino file in your Arduino IDE and compile that code into your main unit
-4. For every sampling unit open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
+3. Add your parameters to device.config file and move it to the SD card attached to the main unit
+4. Open SurfboardMainUnit/SurfboardMainUnit.ino file in your Arduino IDE and compile the code into your main unit
+5. For every sampling unit open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
    
 # Project Poster:
 // to be edited later - saved for template use
