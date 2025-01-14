@@ -8,7 +8,7 @@ class IMU_BNO080: public SensorBase {
     private:
         BNO080 sensor;
     public:
-        IMU_BNO080(Logger logger, SamplesSDCardWriter samplesWriter, int INTPin): SensorBase(logger, samplesWriter, "IMU_BNO080", INTPin) {}
+        IMU_BNO080(Logger logger, SDCardHandler sdcardHandler): SensorBase(logger, sdcardHandler, "IMU_BNO080") {}
         void enableSensor(int IMURate) override{
             sensor.enableAccelerometer(IMURate);
         }

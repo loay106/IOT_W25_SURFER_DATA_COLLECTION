@@ -1,16 +1,11 @@
 #include "SensorBase.h"
 
-SensorBase::SensorBase(Logger logger, SDCardHandler sdcardHandler, string model, int dataPin){
-    this-> dataPin = dataPin;
+SensorBase::SensorBase(Logger logger, SDCardHandler sdcardHandler, string model){
     this->logger = logger;
     this->sdcardHandler = sdcardHandler;
     this->model = model;
     samplingFileName = nullptr;
     sampleBuffer = new string("");
-}
-
-int SensorBase::getDataPin(){
-    return dataPin;
 }
 
 string SensorBase::getModel()

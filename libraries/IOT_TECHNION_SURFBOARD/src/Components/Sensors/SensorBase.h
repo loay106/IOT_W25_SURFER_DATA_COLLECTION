@@ -27,12 +27,11 @@ class SensorBase{
     protected:
         Logger logger;
         string model;
-        int dataPin;
         string* samplingFileName;
 
     public:
         SensorBase(){};
-        SensorBase(Logger logger, SDCardHandler sdcardHandler, string model, int dataPin);
+        SensorBase(Logger logger, SDCardHandler sdcardHandler, string model);
 
         int getDataPin();
         string getModel();
