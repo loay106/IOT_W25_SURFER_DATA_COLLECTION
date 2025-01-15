@@ -115,6 +115,18 @@ void SurfboardMainUnit::stopSampling() {
     }
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
+
+
+void SurfboardMainUnit::RecalibrateForceSensors(uint8_t mac[6] samplingUnit, map<string,string> newCalibrationFactors){
+    try{
+        syncManager.sendCommand(ControlUnitCommand::UPDATE_SENSOR_PARAMS, newCalibrationFactors, samplingUnit);
+    }catch(ESPNowSyncError& err){
+        logger.error("Failed to send recalibration factor to unit!");
+        return;
+    }
+}
+
+
 void SurfboardMainUnit::updateSystem() {
     // status update
     while(syncManager.hasStatusUpdateMessages()){
@@ -155,6 +167,14 @@ void SurfboardMainUnit::updateSystem() {
                 logger.info("Pressed button was ignored because system is not in a ready state");
             }
         }
+    }
+
+
+    if(status == SystemStatus::SYSTEM_STAND_BY){
+        // todo: add code that polls from the firebase cloud the new calibration values....
+        // RecalibrateForceSensors(samplingUnit,newCalibrationFactors);
+        // uint8_t mac[6] samplingUnit;
+        // map<string,string> newCalibrationFactors; // sensor id 
     }
 
     std::map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();

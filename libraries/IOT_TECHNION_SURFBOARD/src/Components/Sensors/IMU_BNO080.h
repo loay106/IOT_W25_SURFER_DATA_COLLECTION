@@ -42,6 +42,8 @@ class IMU_BNO080: public SensorBase {
                 throw NotReadyError();
             }
         }
+
+        void updateSensor(void* param){};
 };
 
 #endif // IMU_BNO080_H

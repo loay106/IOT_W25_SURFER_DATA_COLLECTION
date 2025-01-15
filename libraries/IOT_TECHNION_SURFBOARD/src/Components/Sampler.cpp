@@ -38,6 +38,12 @@ SamplerStatus Sampler::getStatus(){
     return status;
 }
 
+void Sampler::updateSensorParams(int sensorID, void *param){
+    if(sensorID <= sensors.size()){
+        sensors[i]->updateSensor(param);
+    }
+}
+
 void Sampler::enterErrorState(){
     status = SamplerStatus::UNIT_ERROR;
 }

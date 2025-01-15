@@ -17,7 +17,6 @@ enum class LogLevel {
 const int SERIAL_BAUD_RATE = 57600;
 
 class Logger {
-    // todo: change to singleton
     private:
         LogLevel currentLevel; // Current logging level
 

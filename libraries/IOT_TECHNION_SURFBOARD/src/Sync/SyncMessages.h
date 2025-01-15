@@ -21,8 +21,9 @@ extern const char* WIFI_PASSWORD;
 extern const int STATUS_REPORT_DELAY_MILLIS;
 
 enum ControlUnitCommand {
-    START_SAMPLING, // attached IMU_RATE, TIMESTAMP params
-    UPLOAD_SAMPLE_FILES // attached WIFI params
+    START_SAMPLING, // attached IMU_RATE and TIMESTAMP
+    UPLOAD_SAMPLE_FILES, // attached WIFI_SSID and WIFI_PASSWORD
+    UPDATE_SENSOR_PARAMS, // attached sensor id and param
 };
 
 typedef struct CommandMessage {

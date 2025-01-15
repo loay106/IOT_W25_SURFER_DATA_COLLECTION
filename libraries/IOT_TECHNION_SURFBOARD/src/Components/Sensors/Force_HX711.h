@@ -47,6 +47,11 @@ class Force_HX711 : public SensorBase {
             scale.set_scale(calibrationFactor);
             scale.tare(); // Reset scale to zero
         }
+
+        void updateSensor(void* param){
+            int calibrationF = *(int*) param;
+            calibrationFactor = calibrationF;
+        }
 };
 
 
