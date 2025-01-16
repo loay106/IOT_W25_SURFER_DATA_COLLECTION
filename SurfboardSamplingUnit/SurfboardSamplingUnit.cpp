@@ -1,7 +1,7 @@
 #include "SurfboardSamplingUnit.h"
 
 SurfboardSamplingUnit::SurfboardSamplingUnit(uint8_t controlUnitMac[], int SDCardChipSelectPin){
-    logger = Logger();
+    logger = Logger::getInstance();
     sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
     syncManager = SamplingUnitSyncManager(logger, controlUnitMac);
     sampler = Sampler(logger, sdCardHandler);
@@ -9,7 +9,7 @@ SurfboardSamplingUnit::SurfboardSamplingUnit(uint8_t controlUnitMac[], int SDCar
 
 void SurfboardSamplingUnit::init(){
     try{
-        logger.init();
+        logger->init();
         syncManager.init();
         sdCardHandler.init();
         sampler.init();
@@ -23,7 +23,7 @@ void SurfboardSamplingUnit::addSensor(SensorBase *sensor){
     try{
         sampler.addSensor(sensor);
     }catch(InitError& err){
-        logger.error("Failed to add sensor");
+        logger->error("Failed to add sensor");
         sampler.enterErrorState();
     }
 }
@@ -39,7 +39,7 @@ void SurfboardSamplingUnit::updateSystem(){
                     int imuRate = stoi(command.params[IMU_RATE]);
                     sampler.startSampling(timestamp, imuRate);
                 }catch(const exception& ex){
-                    logger.error("Invalid command params");
+                    logger->error("Invalid command params");
                     return;
                 }    
             case ControlUnitCommand::UPLOAD_SAMPLE_FILES:
@@ -47,7 +47,7 @@ void SurfboardSamplingUnit::updateSystem(){
                     sampler.stopSampling();
                     sampler.uploadSampleFiles(command.params[WIFI_SSID], command.params[WIFI_PASSWORD]);
                 }catch(exception& err){
-                    logger.error("Invalid command params");
+                    logger->error("Invalid command params");
                     return;
                 }
             case ControlUnitCommand::UPDATE_SENSOR_PARAMS:
@@ -55,7 +55,7 @@ void SurfboardSamplingUnit::updateSystem(){
                     sampler.stopSampling();
                     sampler.uploadSampleFiles(command.params[WIFI_SSID], command.params[WIFI_PASSWORD]);
                 }catch(exception& err){
-                    logger.error("Invalid command params");
+                    logger->error("Invalid command params");
                     return;
                 }
         }

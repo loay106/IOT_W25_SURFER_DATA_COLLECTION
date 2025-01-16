@@ -1,7 +1,7 @@
 #include "SurfboardMainUnit.h"
 
 SurfboardMainUnit::SurfboardMainUnit(int buttonPin, int SDCardChipSelectPin){
-    logger = Logger();
+    logger = Logger::getInstance();
     sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
     syncManager = ControlUnitSyncManager(logger);
     timeHandler = RTCTimeHandler(logger);
@@ -13,7 +13,7 @@ SurfboardMainUnit::SurfboardMainUnit(int buttonPin, int SDCardChipSelectPin){
 
 void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin) {
     try{
-        logger.init();
+        logger->init(57600);
         syncManager.init(samplingUnitsAdresses, samplingUnitsNum);
         statusLighthandler.init(RGBRedPin, RGBGreenPin, RGBBluePin);
         timeHandler.init();
@@ -42,11 +42,11 @@ void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUni
         WIFI_PARAMS[WIFI_SSID] = configParams[WIFI_SSID];
         WIFI_PARAMS[WIFI_PASSWORD] = configParams[WIFI_PASSWORD];
     }catch(exception& err){
-        logger.error("Failed to read config file from SD card");
+        logger->error("Failed to read config file from SD card");
         updateStatus(SystemStatus::SYSTEM_ERROR);
         return;
     }
-    logger.info("System initalization complete!");
+    logger->info("System initalization complete!");
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
 
@@ -84,7 +84,7 @@ void SurfboardMainUnit::addSensor(SensorBase* sensor) {
     try{
         sampler.addSensor(sensor);
     }catch(InitError& err){
-        logger.error("Failed to add sensor");
+        logger->error("Failed to add sensor");
         updateStatus(SystemStatus::SYSTEM_ERROR);
     }
 }
@@ -96,11 +96,11 @@ void SurfboardMainUnit::startSampling() {
         syncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS);
         sampler.startSampling(timestamp, stoi(SAMPLING_PARAMS[IMU_RATE]));
     }catch(ESPNowSyncError& error){
-        logger.error("Failed to send command to sampling units! Try again!");
+        logger->error("Failed to send command to sampling units! Try again!");
         return;
     }
     updateStatus(SystemStatus::SYSTEM_SAMPLING);
-    logger.info("Sampling started...");
+    logger->info("Sampling started...");
 }
 
 void SurfboardMainUnit::stopSampling() {
@@ -110,7 +110,7 @@ void SurfboardMainUnit::stopSampling() {
         sampler.uploadSampleFiles(WIFI_PARAMS[WIFI_SSID], WIFI_PARAMS[WIFI_PASSWORD]);
         updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
     }catch(ESPNowSyncError& error){
-        logger.error("Failed to send command to sampling units! Try again!");
+        logger->error("Failed to send command to sampling units! Try again!");
         return;
     }
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
@@ -121,7 +121,7 @@ void SurfboardMainUnit::RecalibrateForceSensors(uint8_t mac[6] samplingUnit, map
     try{
         syncManager.sendCommand(ControlUnitCommand::UPDATE_SENSOR_PARAMS, newCalibrationFactors, samplingUnit);
     }catch(ESPNowSyncError& err){
-        logger.error("Failed to send recalibration factor to unit!");
+        logger->error("Failed to send recalibration factor to unit!");
         return;
     }
 }
@@ -137,7 +137,7 @@ void SurfboardMainUnit::updateSystem() {
             samplingUnit.status = statusMessage.status;
         }
         catch(const std::out_of_range& ex){
-            logger.error("Status update message received from unknown unit " + unitID);
+            logger->error("Status update message received from unknown unit " + unitID);
         }
     };
 
@@ -164,7 +164,7 @@ void SurfboardMainUnit::updateSystem() {
             }
             default:{
                 // ignore the press
-                logger.info("Pressed button was ignored because system is not in a ready state");
+                logger->info("Pressed button was ignored because system is not in a ready state");
             }
         }
     }

@@ -12,7 +12,7 @@ using namespace std;
 #include <WiFi.h>
 
 #include "../Utils/Status.h"
-#include "../Utils/Logger.h"
+#include "../Components/IO/Logger.h"
 #include "../Utils/Adresses.h"
 #include "SyncMessages.h"
 
@@ -25,7 +25,7 @@ typedef struct StatusUpdateMessage{
 class ControlUnitSyncManager{
     // todo: change class to singleton
     private:
-        static Logger logger;
+        static Logger* logger;
         static queue<StatusUpdateMessage> statusUpdateQueue;
         static SemaphoreHandle_t queueMutex;
 
@@ -33,7 +33,7 @@ class ControlUnitSyncManager{
         static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);   
     public:
         ControlUnitSyncManager(){};
-        ControlUnitSyncManager(Logger logger);
+        ControlUnitSyncManager(Logger* logger);
         void init(uint8_t samplingUnits[][6], int samplingUnitsNum);
         void sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]);
         void broadcastCommand(const ControlUnitCommand& command,const std::map<string,string>& params); 

@@ -2,17 +2,17 @@
 #define RTC_TIME_HANDLER_H
 
 #include "RTClib.h"
-#include "../../Utils/Logger.h"
+#include "Logger.h"
 #include <Arduino.h>
 
 class RTCTimeHandler{
     private:
-        Logger logger;
+        Logger* logger;
         RTC_DS1307 rtc;
     public:
         RTCTimeHandler(){};
 
-        RTCTimeHandler(Logger logger): logger(logger){};
+        RTCTimeHandler(Logger* logger): logger(logger){};
 
         void init(){
             if (!rtc.begin()) {

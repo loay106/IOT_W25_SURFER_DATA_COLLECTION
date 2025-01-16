@@ -22,7 +22,7 @@ class Sampler {
     public:
         Sampler(){};
         
-        Sampler(Logger logger, SDCardHandler sdCardHandler);
+        Sampler(Logger* logger, SDCardHandler sdCardHandler);
 
         void addSensor(SensorBase* sensor);
 

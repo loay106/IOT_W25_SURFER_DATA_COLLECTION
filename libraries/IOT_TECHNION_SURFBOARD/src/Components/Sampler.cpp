@@ -1,6 +1,6 @@
 #include "Sampler.h"
 
-Sampler::Sampler(Logger logger, SDCardHandler sdCardHandler): logger(logger), sdCardHandler(sdCardHandler), status(SamplerStatus::UNIT_STAND_BY){}
+Sampler::Sampler(Logger* logger, SDCardHandler sdCardHandler): logger(logger), sdCardHandler(sdCardHandler), status(SamplerStatus::UNIT_STAND_BY){}
 
 void Sampler::addSensor(SensorBase *sensor){
     sensor->init();
@@ -11,7 +11,7 @@ void Sampler::init(){
     try{
         sdCardHandler.createFolder("samplings");
     }catch(SDCardError& err){
-        logger.error("Failed to create samplings folder");
+        logger->error("Failed to create samplings folder");
         status = SamplerStatus::UNIT_ERROR;
         throw InitError();
     }

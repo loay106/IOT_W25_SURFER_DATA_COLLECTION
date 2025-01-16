@@ -25,7 +25,7 @@ class SurfboardMainUnit {
         RTCTimeHandler timeHandler;
         RGBStatusHandler statusLighthandler;
         ButtonHandler buttonHandler;
-        Logger logger;
+        Logger* logger;
         Sampler sampler; // internal sampler
         SystemStatus status;
 
@@ -39,7 +39,7 @@ class SurfboardMainUnit {
         void stopSampling();
     public:
         SurfboardMainUnit(){};
-        SurfboardMainUnit(int buttonPin,int SDCardChipSelectPin);
+        SurfboardMainUnit(Logger* logger, int buttonPin,int SDCardChipSelectPin);
 
         void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
 

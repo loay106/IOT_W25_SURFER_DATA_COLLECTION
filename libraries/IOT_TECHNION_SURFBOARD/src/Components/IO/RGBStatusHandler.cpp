@@ -1,7 +1,7 @@
 #include "RGBStatusHandler.h"
 #include <Arduino.h>
 
-RGBStatusHandler::RGBStatusHandler(Logger logger) : logger(logger){
+RGBStatusHandler::RGBStatusHandler(Logger* logger) : logger(logger){
     firstColor = RGBColors::NO_COLOR;
     secondColor = RGBColors::NO_COLOR;
     lastFlickerMillis=0;

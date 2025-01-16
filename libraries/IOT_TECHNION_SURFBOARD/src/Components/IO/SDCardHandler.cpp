@@ -1,16 +1,16 @@
 #include "SDCardHandler.h"
 
-SDCardHandler::SDCardHandler(const uint8_t SDCardChipSelectPin, Logger logger): SDCardChipSelectPin(SDCardChipSelectPin), logger(logger){}
+SDCardHandler::SDCardHandler(const uint8_t SDCardChipSelectPin, Logger* logger): SDCardChipSelectPin(SDCardChipSelectPin), logger(logger){}
 
 void SDCardHandler::init(){
     SPI.begin(18,19,23,SDCardChipSelectPin);
     if (!SD.begin(SDCardChipSelectPin)) {
-        logger.error("Failed to init SD card!");
+        logger->error("Failed to init SD card!");
         throw InitError();
     }
     Wire.begin(21,22);
     Wire.setClock(400000);
-    logger.info("SD card initialized successfully.");
+    logger->info("SD card initialized successfully.");
 }
 
 void SDCardHandler::createFolder(string folderName){
@@ -19,9 +19,9 @@ void SDCardHandler::createFolder(string folderName){
     if (!SD.exists(folderNameCStr)) {
         // Attempt to create the folder
         if (SD.mkdir(folderNameCStr)) {
-            logger.info("Folder created successfully.");
+            logger->info("Folder created successfully.");
         } else {
-            logger.error("Failed to create folder.");
+            logger->error("Failed to create folder.");
             throw SDCardError();
         }
     }
@@ -30,7 +30,7 @@ void SDCardHandler::createFolder(string folderName){
 void SDCardHandler::createFile(string filePath){
     File file = SD.open(filePath.c_str(), FILE_WRITE);
     if (!file) {
-        logger.error("Failed to create file!");
+        logger->error("Failed to create file!");
         throw SDCardError();
     }
     file.close();
@@ -39,7 +39,7 @@ void SDCardHandler::createFile(string filePath){
 void SDCardHandler::writeData(string filePath, const char *data){
     File file = SD.open(filePath.c_str(), FILE_APPEND);
     if (!file) {
-        logger.error("Failed to open file: " + filePath);
+        logger->error("Failed to open file: " + filePath);
         throw SDCardError();
     }
     file.println(data);
@@ -66,7 +66,7 @@ std::map<string, string> SDCardHandler::readConfigFile(string filePath){
                 string paramValue = line.substr(delimiterPos + 1);     // Extract parameter value
                 configMap[paramName] = paramValue;                     // Insert into map
             } else {
-                logger.error("invalid line in config file");
+                logger->error("invalid line in config file");
                 throw SDCardError();
             }
         }

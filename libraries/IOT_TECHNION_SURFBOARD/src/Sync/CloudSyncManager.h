@@ -8,7 +8,7 @@ using namespace std;
 
 class CloudSyncManager{
     public:
-        CloudSyncManager(){};
+        CloudSyncManager();
         void init();
         void connect(); // connect to wifi
         void disconnect(); // disconnect from wifi

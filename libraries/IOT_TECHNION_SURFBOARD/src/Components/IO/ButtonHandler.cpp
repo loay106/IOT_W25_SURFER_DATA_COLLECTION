@@ -1,18 +1,12 @@
 #include <Arduino.h>
 #include "ButtonHandler.h"
 
-Logger ButtonHandler::logger = Logger();
+Logger ButtonHandler::logger* = Logger::getInstance();
 bool ButtonHandler::buttonPressed = false;
 int ButtonHandler::lastPressedAt = 0;
 
-ButtonHandler::ButtonHandler(Logger logger, int buttonPin){
-    ButtonHandler::logger = logger;
-    ButtonHandler::buttonPressed = false;
+void ButtonHandler::init(int buttonPin){
     this->buttonPin = buttonPin;
-    ButtonHandler::lastPressedAt = 0;
-}
-
-void ButtonHandler::init(){
     pinMode(buttonPin, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(buttonPin), ButtonHandler::onButtonPress, FALLING);
 }

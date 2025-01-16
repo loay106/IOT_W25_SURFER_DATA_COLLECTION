@@ -12,7 +12,7 @@ class SurfboardSamplingUnit {
     private:
         Sampler sampler;
         SamplingUnitSyncManager syncManager;
-        Logger logger;
+        Logger* logger;
         SDCardHandler sdCardHandler;
         int lastStatusReportTime;
     public:

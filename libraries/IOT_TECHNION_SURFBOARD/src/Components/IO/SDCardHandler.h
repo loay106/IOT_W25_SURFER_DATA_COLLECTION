@@ -11,16 +11,16 @@ using namespace std;
 #include <Wire.h>
 
 #include "../../Utils/Exceptions.h"
-#include "../../Utils/Logger.h"
+#include "Logger.h"
 
 class SDCardHandler{
     private:
-        Logger logger;
+        Logger* logger;
         uint8_t SDCardChipSelectPin;
     public:
         SDCardHandler(){};
 
-        SDCardHandler(const uint8_t SDCardChipSelectPin, Logger logger);
+        SDCardHandler(const uint8_t SDCardChipSelectPin, Logger* logger);
 
         void init();
 

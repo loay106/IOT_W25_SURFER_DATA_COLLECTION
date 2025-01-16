@@ -1,6 +1,6 @@
 #include "SensorBase.h"
 
-SensorBase::SensorBase(Logger logger, SDCardHandler sdcardHandler, string model){
+SensorBase::SensorBase(Logger* logger, SDCardHandler sdcardHandler, string model){
     this->logger = logger;
     this->sdcardHandler = sdcardHandler;
     this->model = model;
@@ -29,7 +29,7 @@ void SensorBase::stopSampling()
 void SensorBase::writeSamples()
 {
     if(!samplingFileName){
-        logger.error("samplingFileName is empty!");
+        logger->error("samplingFileName is empty!");
         return;
     }
     try{

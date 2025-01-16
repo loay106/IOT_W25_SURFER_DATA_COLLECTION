@@ -6,7 +6,7 @@
 #include <string>
 #include <Arduino.h>
 
-#include "../Utils/Logger.h"
+#include "../Components/IO/Logger.h"
 #include "SyncMessages.h"
 
 
@@ -17,12 +17,12 @@ class SamplingUnitSyncManager {
     private:
         static CommandMessage* nextCommand;
         uint8_t controlUnitMac[6];
-        static Logger logger;
+        static Logger* logger;
 
         static void onDataReceivedCallback(const uint8_t* mac, const uint8_t* incomingData, int len);
     public:
         SamplingUnitSyncManager(){};
-        SamplingUnitSyncManager(Logger logger, uint8_t controlUnitMac[]);
+        SamplingUnitSyncManager(Logger* logger, uint8_t controlUnitMac[]);
         void init();
         void reportStatus(SamplerStatus status);
 

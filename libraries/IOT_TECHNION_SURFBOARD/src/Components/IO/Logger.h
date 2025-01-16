@@ -17,8 +17,13 @@ enum class LogLevel {
 const int SERIAL_BAUD_RATE = 57600;
 
 class Logger {
+    // singleton class
     private:
         LogLevel currentLevel; // Current logging level
+        static Logger* instance;
+
+        Logger() : currentLevel(LogLevel::INFO) {}
+        
 
         void logMessage(LogLevel level, string prefix, string message) {
             if (static_cast<int>(level) <= static_cast<int>(currentLevel)) {
@@ -29,10 +34,17 @@ class Logger {
         }
 
     public:
-        Logger() : currentLevel(LogLevel::INFO) {} // Default logging level is INFO
+        Logger(const Logger& obj) = delete;
 
-        void init() {
-            Serial.begin(SERIAL_BAUD_RATE);
+        static Logger* getInstance() {
+            if (instance == nullptr) {
+                instance = new Logger();
+            }
+            return instance;
+        }
+
+        void init(int serialBaudRate) {
+            Serial.begin(serialBaudRate);
         }
 
         void setLogLevel(LogLevel level) {

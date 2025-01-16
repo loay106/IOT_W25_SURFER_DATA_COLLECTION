@@ -1,7 +1,7 @@
 #ifndef RGB_STATUS_HANDLER_H 
 #define RGB_STATUS_HANDLER_H
 
-#include "../../Utils/Logger.h"
+#include "Logger.h"
 #include <Arduino.h>
 
 const int FLICKERING_RATE = 100;
@@ -17,13 +17,13 @@ class RGBStatusHandler{
     private:
         RGBColors firstColor;
         RGBColors secondColor;
-        Logger logger;
+        Logger* logger;
         int lastFlickerMillis;
 
         void showColor();
     public:
         RGBStatusHandler(){};
-        RGBStatusHandler(Logger logger);
+        RGBStatusHandler(Logger* logger);
         void init(int redPin, int greenPin, int bluePin);
         void updateColors(RGBColors first, RGBColors second);
         void flicker();

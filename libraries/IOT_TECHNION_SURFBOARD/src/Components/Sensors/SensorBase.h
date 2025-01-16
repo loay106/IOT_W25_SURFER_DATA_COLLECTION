@@ -6,7 +6,7 @@
 #include <sstream>
 
 #include "../IO/SDCardHandler.h"
-#include "../../Utils/Logger.h"
+#include "../IO/Logger.h"
 #include "../../Utils/Exceptions.h"
 
 using namespace std;
@@ -25,15 +25,14 @@ class SensorBase{
         string* sampleBuffer;
 
     protected:
-        Logger logger;
+        Logger* logger;
         string model;
         string* samplingFileName;
 
     public:
         SensorBase(){};
-        SensorBase(Logger logger, SDCardHandler sdcardHandler, string model);
+        SensorBase(Logger* logger, SDCardHandler sdcardHandler, string model);
 
-        int getDataPin();
         string getModel();
         void startSampling(string outputFilePath, int rate);
         void stopSampling();
