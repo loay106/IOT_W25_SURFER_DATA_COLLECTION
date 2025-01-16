@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <cstdint>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ class CloudSyncManager{
         /*
             Leave this for later....
         */
-        std::map<string, std::map<string,string>> getCalibrationFactors(){};
+        std::map<string, string> getSensorParams(uint8_t unitMac[]){};
         /*
             Upload sample files from sampling units (files from the sd card).
             Files are read by lines this method will be called with its content on each line (line = sampleData)

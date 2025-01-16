@@ -25,22 +25,15 @@ class Logger {
         Logger(){
             currentLevel = LogLevel::INFO;
         }
-        void logMessage(LogLevel level, string prefix, string message) {
-            if (static_cast<int>(level) <= static_cast<int>(currentLevel)) {
-                string formattedMessage = "[" + prefix + "] " + message;
-                Serial.println(String(formattedMessage.c_str()));
-                Serial.flush();
-            }
-        }
-
+        void logMessage(LogLevel level, string prefix, string message);
     public:
         Logger(const Logger& obj) = delete;
 
         static Logger* getInstance() {
-            if (instance == nullptr) {
-                instance = new Logger();
+            if (Logger::instance == nullptr) {
+                Logger::instance = new Logger();
             }
-            return instance;
+            return Logger::instance;
         }
 
         void init(int serialBaudRate) {

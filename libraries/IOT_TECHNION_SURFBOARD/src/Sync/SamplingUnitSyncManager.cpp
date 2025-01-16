@@ -1,5 +1,6 @@
 #include "SamplingUnitSyncManager.h"
 
+SamplingUnitSyncManager* SamplingUnitSyncManager::instance = nullptr;
 CommandMessage* SamplingUnitSyncManager::nextCommand = nullptr;
 Logger* SamplingUnitSyncManager::logger = Logger::getInstance();
 

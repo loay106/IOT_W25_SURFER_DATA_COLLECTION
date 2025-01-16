@@ -23,7 +23,7 @@ class SurfboardMainUnit {
         std::map<string, SamplingUnitRep> samplingUnits; // mac string to instance mapping
         ControlUnitSyncManager* syncManager;
         RTCTimeHandler* timeHandler;
-        RGBStatusHandler statusLighthandler;
+        RGBStatusHandler* statusLighthandler;
         ButtonHandler* buttonHandler;
         Logger* logger;
         Sampler* sampler; // internal sampler
@@ -38,10 +38,9 @@ class SurfboardMainUnit {
         void startSampling();
         void stopSampling();
     public:
-        SurfboardMainUnit(){};
         SurfboardMainUnit(ControlUnitSyncManager* syncManager, RTCTimeHandler* timeHandler, RGBStatusHandler* statusLighthandler, ButtonHandler* buttonHandler, Logger* logger, Sampler* sampler, SDCardHandler* sdCardHandler);
-        SurfboardMainUnit(Logger* logger, int SDCardChipSelectPin);
 
+        void UpdateSensorsParams(uint8_t samplingUnitMac[], std::map<string,string> newSensorParams);
         void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum);
 
         void addSensor(SensorBase* sensor);

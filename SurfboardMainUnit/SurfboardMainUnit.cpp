@@ -12,18 +12,6 @@ SurfboardMainUnit::SurfboardMainUnit(ControlUnitSyncManager *syncManager, RTCTim
     status = SystemStatus::SYSTEM_STARTING;
 }
 
-SurfboardMainUnit::SurfboardMainUnit(Logger *logger, int SDCardChipSelectPin)
-{
-    logger = logger;
-    sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
-    syncManager = ControlUnitSyncManager::getInstance();
-    timeHandler = RTCTimeHandler(logger);
-    statusLighthandler = RGBStatusHandler(logger);
-    buttonHandler = ButtonHandler::getInstance();
-    status = SystemStatus::SYSTEM_STARTING;
-    sampler = Sampler(logger, sdCardHandler);
-}
-
 void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum) {
     // add sampling units
     for(int i=0;i<samplingUnitsNum;i++){
@@ -118,9 +106,11 @@ void SurfboardMainUnit::stopSampling() {
 }
 
 
-void SurfboardMainUnit::RecalibrateForceSensors(uint8_t mac[6] samplingUnit, map<string,string> newCalibrationFactors){
+void SurfboardMainUnit::UpdateSensorsParams(uint8_t samplingUnitMac[], std::map<string,string> newSensorParams){
+    // todo: validate if the samplingUnit is the same as the main unit, then update the internal sampler.
+    // otherwise, send the command to the appropriate sampling unit
     try{
-        syncManager->sendCommand(ControlUnitCommand::UPDATE_SENSOR_PARAMS, newCalibrationFactors, samplingUnit);
+        syncManager->sendCommand(ControlUnitCommand::UPDATE_SENSOR_PARAMS, newSensorParams, samplingUnitMac);
     }catch(ESPNowSyncError& err){
         logger->error("Failed to send recalibration factor to unit!");
         return;
@@ -142,7 +132,7 @@ void SurfboardMainUnit::updateSystem() {
         }
     };
 
-    if(buttonHandler.wasPressed()){
+    if(buttonHandler->wasPressed()){
         switch(status){
             case SystemStatus::SYSTEM_SAMPLING:{
                 stopSampling();
@@ -206,5 +196,5 @@ void SurfboardMainUnit::updateSystem() {
         it++;        
     }
 
-    statusLighthandler.flicker();
+    statusLighthandler->flicker();
 };

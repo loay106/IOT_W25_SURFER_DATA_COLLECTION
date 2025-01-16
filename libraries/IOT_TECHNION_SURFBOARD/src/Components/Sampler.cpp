@@ -43,7 +43,7 @@ SamplerStatus Sampler::getStatus(){
 
 void Sampler::updateSensorParams(int sensorID, void *param){
     if(sensorID <= sensors.size()){
-        sensors[i]->updateSensor(param);
+        sensors[sensorID]->updateSensor(param);
     }
 }
 

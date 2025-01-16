@@ -29,6 +29,8 @@ class ControlUnitSyncManager{
         static queue<StatusUpdateMessage> statusUpdateQueue;
         static SemaphoreHandle_t queueMutex;
 
+        static ControlUnitSyncManager* instance;
+
         static void addStatusUpdateMessage(StatusUpdateMessage msg); 
         static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);  
         ControlUnitSyncManager(){}; 

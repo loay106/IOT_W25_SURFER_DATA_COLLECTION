@@ -16,7 +16,7 @@ void setup() {
     samplingUnit = new SurfboardSamplingUnit(syncManager,sdCardHandler,sampler, logger);
 
     // declare sensors here....
-    // IMU_BNO080* sensor1 = new IMU_BNO080(logger, sdCardHandler);
+    // IMU_BNO080* sensor0 = new IMU_BNO080(logger, sdCardHandler);
 
     try{
         // don't change the order of the init
@@ -26,7 +26,7 @@ void setup() {
         sampler->init();
 
         // init sensors here..
-        // sensor1.init();
+        // sensor0.init();
     }catch(InitError& err){
         while(true){
             // don't proceed, there's a wiring error!
@@ -37,7 +37,7 @@ void setup() {
     }
 
     // add sensors here....
-    //samplingUnit->addSensor(sensor1);
+    //samplingUnit->addSensor(sensor0);
 }
 
 void loop() {

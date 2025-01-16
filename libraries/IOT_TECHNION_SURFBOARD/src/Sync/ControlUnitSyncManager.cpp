@@ -1,5 +1,6 @@
 #include "ControlUnitSyncManager.h"
 
+ControlUnitSyncManager* ControlUnitSyncManager::instance = nullptr;
 Logger* ControlUnitSyncManager::logger = Logger::getInstance();
 queue<StatusUpdateMessage> ControlUnitSyncManager::statusUpdateQueue;
 SemaphoreHandle_t ControlUnitSyncManager::queueMutex  = xSemaphoreCreateMutex();

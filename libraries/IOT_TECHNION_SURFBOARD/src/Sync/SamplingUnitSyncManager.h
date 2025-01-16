@@ -19,6 +19,8 @@ class SamplingUnitSyncManager {
         uint8_t controlUnitMac[6];
         static Logger* logger;
 
+        static SamplingUnitSyncManager* instance;
+
         SamplingUnitSyncManager(){};
         static void onDataReceivedCallback(const uint8_t* mac, const uint8_t* incomingData, int len);
     public:
