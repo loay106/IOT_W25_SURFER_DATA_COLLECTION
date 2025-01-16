@@ -20,7 +20,7 @@ class Force_HX711 : public SensorBase {
         int doutPin;
         int sckPin;
     public:
-        Force_HX711(Logger* logger, SDCardHandler sdcardHandler, int calibrationFactor, int doutPin, int sckPin): SensorBase(logger, sdcardHandler, "HX711"){
+        Force_HX711(Logger* logger, SDCardHandler* sdcardHandler, int calibrationFactor, int doutPin, int sckPin): SensorBase(logger, sdcardHandler, "HX711"){
             this->calibrationFactor = calibrationFactor;
             this->doutPin = doutPin;
             this->sckPin = sckPin;

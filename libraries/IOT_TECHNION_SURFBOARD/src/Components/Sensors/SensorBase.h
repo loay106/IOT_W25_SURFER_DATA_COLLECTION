@@ -21,7 +21,7 @@ const int MAX_SAMPLES_BUFFER_LENGTH = 400;
 
 class SensorBase{
     private:
-        SDCardHandler sdcardHandler;
+        SDCardHandler* sdcardHandler;
         string* sampleBuffer;
 
     protected:
@@ -31,7 +31,7 @@ class SensorBase{
 
     public:
         SensorBase(){};
-        SensorBase(Logger* logger, SDCardHandler sdcardHandler, string model);
+        SensorBase(Logger* logger, SDCardHandler* sdcardHandler, string model);
 
         string getModel();
         void startSampling(string outputFilePath, int rate);

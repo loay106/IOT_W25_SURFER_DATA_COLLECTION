@@ -1,6 +1,6 @@
 #include "SensorBase.h"
 
-SensorBase::SensorBase(Logger* logger, SDCardHandler sdcardHandler, string model){
+SensorBase::SensorBase(Logger* logger, SDCardHandler* sdcardHandler, string model){
     this->logger = logger;
     this->sdcardHandler = sdcardHandler;
     this->model = model;
@@ -38,7 +38,7 @@ void SensorBase::writeSamples()
         if(sampleBuffer->length() >= MAX_SAMPLES_BUFFER_LENGTH){
             string* temp = sampleBuffer;
             sampleBuffer = new string();
-            sdcardHandler.writeData(*samplingFileName, temp->c_str());
+            sdcardHandler->writeData(*samplingFileName, temp->c_str());
             delete temp;
         }else{
             sampleBuffer->append("|");

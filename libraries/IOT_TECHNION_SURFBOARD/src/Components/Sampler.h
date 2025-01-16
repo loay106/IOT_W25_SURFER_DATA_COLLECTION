@@ -16,13 +16,11 @@ class Sampler {
     private:
         vector<SensorBase*> sensors;
         SamplerStatus status;
-        Logger logger;
-        SDCardHandler sdCardHandler;
+        Logger* logger;
+        SDCardHandler* sdCardHandler;
 
-    public:
-        Sampler(){};
-        
-        Sampler(Logger* logger, SDCardHandler sdCardHandler);
+    public:      
+        Sampler(Logger* logger, SDCardHandler* sdCardHandler);
 
         void addSensor(SensorBase* sensor);
 

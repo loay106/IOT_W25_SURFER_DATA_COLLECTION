@@ -10,17 +10,13 @@ using namespace std;
 
 class SurfboardSamplingUnit {
     private:
-        Sampler sampler;
+        Sampler* sampler;
         SamplingUnitSyncManager* syncManager;
         Logger* logger;
-        SDCardHandler sdCardHandler;
+        SDCardHandler* sdCardHandler;
         int lastStatusReportTime;
     public:
-        SurfboardSamplingUnit(){};
-        SurfboardSamplingUnit(uint8_t controlUnitMac[], int SDCardChipSelectPin);
-
-        void init();
-
+        SurfboardSamplingUnit(SamplingUnitSyncManager* syncManager, SDCardHandler* sdCardHandler, Sampler* sampler, Logger* logger);
         void addSensor(SensorBase* sensor);
         void updateSystem();
 

@@ -24,7 +24,11 @@ void setup() {
     RGBStatusHandler* statusLighthandler = new RGBStatusHandler(logger);
     ButtonHandler* buttonHandler = ButtonHandler::getInstance();
     SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
+    Sampler* sampler = new Sampler(logger, sdCardHandler);
     mainUnit = new SurfboardMainUnit(syncManager, timeHandler, statusLighthandler, buttonHandler, logger, sampler, sdCardHandler);
+
+    // declare sensors here....
+    // IMU_BNO080* sensor1 = new IMU_BNO080(logger, sdCardHandler);
     try{
         // don't change the order of the init
         logger->init(serialBaudRate);
@@ -33,7 +37,11 @@ void setup() {
         statusLighthandler->init(RGBRedPin, RGBGreenPin, RGBBluePin);
         buttonHandler->init(buttonPin);
         sdCardHandler->init();
+        sampler->init();
         mainUnit.init(samplingUnitsMacAddresses, 1);
+
+        // init sensors here..
+        // sensor1.init();
     }catch(InitError& err){
         while(true){
             // don't proceed, there's a wiring error!
@@ -42,10 +50,13 @@ void setup() {
         }
         
     }
+
+    // add sensors here....
+    //mainUnit->addSensor(sensor1);
 }
 
 void loop() {
     mainUnit.updateSystem();
-    delay(10);
+    delay(5); // update as needed
 }
 
