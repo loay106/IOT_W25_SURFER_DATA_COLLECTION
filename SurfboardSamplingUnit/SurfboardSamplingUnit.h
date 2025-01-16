@@ -7,6 +7,7 @@ using namespace std;
 
 #include <IOT_TECHNION_SURFBOARD.h>
 
+const string CONFIG_FILE_NAME = "sampling_unit.config";
 
 class SurfboardSamplingUnit {
     private:

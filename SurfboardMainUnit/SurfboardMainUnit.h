@@ -11,7 +11,7 @@ using namespace std;
 #include <IOT_TECHNION_SURFBOARD.h>
 
 
-const string CONFIG_FILE_NAME = "device.config";
+const string CONFIG_FILE_NAME = "main_unit.config";
 
 typedef struct SamplingUnitRep{
     uint8_t mac[6];
