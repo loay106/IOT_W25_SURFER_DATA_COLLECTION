@@ -8,9 +8,8 @@ SurfboardSamplingUnit::SurfboardSamplingUnit(SamplingUnitSyncManager *syncManage
     lastStatusReportTime = 0;
 }
 
-void SurfboardSamplingUnit::addSensor(SensorBase *sensor)
-{
-    sampler.addSensor(sensor);
+void SurfboardSamplingUnit::addSensor(SensorBase *sensor){
+    sampler->addSensor(sensor);
 }
 
 void SurfboardSamplingUnit::updateSystem(){
@@ -51,7 +50,7 @@ void SurfboardSamplingUnit::updateSystem(){
     // status report - update every STATUS_REPORT_DELAY_MILLIS
     int current = millis();
     if((current - lastStatusReportTime) >= STATUS_REPORT_DELAY_MILLIS){
-        syncManager->reportStatus(sampler.getStatus());
+        syncManager->reportStatus(sampler->getStatus());
         lastStatusReportTime = current;
     }
 }

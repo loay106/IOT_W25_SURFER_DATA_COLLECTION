@@ -52,23 +52,14 @@ class Logger {
         }
 
         void info(string message) {
-            if(!isInit){
-                throw NotInitError();
-            }
             logMessage(LogLevel::INFO, "INFO", message);
         }
 
         void error(string message) {
-            if(!isInit){
-                throw NotInitError();
-            }
             logMessage(LogLevel::ERROR, "ERROR", message);
         }
 
         void debug(string message) {
-            if(!isInit){
-                throw NotInitError();
-            }
             logMessage(LogLevel::DEBUG, "DEBUG", message);
         }
 };

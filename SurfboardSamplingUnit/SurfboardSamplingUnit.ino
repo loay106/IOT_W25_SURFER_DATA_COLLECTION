@@ -1,9 +1,12 @@
 #include "SurfboardSamplingUnit.h"
 
+// constants
+int serialBaudRate = 57600;
 int SDCardChipSelectPin = 5;
-
-SurfboardSamplingUnit* samplingUnit; 
 uint8_t CONTROL_UNIT_MAC[6] = {0xCC, 0xDB, 0xA7, 0x5A, 0x7F, 0xC0};
+
+// globals
+SurfboardSamplingUnit* samplingUnit; 
 
 void setup() {
     Logger* logger = Logger::getInstance();
@@ -21,7 +24,6 @@ void setup() {
         syncManager->init(CONTROL_UNIT_MAC);
         sdCardHandler->init();
         sampler->init();
-        samplingUnit.init();
 
         // init sensors here..
         // sensor1.init();
@@ -39,6 +41,6 @@ void setup() {
 }
 
 void loop() {
-    samplingUnit.updateSystem();
+    samplingUnit->updateSystem();
     delay(5); // update delay as needed
 }

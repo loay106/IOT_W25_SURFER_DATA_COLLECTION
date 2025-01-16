@@ -19,5 +19,5 @@ class SurfboardSamplingUnit {
         SurfboardSamplingUnit(SamplingUnitSyncManager* syncManager, SDCardHandler* sdCardHandler, Sampler* sampler, Logger* logger);
         void addSensor(SensorBase* sensor);
         void updateSystem();
-
+};
 #endif // SURFBOARD_SAMPLING_UNIT_H
