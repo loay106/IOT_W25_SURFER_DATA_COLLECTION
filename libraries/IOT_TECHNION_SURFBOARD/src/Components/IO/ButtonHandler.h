@@ -14,8 +14,10 @@ class ButtonHandler{
         static int lastPressedAt;
         static void onButtonPress();
         ButtonHandler(){
-            buttonPin=false;
+            buttonPin=0;
+            isInit=false;
         };
+        bool isInit;
     public:
         ButtonHandler(const ButtonHandler& obj) = delete;
         static ButtonHandler* getInstance() {

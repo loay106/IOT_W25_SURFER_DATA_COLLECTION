@@ -22,14 +22,14 @@ class SurfboardMainUnit {
     private:
         std::map<string, SamplingUnitRep> samplingUnits; // mac string to instance mapping
         ControlUnitSyncManager* syncManager;
-        RTCTimeHandler timeHandler;
+        RTCTimeHandler* timeHandler;
         RGBStatusHandler statusLighthandler;
         ButtonHandler* buttonHandler;
         Logger* logger;
-        Sampler sampler; // internal sampler
-        SystemStatus status;
+        Sampler* sampler; // internal sampler
+        SDCardHandler* sdCardHandler;
 
-        SDCardHandler sdCardHandler;
+        SystemStatus status;
         std::map<string,string> WIFI_PARAMS;
         std::map<string,string> SAMPLING_PARAMS;
 
@@ -39,9 +39,10 @@ class SurfboardMainUnit {
         void stopSampling();
     public:
         SurfboardMainUnit(){};
+        SurfboardMainUnit(ControlUnitSyncManager* syncManager, RTCTimeHandler* timeHandler, RGBStatusHandler* statusLighthandler, ButtonHandler* buttonHandler, Logger* logger, Sampler* sampler, SDCardHandler* sdCardHandler);
         SurfboardMainUnit(Logger* logger, int SDCardChipSelectPin);
 
-        void init(uint8_t samplingUnitsAdresses[][6], int buttonPin, int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
+        void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum);
 
         void addSensor(SensorBase* sensor);
 

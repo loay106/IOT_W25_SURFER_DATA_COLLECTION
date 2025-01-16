@@ -22,9 +22,9 @@ class Logger {
         LogLevel currentLevel; // Current logging level
         static Logger* instance;
 
-        Logger() : currentLevel(LogLevel::INFO) {}
-        
-
+        Logger(){
+            currentLevel = LogLevel::INFO;
+        }
         void logMessage(LogLevel level, string prefix, string message) {
             if (static_cast<int>(level) <= static_cast<int>(currentLevel)) {
                 string formattedMessage = "[" + prefix + "] " + message;
@@ -52,14 +52,23 @@ class Logger {
         }
 
         void info(string message) {
+            if(!isInit){
+                throw NotInitError();
+            }
             logMessage(LogLevel::INFO, "INFO", message);
         }
 
         void error(string message) {
+            if(!isInit){
+                throw NotInitError();
+            }
             logMessage(LogLevel::ERROR, "ERROR", message);
         }
 
         void debug(string message) {
+            if(!isInit){
+                throw NotInitError();
+            }
             logMessage(LogLevel::DEBUG, "DEBUG", message);
         }
 };

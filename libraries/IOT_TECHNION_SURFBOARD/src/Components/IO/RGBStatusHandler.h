@@ -19,10 +19,8 @@ class RGBStatusHandler{
         RGBColors secondColor;
         Logger* logger;
         int lastFlickerMillis;
-
         void showColor();
     public:
-        RGBStatusHandler(){};
         RGBStatusHandler(Logger* logger);
         void init(int redPin, int greenPin, int bluePin);
         void updateColors(RGBColors first, RGBColors second);

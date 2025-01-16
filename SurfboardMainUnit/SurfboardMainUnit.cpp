@@ -1,6 +1,19 @@
 #include "SurfboardMainUnit.h"
 
-SurfboardMainUnit::SurfboardMainUnit(Logger* logger, int SDCardChipSelectPin){
+SurfboardMainUnit::SurfboardMainUnit(ControlUnitSyncManager *syncManager, RTCTimeHandler* timeHandler, RGBStatusHandler* statusLighthandler, ButtonHandler *buttonHandler, Logger *logger, Sampler* sampler, SDCardHandler* sdCardHandler){
+    this->logger = logger;
+    this->syncManager = syncManager;
+    this->timeHandler = timeHandler;
+    this->statusLighthandler = statusLighthandler;
+    this->buttonHandler = buttonHandler;
+    this->logger = logger;
+    this->sampler = sampler;
+    this->sdCardHandler = sdCardHandler;
+    status = SystemStatus::SYSTEM_STARTING;
+}
+
+SurfboardMainUnit::SurfboardMainUnit(Logger *logger, int SDCardChipSelectPin)
+{
     logger = logger;
     sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
     syncManager = ControlUnitSyncManager::getInstance();
@@ -11,39 +24,28 @@ SurfboardMainUnit::SurfboardMainUnit(Logger* logger, int SDCardChipSelectPin){
     sampler = Sampler(logger, sdCardHandler);
 }
 
-void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int buttonPin, int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin) {
-    try{
-        syncManager->init(samplingUnitsAdresses, samplingUnitsNum);
-        statusLighthandler.init(RGBRedPin, RGBGreenPin, RGBBluePin);
-        timeHandler.init();
-        buttonHandler->init(buttonPin);
-        sdCardHandler.init();
-
-        // add external sampling units
-        for(int i=0;i<samplingUnitsNum;i++){
-            SamplingUnitRep samplingUnit;
-            memcpy(samplingUnit.mac, samplingUnitsAdresses[i], 6);
-            samplingUnit.status = SamplerStatus::UNIT_STAND_BY;
-            string macString = macToString(samplingUnit.mac);
-            samplingUnits[macString] = samplingUnit;
-        }
-    }catch(exception& e){
-        updateStatus(SystemStatus::SYSTEM_ERROR);
-        return;
+void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum) {
+    // add sampling units
+    for(int i=0;i<samplingUnitsNum;i++){
+        SamplingUnitRep samplingUnit;
+        memcpy(samplingUnit.mac, samplingUnitsAdresses[i], 6);
+        samplingUnit.status = SamplerStatus::UNIT_STAND_BY;
+        string macString = macToString(samplingUnit.mac);
+        samplingUnits[macString] = samplingUnit;
     }
 
+    // set system parameters
     std::map<string,string> configParams;
     try{
-        // set system parameters
-        SAMPLING_PARAMS[TIMESTAMP] = to_string(timeHandler.getCurrentTimestamp());
-        configParams = sdCardHandler.readConfigFile(CONFIG_FILE_NAME);
+        SAMPLING_PARAMS[TIMESTAMP] = to_string(timeHandler->getCurrentTimestamp());
+        configParams = sdCardHandler->readConfigFile(CONFIG_FILE_NAME);
         SAMPLING_PARAMS[IMU_RATE] = configParams[IMU_RATE];
         WIFI_PARAMS[WIFI_SSID] = configParams[WIFI_SSID];
         WIFI_PARAMS[WIFI_PASSWORD] = configParams[WIFI_PASSWORD];
     }catch(exception& err){
         logger->error("Failed to read config file from SD card");
         updateStatus(SystemStatus::SYSTEM_ERROR);
-        return;
+        throw InitError();
     }
     logger->info("System initalization complete!");
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
@@ -56,32 +58,32 @@ void SurfboardMainUnit::updateStatus(SystemStatus newStatus){
     status = newStatus;
     switch (status){
         case SystemStatus::SYSTEM_STARTING:
-            statusLighthandler.updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
+            statusLighthandler->updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
             break;
         case SystemStatus::SYSTEM_STAND_BY:
-            statusLighthandler.updateColors(RGBColors::GREEN, RGBColors::GREEN);
+            statusLighthandler->updateColors(RGBColors::GREEN, RGBColors::GREEN);
             break;  
         case SystemStatus::SYSTEM_SAMPLING:
-            statusLighthandler.updateColors(RGBColors::GREEN, RGBColors::NO_COLOR);
+            statusLighthandler->updateColors(RGBColors::GREEN, RGBColors::NO_COLOR);
             break;     
         case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
-            statusLighthandler.updateColors(RGBColors::GREEN, RGBColors::RED);
+            statusLighthandler->updateColors(RGBColors::GREEN, RGBColors::RED);
             break;    
         case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
-            statusLighthandler.updateColors(RGBColors::BLUE, RGBColors::NO_COLOR);
+            statusLighthandler->updateColors(RGBColors::BLUE, RGBColors::NO_COLOR);
             break;
         case SystemStatus::SYSTEM_ERROR:
-            statusLighthandler.updateColors(RGBColors::RED, RGBColors::RED);
+            statusLighthandler->updateColors(RGBColors::RED, RGBColors::RED);
             break;              
         default:
-            statusLighthandler.updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
+            statusLighthandler->updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
             break;
     }
 }
 
 void SurfboardMainUnit::addSensor(SensorBase* sensor) {
     try{
-        sampler.addSensor(sensor);
+        sampler->addSensor(sensor);
     }catch(InitError& err){
         logger->error("Failed to add sensor");
         updateStatus(SystemStatus::SYSTEM_ERROR);
@@ -89,11 +91,11 @@ void SurfboardMainUnit::addSensor(SensorBase* sensor) {
 }
 
 void SurfboardMainUnit::startSampling() {
-    int timestamp = timeHandler.getCurrentTimestamp();
+    int timestamp = timeHandler->getCurrentTimestamp();
     SAMPLING_PARAMS[TIMESTAMP] = to_string(timestamp);
     try{
         syncManager->broadcastCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS);
-        sampler.startSampling(timestamp, stoi(SAMPLING_PARAMS[IMU_RATE]));
+        sampler->startSampling(timestamp, stoi(SAMPLING_PARAMS[IMU_RATE]));
     }catch(ESPNowSyncError& error){
         logger->error("Failed to send command to sampling units! Try again!");
         return;
@@ -105,8 +107,8 @@ void SurfboardMainUnit::startSampling() {
 void SurfboardMainUnit::stopSampling() {
     try{
         syncManager->broadcastCommand(ControlUnitCommand::UPLOAD_SAMPLE_FILES, WIFI_PARAMS);
-        sampler.stopSampling();
-        sampler.uploadSampleFiles(WIFI_PARAMS[WIFI_SSID], WIFI_PARAMS[WIFI_PASSWORD]);
+        sampler->stopSampling();
+        sampler->uploadSampleFiles(WIFI_PARAMS[WIFI_SSID], WIFI_PARAMS[WIFI_PASSWORD]);
         updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
     }catch(ESPNowSyncError& error){
         logger->error("Failed to send command to sampling units! Try again!");

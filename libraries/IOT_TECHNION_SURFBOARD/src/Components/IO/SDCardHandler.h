@@ -18,8 +18,6 @@ class SDCardHandler{
         Logger* logger;
         uint8_t SDCardChipSelectPin;
     public:
-        SDCardHandler(){};
-
         SDCardHandler(const uint8_t SDCardChipSelectPin, Logger* logger);
 
         void init();
