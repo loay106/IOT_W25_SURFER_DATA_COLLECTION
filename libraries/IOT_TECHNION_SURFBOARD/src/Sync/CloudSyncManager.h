@@ -11,7 +11,7 @@ class CloudSyncManager{
     public:
         CloudSyncManager();
         void init();
-        void connect(); // connect to wifi
+        void connect(string ssid, string password); // connect to wifi
         void disconnect(); // disconnect from wifi
         /*
             Leave this for later....
@@ -24,6 +24,8 @@ class CloudSyncManager{
                 0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57
             
             Lines are then written to a file in the firebase storage named "sampling_[timestamp].csv"
+
+            // throw WifiError() in case of an error
         */
         void uploadSamples(string timestamp, string samplingUnitMac, string sensorID, string sensorModel, string sampleData);
 };

@@ -9,6 +9,7 @@ class InitError : public BaseError {};
 class SDCardError: public BaseError {};
 class NotReadyError: public BaseError {};
 class ESPNowSyncError: public BaseError {};
+class WifiError: public BaseError {};
 class InvalidSyncMessage: public BaseError {};
 
 

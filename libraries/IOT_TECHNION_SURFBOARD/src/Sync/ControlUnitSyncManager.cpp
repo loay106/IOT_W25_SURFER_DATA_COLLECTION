@@ -4,32 +4,41 @@ ControlUnitSyncManager* ControlUnitSyncManager::instance = nullptr;
 Logger* ControlUnitSyncManager::logger = Logger::getInstance();
 queue<StatusUpdateMessage> ControlUnitSyncManager::statusUpdateQueue;
 SemaphoreHandle_t ControlUnitSyncManager::queueMutex  = xSemaphoreCreateMutex();
+vector<esp_now_peer_info_t*> ControlUnitSyncManager::peers;
 
-void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsNum)
-{
-    WiFi.mode(WIFI_STA); // Then set to station mode
+void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsNum){
+    WiFi.mode(WIFI_STA);
 
+    for (int i = 0; i < samplingUnitsNum; i++) {
+
+        esp_now_peer_info_t* peerInfo = new esp_now_peer_info_t();
+        memcpy(peerInfo.peer_addr, samplingUnits[i], 6);
+        peerInfo.channel = 0; // Default channel
+        peerInfo.encrypt = false;
+        ControlUnitSyncManager::peers.push_back(peerInfo);
+    }
+}
+
+void ControlUnitSyncManager::connect(){
     if (esp_now_init() == ESP_OK) {
         ControlUnitSyncManager::logger->info("ESPNow Init success!");
     }else {
         ControlUnitSyncManager::logger->error("ESPNow Init failed!");
-        throw InitError();
+        throw ESPNowSyncError();
     }
 
-    for (int i = 0; i < samplingUnitsNum; i++) {
-        esp_now_peer_info_t peerInfo = {};
-        memcpy(peerInfo.peer_addr, samplingUnits[i], 6);
-        peerInfo.channel = 0; // Default channel
-        peerInfo.encrypt = false;
 
-        if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-            ControlUnitSyncManager::logger->error("Failed to add peer");
-        } else {
-            ControlUnitSyncManager::logger->info("Added peer " + macToString(peerInfo.peer_addr) + " successfully!");
+    for(esp_now_peer_info_t* peerInfo: peers){
+        if (esp_now_add_peer(*peerInfo) != ESP_OK) {
+            throw ESPNowSyncError();
         }
     }
 
     esp_now_register_recv_cb(ControlUnitSyncManager::processReceivedMessages);
+}
+
+void ControlUnitSyncManager::disconnect(){
+    esp_now_deinit();
 }
 
 void ControlUnitSyncManager::sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]){

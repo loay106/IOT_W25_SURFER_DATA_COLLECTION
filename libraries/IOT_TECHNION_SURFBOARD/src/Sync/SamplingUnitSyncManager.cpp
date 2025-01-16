@@ -17,30 +17,38 @@ void SamplingUnitSyncManager::onDataReceivedCallback(const uint8_t *mac, const u
 }
 
 void SamplingUnitSyncManager::init(uint8_t controlUnitMac[]) {
-    memcpy(this->controlUnitMac, controlUnitMac, 6);
     WiFi.mode(WIFI_STA);
+    controlUnitPeer = new esp_now_peer_info_t();
+    memcpy(controlUnitPeer->peer_addr, controlUnitMac, 6);
+    peerInfo.channel = 0; // default channel
+    peerInfo.encrypt = false;
+}
+
+void SamplingUnitSyncManager::connect(){
     if (esp_now_init() != ESP_OK) {
         SamplingUnitSyncManager::logger->info("Error initializing ESP-NOW");
         throw InitError();
     }
-    esp_now_peer_info_t peerInfo = {};
-    memcpy(peerInfo.peer_addr, controlUnitMac, 6);
-    peerInfo.channel = 0; // default channel
-    peerInfo.encrypt = false;
-    if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-        SamplingUnitSyncManager::logger->error("Failed to add peer!");
-        throw InitError();
+    if (esp_now_add_peer(*controlUnitPeer) != ESP_OK) {
+        throw ESPNowSyncError();
     }
     esp_now_register_recv_cb(SamplingUnitSyncManager::onDataReceivedCallback);
-    SamplingUnitSyncManager::logger->info("peering successful!");
+
 }
-void SamplingUnitSyncManager::reportStatus(SamplerStatus status) {
+
+void SamplingUnitSyncManager::disconnect(){
+    esp_now_deinit();
+}
+
+void SamplingUnitSyncManager::reportStatus(SamplerStatus status)
+{
     string message = serializeStatusUpdateMsg(status);
     esp_err_t result = esp_now_send(controlUnitMac, (uint8_t *) message.c_str(), message.length());
     if (result != ESP_OK) {
         SamplingUnitSyncManager::logger->error("Failed to report status!");
-    } 
+    }
 }
+
 CommandMessage SamplingUnitSyncManager::getNextCommand(){
     if(SamplingUnitSyncManager::nextCommand){
         CommandMessage command;

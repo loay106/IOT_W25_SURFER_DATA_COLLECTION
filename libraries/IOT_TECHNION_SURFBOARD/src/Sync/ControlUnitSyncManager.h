@@ -28,7 +28,7 @@ class ControlUnitSyncManager{
         static Logger* logger;
         static queue<StatusUpdateMessage> statusUpdateQueue;
         static SemaphoreHandle_t queueMutex;
-
+        static vector<esp_now_peer_info_t*> peers;
         static ControlUnitSyncManager* instance;
 
         static void addStatusUpdateMessage(StatusUpdateMessage msg); 
@@ -43,6 +43,8 @@ class ControlUnitSyncManager{
             return instance;
         }
         void init(uint8_t samplingUnits[][6], int samplingUnitsNum);
+        void connect();
+        void disconnect();
         void sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]);
         void broadcastCommand(const ControlUnitCommand& command,const std::map<string,string>& params); 
         bool hasStatusUpdateMessages();
