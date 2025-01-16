@@ -1,23 +1,22 @@
 #include "SurfboardMainUnit.h"
 
-SurfboardMainUnit::SurfboardMainUnit(int buttonPin, int SDCardChipSelectPin){
-    logger = Logger::getInstance();
+SurfboardMainUnit::SurfboardMainUnit(Logger* logger, int SDCardChipSelectPin){
+    logger = logger;
     sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
-    syncManager = ControlUnitSyncManager(logger);
+    syncManager = ControlUnitSyncManager::getInstance();
     timeHandler = RTCTimeHandler(logger);
     statusLighthandler = RGBStatusHandler(logger);
-    buttonHandler = ButtonHandler(logger, buttonPin);
+    buttonHandler = ButtonHandler::getInstance();
     status = SystemStatus::SYSTEM_STARTING;
     sampler = Sampler(logger, sdCardHandler);
 }
 
-void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin) {
+void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int buttonPin, int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin) {
     try{
-        logger->init(57600);
-        syncManager.init(samplingUnitsAdresses, samplingUnitsNum);
+        syncManager->init(samplingUnitsAdresses, samplingUnitsNum);
         statusLighthandler.init(RGBRedPin, RGBGreenPin, RGBBluePin);
         timeHandler.init();
-        buttonHandler.init();
+        buttonHandler->init(buttonPin);
         sdCardHandler.init();
 
         // add external sampling units
@@ -93,7 +92,7 @@ void SurfboardMainUnit::startSampling() {
     int timestamp = timeHandler.getCurrentTimestamp();
     SAMPLING_PARAMS[TIMESTAMP] = to_string(timestamp);
     try{
-        syncManager.broadcastCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS);
+        syncManager->broadcastCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS);
         sampler.startSampling(timestamp, stoi(SAMPLING_PARAMS[IMU_RATE]));
     }catch(ESPNowSyncError& error){
         logger->error("Failed to send command to sampling units! Try again!");
@@ -105,7 +104,7 @@ void SurfboardMainUnit::startSampling() {
 
 void SurfboardMainUnit::stopSampling() {
     try{
-        syncManager.broadcastCommand(ControlUnitCommand::UPLOAD_SAMPLE_FILES, WIFI_PARAMS);
+        syncManager->broadcastCommand(ControlUnitCommand::UPLOAD_SAMPLE_FILES, WIFI_PARAMS);
         sampler.stopSampling();
         sampler.uploadSampleFiles(WIFI_PARAMS[WIFI_SSID], WIFI_PARAMS[WIFI_PASSWORD]);
         updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
@@ -119,7 +118,7 @@ void SurfboardMainUnit::stopSampling() {
 
 void SurfboardMainUnit::RecalibrateForceSensors(uint8_t mac[6] samplingUnit, map<string,string> newCalibrationFactors){
     try{
-        syncManager.sendCommand(ControlUnitCommand::UPDATE_SENSOR_PARAMS, newCalibrationFactors, samplingUnit);
+        syncManager->sendCommand(ControlUnitCommand::UPDATE_SENSOR_PARAMS, newCalibrationFactors, samplingUnit);
     }catch(ESPNowSyncError& err){
         logger->error("Failed to send recalibration factor to unit!");
         return;
@@ -129,7 +128,7 @@ void SurfboardMainUnit::RecalibrateForceSensors(uint8_t mac[6] samplingUnit, map
 
 void SurfboardMainUnit::updateSystem() {
     // status update
-    while(syncManager.hasStatusUpdateMessages()){
+    while(syncManager->hasStatusUpdateMessages()){
         StatusUpdateMessage statusMessage = ControlUnitSyncManager::popStatusUpdateMessage();
         string unitID = macToString(statusMessage.from);
         try{
@@ -187,7 +186,7 @@ void SurfboardMainUnit::updateSystem() {
                 updateStatus(SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR);
             }else{
                 try{
-                    syncManager.sendCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS, it->second.mac);
+                    syncManager->sendCommand(ControlUnitCommand::START_SAMPLING, SAMPLING_PARAMS, it->second.mac);
                 }catch(ESPNowSyncError& error){
                     // try again next iteration...maybe unit is not nearby
                     continue;
@@ -199,7 +198,7 @@ void SurfboardMainUnit::updateSystem() {
             if(it->second.status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD || it->second.status == SamplerStatus::UNIT_ERROR){
                 continue;
             }else{
-                syncManager.sendCommand(ControlUnitCommand::UPLOAD_SAMPLE_FILES, WIFI_PARAMS, it->second.mac);
+                syncManager->sendCommand(ControlUnitCommand::UPLOAD_SAMPLE_FILES, WIFI_PARAMS, it->second.mac);
             }
         }
         it++;        

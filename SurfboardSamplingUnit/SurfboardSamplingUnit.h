@@ -11,7 +11,7 @@ using namespace std;
 class SurfboardSamplingUnit {
     private:
         Sampler sampler;
-        SamplingUnitSyncManager syncManager;
+        SamplingUnitSyncManager* syncManager;
         Logger* logger;
         SDCardHandler sdCardHandler;
         int lastStatusReportTime;

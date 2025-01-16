@@ -1,16 +1,16 @@
 #include "SurfboardSamplingUnit.h"
 
-SurfboardSamplingUnit::SurfboardSamplingUnit(uint8_t controlUnitMac[], int SDCardChipSelectPin){
+SurfboardSamplingUnit::SurfboardSamplingUnit(int SDCardChipSelectPin){
     logger = Logger::getInstance();
     sdCardHandler = SDCardHandler(SDCardChipSelectPin, logger);
-    syncManager = SamplingUnitSyncManager(logger, controlUnitMac);
+    syncManager = SamplingUnitSyncManager::getInstance();
     sampler = Sampler(logger, sdCardHandler);
 }
 
-void SurfboardSamplingUnit::init(){
+void SurfboardSamplingUnit::init(uint8_t controlUnitMac[]){
     try{
         logger->init();
-        syncManager.init();
+        syncManager->init(controlUnitMac);
         sdCardHandler.init();
         sampler.init();
     }catch(exception& e){
@@ -31,7 +31,7 @@ void SurfboardSamplingUnit::addSensor(SensorBase *sensor){
 void SurfboardSamplingUnit::updateSystem(){
     // command handling
     try{
-        CommandMessage command = syncManager.getNextCommand();
+        CommandMessage command = syncManager->getNextCommand();
         switch(command.command){
             case ControlUnitCommand::START_SAMPLING:
                 try{
@@ -66,7 +66,7 @@ void SurfboardSamplingUnit::updateSystem(){
     // status report - update every STATUS_REPORT_DELAY_MILLIS
     int current = millis();
     if((current - lastStatusReportTime) >= STATUS_REPORT_DELAY_MILLIS){
-        syncManager.reportStatus(sampler.getStatus());
+        syncManager->reportStatus(sampler.getStatus());
         lastStatusReportTime = current;
     }
 }

@@ -1,6 +1,6 @@
 #include "SamplingUnitSyncManager.h"
 
-CommandMessage* SamplingUnitSyncManager::nextCommand;
+CommandMessage* SamplingUnitSyncManager::nextCommand = nullptr;
 Logger* SamplingUnitSyncManager::logger = Logger::getInstance();
 
 void SamplingUnitSyncManager::onDataReceivedCallback(const uint8_t *mac, const uint8_t *incomingData, int len){
@@ -15,12 +15,8 @@ void SamplingUnitSyncManager::onDataReceivedCallback(const uint8_t *mac, const u
     }
 }
 
-SamplingUnitSyncManager::SamplingUnitSyncManager(Logger* logger, uint8_t controlUnitMac[]){
-    SamplingUnitSyncManager::nextCommand=nullptr;
+void SamplingUnitSyncManager::init(uint8_t controlUnitMac[]) {
     memcpy(this->controlUnitMac, controlUnitMac, 6);
-    SamplingUnitSyncManager::logger = logger;
-}
-void SamplingUnitSyncManager::init() {
     WiFi.mode(WIFI_STA);
     if (esp_now_init() != ESP_OK) {
         SamplingUnitSyncManager::logger->info("Error initializing ESP-NOW");
@@ -55,5 +51,4 @@ CommandMessage SamplingUnitSyncManager::getNextCommand(){
     }else{
         throw NotReadyError();
     }
-
 }

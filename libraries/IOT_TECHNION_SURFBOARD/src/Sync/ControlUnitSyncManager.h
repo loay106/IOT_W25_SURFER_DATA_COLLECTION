@@ -23,17 +23,23 @@ typedef struct StatusUpdateMessage{
 } StatusUpdateMessage;
 
 class ControlUnitSyncManager{
-    // todo: change class to singleton
+    // singleton class
     private:
         static Logger* logger;
         static queue<StatusUpdateMessage> statusUpdateQueue;
         static SemaphoreHandle_t queueMutex;
 
         static void addStatusUpdateMessage(StatusUpdateMessage msg); 
-        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);   
+        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);  
+        ControlUnitSyncManager(){}; 
     public:
-        ControlUnitSyncManager(){};
-        ControlUnitSyncManager(Logger* logger);
+        ControlUnitSyncManager(const ControlUnitSyncManager& obj) = delete;
+        static ControlUnitSyncManager* getInstance() {
+            if (instance == nullptr) {
+                instance = new ControlUnitSyncManager();
+            }
+            return instance;
+        }
         void init(uint8_t samplingUnits[][6], int samplingUnitsNum);
         void sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]);
         void broadcastCommand(const ControlUnitCommand& command,const std::map<string,string>& params); 

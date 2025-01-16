@@ -21,10 +21,10 @@ typedef struct SamplingUnitRep{
 class SurfboardMainUnit {
     private:
         std::map<string, SamplingUnitRep> samplingUnits; // mac string to instance mapping
-        ControlUnitSyncManager syncManager;
+        ControlUnitSyncManager* syncManager;
         RTCTimeHandler timeHandler;
         RGBStatusHandler statusLighthandler;
-        ButtonHandler buttonHandler;
+        ButtonHandler* buttonHandler;
         Logger* logger;
         Sampler sampler; // internal sampler
         SystemStatus status;
@@ -39,9 +39,9 @@ class SurfboardMainUnit {
         void stopSampling();
     public:
         SurfboardMainUnit(){};
-        SurfboardMainUnit(Logger* logger, int buttonPin,int SDCardChipSelectPin);
+        SurfboardMainUnit(Logger* logger, int SDCardChipSelectPin);
 
-        void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
+        void init(uint8_t samplingUnitsAdresses[][6], int buttonPin, int samplingUnitsNum, int RGBRedPin, int RGBGreenPin, int RGBBluePin);
 
         void addSensor(SensorBase* sensor);
 

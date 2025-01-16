@@ -6,8 +6,8 @@ SurfboardSamplingUnit samplingUnit;
 uint8_t CONTROL_UNIT_MAC[6] = {0xCC, 0xDB, 0xA7, 0x5A, 0x7F, 0xC0};
 
 void setup() {
-    samplingUnit = SurfboardSamplingUnit(CONTROL_UNIT_MAC, SDCardChipSelectPin);
-    samplingUnit.init();
+    samplingUnit = SurfboardSamplingUnit(SDCardChipSelectPin);
+    samplingUnit.init(CONTROL_UNIT_MAC);
 
     // add sensors here....
 }

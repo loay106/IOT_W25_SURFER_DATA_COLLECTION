@@ -17,6 +17,7 @@ class ButtonHandler{
             buttonPin=false;
         };
     public:
+        ButtonHandler(const ButtonHandler& obj) = delete;
         static ButtonHandler* getInstance() {
             if (instance == nullptr) {
                 instance = new ButtonHandler();

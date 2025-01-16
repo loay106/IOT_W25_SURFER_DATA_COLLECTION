@@ -4,10 +4,6 @@ Logger* ControlUnitSyncManager::logger = Logger::getInstance();
 queue<StatusUpdateMessage> ControlUnitSyncManager::statusUpdateQueue;
 SemaphoreHandle_t ControlUnitSyncManager::queueMutex  = xSemaphoreCreateMutex();
 
-ControlUnitSyncManager::ControlUnitSyncManager(Logger* logger){
-    ControlUnitSyncManager::logger = logger;
-}
-
 void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsNum)
 {
     WiFi.mode(WIFI_STA); // Then set to station mode

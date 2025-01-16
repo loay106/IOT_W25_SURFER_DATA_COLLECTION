@@ -19,11 +19,18 @@ class SamplingUnitSyncManager {
         uint8_t controlUnitMac[6];
         static Logger* logger;
 
+        SamplingUnitSyncManager(){};
         static void onDataReceivedCallback(const uint8_t* mac, const uint8_t* incomingData, int len);
     public:
-        SamplingUnitSyncManager(){};
-        SamplingUnitSyncManager(Logger* logger, uint8_t controlUnitMac[]);
-        void init();
+        SamplingUnitSyncManager(const SamplingUnitSyncManager& obj) = delete;
+        static SamplingUnitSyncManager* getInstance() {
+            if (instance == nullptr) {
+                instance = new SamplingUnitSyncManager();
+            }
+            return instance;
+        }
+
+        void init(uint8_t controlUnitMac[]);
         void reportStatus(SamplerStatus status);
 
         CommandMessage getNextCommand();
