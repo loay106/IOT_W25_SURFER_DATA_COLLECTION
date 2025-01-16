@@ -119,7 +119,10 @@ void SurfboardMainUnit::UpdateSensorsParams(uint8_t samplingUnitMac[], std::map<
 
 
 void SurfboardMainUnit::updateSystem() {
-    // status update
+    // update status light flicker
+    statusLighthandler->flicker();
+
+    // read status update messages from sampling units
     while(syncManager->hasStatusUpdateMessages()){
         StatusUpdateMessage statusMessage = ControlUnitSyncManager::popStatusUpdateMessage();
         string unitID = macToString(statusMessage.from);
@@ -132,6 +135,7 @@ void SurfboardMainUnit::updateSystem() {
         }
     };
 
+    // handle button press
     if(buttonHandler->wasPressed()){
         switch(status){
             case SystemStatus::SYSTEM_SAMPLING:{
@@ -160,14 +164,7 @@ void SurfboardMainUnit::updateSystem() {
         }
     }
 
-
-    if(status == SystemStatus::SYSTEM_STAND_BY){
-        // todo: add code that polls from the firebase cloud the new calibration values....
-        // RecalibrateForceSensors(samplingUnit,newCalibrationFactors);
-        // uint8_t mac[6] samplingUnit;
-        // map<string,string> newCalibrationFactors; // sensor id 
-    }
-
+    // make sure all units are on the same status
     std::map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();
     // todo: validate that units finished syncing...when all finish move system status to STAND_BY...
     while (it != samplingUnits.end()) {
@@ -195,6 +192,4 @@ void SurfboardMainUnit::updateSystem() {
         }
         it++;        
     }
-
-    statusLighthandler->flicker();
 };
