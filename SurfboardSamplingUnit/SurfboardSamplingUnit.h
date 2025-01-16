@@ -10,6 +10,10 @@ using namespace std;
 const string CONFIG_FILE_NAME = "sampling_unit.config";
 
 class SurfboardSamplingUnit {
+    /*  
+        todo: add functionalities:
+            1. read sensors params from config file
+    */
     private:
         Sampler* sampler;
         SamplingUnitSyncManager* syncManager;
