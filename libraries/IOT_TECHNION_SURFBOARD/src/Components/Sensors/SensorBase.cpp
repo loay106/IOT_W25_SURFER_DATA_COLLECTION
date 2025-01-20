@@ -6,11 +6,17 @@ SensorBase::SensorBase(Logger* logger, SDCardHandler* sdcardHandler, string mode
     this->model = model;
     samplingFileName = nullptr;
     sampleBuffer = new string("");
+    samples_count=0;
 }
 
 string SensorBase::getModel()
 {
     return model;
+}
+
+unsigned long SensorBase::getSamplesCount()
+{
+    return samples_count;
 }
 
 void SensorBase::startSampling(string outputFilePath, int rate)

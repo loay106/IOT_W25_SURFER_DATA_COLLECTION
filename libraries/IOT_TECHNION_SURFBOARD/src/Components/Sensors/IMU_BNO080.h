@@ -28,6 +28,7 @@ class IMU_BNO080: public SensorBase {
 
         string getSample() override{
             if (sensor.dataAvailable()) {
+                samples_count++;
                 float accX = sensor.getAccelX();
                 float accY = sensor.getAccelY();
                 float accZ = sensor.getAccelZ();

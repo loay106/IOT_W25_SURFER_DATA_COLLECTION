@@ -10,8 +10,6 @@ using namespace std;
 //#define LOADCELL_DOUT_PIN 12
 //#define LOADCELL_SCK_PIN 13
 
-const float GRAVITY = 9.81;
-
 
 class Force_HX711 : public SensorBase { 
     private:
@@ -19,33 +17,45 @@ class Force_HX711 : public SensorBase {
         int calibrationFactor;
         int doutPin;
         int sckPin;
+        int delay_time;
     public:
         Force_HX711(Logger* logger, SDCardHandler* sdcardHandler, int calibrationFactor, int doutPin, int sckPin): SensorBase(logger, sdcardHandler, "HX711"){
             this->calibrationFactor = calibrationFactor;
             this->doutPin = doutPin;
             this->sckPin = sckPin;
         }
-        void enableSensor(int rate) override {};
+        void enableSensor(int rate) override {
+            double time_delay = 1000000.0/rate;
+            delay_time = ceil(time_delay);
+        };
 
-        void disableSensor() override {};
+        int getDelayTime(){return delay_time;}
+
+        void disableSensor() override {
+            sensor.power_down();
+            logger->info("HX711 sensor disabled");
+        };
 
         string getSample() override{
-            if (scale.is_ready()){
-                    float mass_kg = scale.get_units() / 1000;
-                    float force_N = mass_kg * GRAVITY;
-                    ostringstream oss;
-                    oss.precision(2);
-                    oss << std::fixed << force_N;
-                    return oss.str();
-                }else{
-                    throw NotReadyError();
-                }
+            if (sensor.is_ready()){
+                samples_count++;
+                float mass_kg = sensor.get_units() / 1000;
+                float force_N = mass_kg * GRAVITY;
+                ostringstream oss;
+                oss.precision(2);
+                oss << std::fixed << force_N;
+                return oss.str();
+            }
+            else
+            {
+                throw NotReadyError();
+            }
         }
 
         void init() override{
-            scale.begin(doutPin, sckPin);
-            scale.set_scale(calibrationFactor);
-            scale.tare(); // Reset scale to zero
+            sensor.begin(doutPin, sckPin);
+            sensor.set_scale(calibrationFactor);
+            sensor.tare(); // Reset scale to zero
         }
 
         void updateSensor(void* param){

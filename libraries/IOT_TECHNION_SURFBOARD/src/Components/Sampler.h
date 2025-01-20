@@ -43,6 +43,7 @@ class Sampler {
         }; 
 
         void writeSensorsData();
+        void printAcutalRates(unsigned long sampling_time);
 };
 
 #endif // SAMPLER_H

@@ -2,8 +2,8 @@
 
 Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler){
     status = SamplerStatus::UNIT_STAND_BY;
-    logger = logger;
-    sdCardHandler = sdCardHandler;
+    this->logger = logger;
+    this->sdCardHandler = sdCardHandler;
 }
 
 void Sampler::addSensor(SensorBase *sensor){
@@ -12,7 +12,7 @@ void Sampler::addSensor(SensorBase *sensor){
 
 void Sampler::init(){
     try{
-        sdCardHandler->createFolder("samplings");
+        sdCardHandler->createFolder("/samplings");
     }catch(SDCardError& err){
         logger->error("Failed to create samplings folder");
         status = SamplerStatus::UNIT_ERROR;
@@ -25,7 +25,7 @@ void Sampler::startSampling(int timestamp, int IMURate){
     for(int i=0;i<sensors.size(); i++){
         // sample files have this format:
         // [TIMESTAMP]_[SENSOR_ID]_[SENSOR_MODEL]
-        string filePath = "samplings/" + to_string(timestamp) + "_" + to_string(i) + "_" + sensors[i]->getModel();
+        string filePath = "/samplings/" + to_string(timestamp) + "_" + to_string(i) + "_" + sensors[i]->getModel();
         sensors[i]->startSampling(filePath, IMURate);
     }
 }
@@ -54,5 +54,18 @@ void Sampler::enterErrorState(){
 void Sampler::writeSensorsData(){
     for(int i= 0; i< Sampler::sensors.size(); i++){
         sensors[i]->writeSamples();
+    }
+}
+
+void Sampler::printAcutalRates(unsigned long sampling_time){
+    string model="";
+    unsigned long rate=0;
+    unsigned long sampling_time_in_sec = sampling_time/1000;
+    string message="";
+    for(int i= 0; i< Sampler::sensors.size(); i++){
+        model = sensors[i]->getModel();
+        rate = (sensors[i]->getSamplesCount()) / (sampling_time_in_sec);
+        message = model + " actual rate is: " + std::to_string(rate) + "Hz";
+        logger->info(message);
     }
 }

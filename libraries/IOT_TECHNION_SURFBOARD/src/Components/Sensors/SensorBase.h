@@ -18,6 +18,7 @@ enum class SensorStatus{
 };
 
 const int MAX_SAMPLES_BUFFER_LENGTH = 400;
+const float GRAVITY = 9.81;
 
 class SensorBase{
     private:
@@ -28,6 +29,7 @@ class SensorBase{
         Logger* logger;
         string model;
         string* samplingFileName;
+        unsigned long samples_count; 
 
     public:
         SensorBase(){};
@@ -37,6 +39,7 @@ class SensorBase{
         void startSampling(string outputFilePath, int rate);
         void stopSampling();
         void writeSamples();
+        unsigned long getSamplesCount();
 
         virtual void enableSensor(int rate) = 0;
         virtual void disableSensor() = 0;
