@@ -63,7 +63,6 @@ void setup() {
 
 void loop() {
   unsigned long currentMillis = millis();
-  // If 1 second has passed
   if (currentMillis - previousMillis >= interval && sampling) {
     logger->info("15 seconds have passed. Stopping sampling...");
     unsigned long sampling_time = currentMillis - previousMillis;
