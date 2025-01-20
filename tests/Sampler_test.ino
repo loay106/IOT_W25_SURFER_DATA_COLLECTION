@@ -52,7 +52,6 @@ void setup() {
   sampler->addSensor(fake_force_2);
   sampler->addSensor(fake_force_3);
   sampler->addSensor(real_force);
-  // Start sampling (timestamp = 123456 and IMU rate = 10)
   sampler->startSampling(timestamp, HX711_rate);
   delay_time = fake_force_1->getDelayTime();
   // Wait for a few seconds to simulate the sampling
