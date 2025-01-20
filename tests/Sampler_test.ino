@@ -12,7 +12,6 @@ const int serialBaudRate = 115200;
 const int calibration_factor = 430;
 unsigned long previousMillis = 0; // Store the last time the message was printed
 const long interval = 15000;
-//unsigned long startMillis = 0;
 unsigned long timestamp = millis();
 const int HX711_rate=80;
 int delay_time=0;
@@ -68,7 +67,6 @@ void loop() {
     sampler->printAcutalRates(sampling_time);
     sampler->stopSampling();
     logger->info("Sampling stopped.");
-   
     sampling =false;
   }
   if(sampling)
