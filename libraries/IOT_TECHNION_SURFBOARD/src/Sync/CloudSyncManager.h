@@ -4,6 +4,10 @@
 #include <string>
 #include <map>
 #include <cstdint>
+#include <Arduino.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+
 
 using namespace std;
 
@@ -27,7 +31,7 @@ class CloudSyncManager{
 
             // throw WifiError() in case of an error
         */
-        void uploadSamples(string timestamp, string samplingUnitMac, string sensorID, string sensorModel, string sampleData);
+        void uploadSamples(string timestamp_str, string unitMac_str, string sensorID_str, string sensorModel_str, string samples_str);
 };
 
 
