@@ -10,8 +10,6 @@ class RTCTimeHandler{
         Logger* logger;
         RTC_DS3231 rtc;
     public:
-        RTCTimeHandler(){};
-
         RTCTimeHandler(Logger* logger): logger(logger){};
 
         void init(){
