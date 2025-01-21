@@ -8,7 +8,7 @@
 class RTCTimeHandler{
     private:
         Logger* logger;
-        RTC_DS1307 rtc;
+        RTC_DS3231 rtc;
     public:
         RTCTimeHandler(){};
 

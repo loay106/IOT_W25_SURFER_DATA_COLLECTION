@@ -12,9 +12,9 @@ void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsN
     for (int i = 0; i < samplingUnitsNum; i++) {
 
         esp_now_peer_info_t* peerInfo = new esp_now_peer_info_t();
-        memcpy(peerInfo.peer_addr, samplingUnits[i], 6);
-        peerInfo.channel = 0; // Default channel
-        peerInfo.encrypt = false;
+        memcpy(peerInfo->peer_addr, samplingUnits[i], 6);
+        peerInfo->channel = 0; // Default channel
+        peerInfo->encrypt = false;
         ControlUnitSyncManager::peers.push_back(peerInfo);
     }
 }
@@ -29,7 +29,7 @@ void ControlUnitSyncManager::connect(){
 
 
     for(esp_now_peer_info_t* peerInfo: peers){
-        if (esp_now_add_peer(*peerInfo) != ESP_OK) {
+        if (esp_now_add_peer(peerInfo) != ESP_OK) {
             throw ESPNowSyncError();
         }
     }
