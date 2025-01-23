@@ -2,19 +2,21 @@
 #define CLOUD_SYNC_MANAGER_H
 
 #include <string>
-#include <map>
 #include <cstdint>
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include "../Utils/Exceptions.h"
+#include "../Components/IO/WifiHandler.h"
 
 
 using namespace std;
 
 class CloudSyncManager{
+    private:
+        WifiHandler* wifiHandler;
     public:
-        CloudSyncManager();
+        CloudSyncManager(WifiHandler* wifiHandler);
         void init();
         void connect(string ssid, string password); // connect to wifi
         void disconnect(); // disconnect from wifi

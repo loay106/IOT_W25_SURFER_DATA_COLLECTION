@@ -3,7 +3,7 @@
 ButtonHandler* buttonHandler = nullptr;
 Logger* logger = nullptr;
 
-int buttonPin = 32;
+int buttonPin = 4;
 
 
 void setup() {
@@ -14,8 +14,11 @@ void setup() {
 }
 
 void loop() {
-    if (buttonHandler->wasPressed()) {
-        logger->info("Button was pressed!");
+    ButtonPressType press = buttonHandler->getLastPressType();
+    if (press == ButtonPressType::SOFT_PRESS) {
+        logger->info("Button was soft pressed!");
+    }else if (press == ButtonPressType::LONG_PRESS) {
+        logger->info("Button was long pressed!");
     }
     delay(10);
 }

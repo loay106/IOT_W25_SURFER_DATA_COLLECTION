@@ -1,27 +1,24 @@
 #include "CloudSyncManager.h"
 
-CloudSyncManager::CloudSyncManager(){}
-void CloudSyncManager::init(){}
+CloudSyncManager::CloudSyncManager(WifiHandler *wifiHandler){
+    this->wifiHandler=wifiHandler;
+}
+
+void CloudSyncManager::init() {}
 
 void CloudSyncManager::connect(string ssid, string password){
-    WiFi.begin(ssid.c_str(), password.c_str());
-    Serial.println("Connecting to WiFi...");
-
-    // Wait until connected to WiFi
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.println("Connecting to WiFi...");
+    try{
+        wifiHandler->connect(ssid, password);
+    }catch(WifiError& err){
+        throw err;
     }
-
-    Serial.println("Connected to WiFi!");
 }
 
 void CloudSyncManager::disconnect() {
-    WiFi.disconnect(true);
-    Serial.println("Disconnected from WiFi.");
+    wifiHandler->disconnect();
 }
 
-
+/*
 void CloudSyncManager::uploadSamples(String timestamp, String unitMac, String sensorID, String sensorModel, String samples,HTTPClient* http){
     static String lastTimestamp = "";
     static int sampleIndex = 0;
@@ -52,4 +49,6 @@ void CloudSyncManager::uploadSamples(String timestamp, String unitMac, String se
     }
 
 }
+
+*/
 
