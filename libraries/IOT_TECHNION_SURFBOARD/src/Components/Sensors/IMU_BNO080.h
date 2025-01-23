@@ -18,6 +18,7 @@ class IMU_BNO080: public SensorBase {
 
         void disableSensor() override{
             sensor.enableAccelerometer(0);
+            logger->info("BNO080 sensor disabled");
         }
 
         void init() override{
@@ -36,13 +37,10 @@ class IMU_BNO080: public SensorBase {
                 float accX = sensor.getAccelX();
                 float accY = sensor.getAccelY();
                 float accZ = sensor.getAccelZ();
-
-                // Create a string to store the data
-                String dataString = String(accX, 2) + " " +
-                                    String(accY, 2) + " " +
-                                    String(accZ, 2);
-                Serial.println(dataString);
-                return dataString.c_str();
+                ostringstream oss;
+                oss.precision(2);
+                oss << std::fixed << accX << " " << accY << " " << accZ;
+                return oss.str();
             }else{
                 throw NotReadyError();
             }

@@ -32,7 +32,7 @@ void SamplingUnitSyncManager::connect(){
     if (esp_now_add_peer(controlUnitPeer) != ESP_OK) {
         throw ESPNowSyncError();
     }
-    esp_now_register_recv_cb(SamplingUnitSyncManager::onDataReceivedCallback);
+    esp_now_register_recv_cb(esp_now_recv_cb_t(SamplingUnitSyncManager::onDataReceivedCallback));
 
 }
 

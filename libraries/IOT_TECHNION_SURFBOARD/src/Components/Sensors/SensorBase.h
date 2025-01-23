@@ -17,7 +17,7 @@ enum class SensorStatus{
     ERROR,
 };
 
-const int MAX_SAMPLES_BUFFER_LENGTH = 400;
+const int MAX_SAMPLES_BUFFER_LENGTH = 4096
 const float GRAVITY = 9.81;
 
 class SensorBase{

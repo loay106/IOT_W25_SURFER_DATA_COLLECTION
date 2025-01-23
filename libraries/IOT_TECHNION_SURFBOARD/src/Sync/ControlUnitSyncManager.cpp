@@ -34,7 +34,7 @@ void ControlUnitSyncManager::connect(){
         }
     }
 
-    esp_now_register_recv_cb(ControlUnitSyncManager::processReceivedMessages);
+    esp_now_register_recv_cb(esp_now_recv_cb_t(ControlUnitSyncManager::processReceivedMessages));
 }
 
 void ControlUnitSyncManager::disconnect(){
