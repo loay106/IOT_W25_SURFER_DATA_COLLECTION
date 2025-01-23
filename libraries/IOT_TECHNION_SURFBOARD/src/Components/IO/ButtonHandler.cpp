@@ -3,7 +3,7 @@
 
 const int ButtonHandler::DEBOUNCE_PERIOD_MILLIES = 500;
 
-void IRAM_ATTR ButtonHandler::ButtonISTR(void* arg) {
+void IRAM_ATTR ButtonHandler::ButtonISR(void* arg) {
     ButtonHandler* handler = static_cast<ButtonHandler*>(arg);
     int currentMillis = millis();
     if (currentMillis - handler->lastPressedAt >= ButtonHandler::DEBOUNCE_PERIOD_MILLIES) { 
@@ -21,7 +21,7 @@ ButtonHandler::ButtonHandler(Logger *logger, int buttonPin){
 
 void ButtonHandler::init() {
     pinMode(buttonPin, INPUT_PULLUP);
-    attachInterruptArg(digitalPinToInterrupt(buttonPin), ButtonHandler::ButtonISTR, this, FALLING);
+    attachInterruptArg(digitalPinToInterrupt(buttonPin), ButtonHandler::ButtonISR, this, FALLING);
 }
 
 bool ButtonHandler::wasPressed(){

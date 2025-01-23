@@ -10,7 +10,7 @@ class ButtonHandler{
         int buttonPin;
         volatile bool buttonPressed;
         volatile int lastPressedAt;
-        static void IRAM_ATTR ButtonISTR(void* arg);
+        static void IRAM_ATTR ButtonISR(void* arg);
     public:
         static const int DEBOUNCE_PERIOD_MILLIES;
         ButtonHandler(Logger* logger, int buttonPin);
