@@ -1,28 +1,31 @@
 #include <Arduino.h>
 #include "ButtonHandler.h"
 
-ButtonHandler* ButtonHandler::instance = nullptr;
-Logger* ButtonHandler::logger = Logger::getInstance();
-bool ButtonHandler::buttonPressed = false;
-int ButtonHandler::lastPressedAt = 0;
+const int ButtonHandler::DEBOUNCE_PERIOD_MILLIES = 500;
 
-void ButtonHandler::init(int buttonPin){
-    this->buttonPin = buttonPin;
-    pinMode(buttonPin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(buttonPin), ButtonHandler::onButtonPress, FALLING);
-}
-
-bool ButtonHandler::wasPressed(){
-    bool pressed = ButtonHandler::buttonPressed;
-    ButtonHandler::buttonPressed = false;  // Clear the flag
-    return pressed;
-}
-
-void IRAM_ATTR ButtonHandler::onButtonPress(){
+void IRAM_ATTR ButtonHandler::ButtonISTR(void* arg) {
+    ButtonHandler* handler = static_cast<ButtonHandler*>(arg);
     int currentMillis = millis();
-    if(currentMillis - ButtonHandler::lastPressedAt >= 500){ // Only one press is considered every 0.5 seconds!
-        ButtonHandler::buttonPressed = true;
-        ButtonHandler::lastPressedAt = currentMillis;
+    if (currentMillis - handler->lastPressedAt >= ButtonHandler::DEBOUNCE_PERIOD_MILLIES) { 
+        handler->buttonPressed = true;
+        handler->lastPressedAt = currentMillis;
     }
 }
 
+ButtonHandler::ButtonHandler(Logger *logger, int buttonPin){
+    this->buttonPressed = false;
+    this->lastPressedAt = 0;
+    this->buttonPin = buttonPin;
+    this->logger = logger;
+}
+
+void ButtonHandler::init() {
+    pinMode(buttonPin, INPUT_PULLUP);
+    attachInterruptArg(digitalPinToInterrupt(buttonPin), ButtonHandler::ButtonISTR, this, FALLING);
+}
+
+bool ButtonHandler::wasPressed(){
+    bool pressed = buttonPressed;
+    buttonPressed = false; // Clear the flag
+    return pressed;
+}

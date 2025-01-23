@@ -7,6 +7,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include "../Utils/Exceptions.h"
 
 
 using namespace std;
@@ -17,10 +18,6 @@ class CloudSyncManager{
         void init();
         void connect(string ssid, string password); // connect to wifi
         void disconnect(); // disconnect from wifi
-        /*
-            Leave this for later....
-        */
-        std::map<string, string> getSensorParams(uint8_t unitMac[]){};
         /*
             Upload sample files from sampling units (files from the sd card).
             Files are read by lines this method will be called with its content on each line (line = sampleData)

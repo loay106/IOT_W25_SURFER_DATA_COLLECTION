@@ -59,7 +59,7 @@ void Sampler::startSampling(int timestamp, int IMURate){
      }
  }
 
-void uploadSampleFiles(string wifi_ssid, string wifi_password){
+void Sampler::uploadSampleFiles(string wifi_ssid, string wifi_password){
     /////////// use logger instead of serial
     status = SamplerStatus::UNIT_STAND_BY;
     const int BASE_DELAY_MS = 1000;
@@ -102,7 +102,7 @@ void uploadSampleFiles(string wifi_ssid, string wifi_password){
             for (int attempt = 0; attempt < MAX_RETRIES; ++attempt) {
                 try {
                     ///////// change "1" to real unit mac address
-                    uploadSamples(timestamp, "1", sensorID, sensorModel,line,&http);
+                    cloudSyncManager->uploadSamples(timestamp, "1", sensorID, sensorModel,line,&http);
                     success = true;
                     break;
                 } catch (...) {
@@ -138,7 +138,7 @@ void uploadSampleFiles(string wifi_ssid, string wifi_password){
         file = root.openNextFile();
     }
     http.end();
-    disconnect();
+    cloudSyncManager->disconnect();
 }
 
 void Sampler::printAcutalRates(unsigned long sampling_time){

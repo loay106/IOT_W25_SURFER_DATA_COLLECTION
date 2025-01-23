@@ -25,7 +25,6 @@ class SDCardHandler{
         void createFolder(string folderName);
         void createFile(string filePath);
         void writeData(string filePath,const char* data);
-        void openFolder(string folderName, File* root);
 
         std::map<string, string> readConfigFile(string filePath);
 

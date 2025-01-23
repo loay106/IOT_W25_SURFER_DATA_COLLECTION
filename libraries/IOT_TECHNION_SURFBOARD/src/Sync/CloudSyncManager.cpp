@@ -48,7 +48,7 @@ void CloudSyncManager::uploadSamples(String timestamp, String unitMac, String se
         Serial.println("Data sent successfully!");
     } else {
         Serial.println("Error sending data: " + String(httpResponseCode));
-        throw WifiError();
+        throw CloudSyncError();
     }
 
 }
