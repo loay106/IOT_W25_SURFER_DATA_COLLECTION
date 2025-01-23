@@ -5,24 +5,16 @@
 #include <Arduino.h>
 
 class ButtonHandler{
-    // singleton class
     private:
-        static Logger* logger;
-        static ButtonHandler* instance;
+        Logger* logger;
         int buttonPin;
-        static bool buttonPressed;
-        static int lastPressedAt;
-        static void onButtonPress();
-        ButtonHandler(){};
+        volatile bool buttonPressed;
+        volatile int lastPressedAt;
+        static void IRAM_ATTR ButtonISTR(void* arg);
     public:
-        ButtonHandler(const ButtonHandler& obj) = delete;
-        static ButtonHandler* getInstance() {
-            if (instance == nullptr) {
-                instance = new ButtonHandler();
-            }
-            return instance;
-        }
-        void init(int buttonPin);
+        static const int DEBOUNCE_PERIOD_MILLIES;
+        ButtonHandler(Logger* logger, int buttonPin);
+        void init();
         bool wasPressed();
 };
 
