@@ -26,6 +26,13 @@ void SDCardHandler::createFolder(string folderName){
         }
     }
 }
+void SDCardHandler::openFolder(string folderName, File* root) {
+    File* root = SD.open(folderName.c_str());
+    if (!root || !root.isDirectory()) {
+        Serial.println("Failed to open directory");
+        throw SDCardError();
+    }
+}
 
 void SDCardHandler::createFile(string filePath){
     File file = SD.open(filePath.c_str(), FILE_WRITE);
