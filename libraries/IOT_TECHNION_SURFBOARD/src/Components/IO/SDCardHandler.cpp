@@ -113,8 +113,7 @@ SDCardHandler::SDCardFileReader::SDCardFileReader(File file){
     this->file = file;
 }
 
-String SDCardHandler::SDCardFileReader::readNextLine()
-{
+String SDCardHandler::SDCardFileReader::readNextLine(){
     if(!file){
         throw SDCardError();
     }

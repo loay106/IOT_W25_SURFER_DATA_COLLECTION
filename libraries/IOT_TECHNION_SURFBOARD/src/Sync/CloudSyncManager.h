@@ -8,6 +8,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "../Components/IO/WifiHandler.h"
+#include "../Components/IO/SDCardHandler.h"
 
 
 using namespace std;
@@ -15,22 +16,19 @@ using namespace std;
 class CloudSyncManager{
     private:
         WifiHandler* wifiHandler;
+        String sampleUploadEndpoint;
+        HTTPClient httpClient;
     public:
-        CloudSyncManager(WifiHandler* wifiHandler);
+        CloudSyncManager(WifiHandler* wifiHandler,String sampleUploadEndpoint);
         void init();
         void connect(string ssid, string password); // connect to wifi
         void disconnect(); // disconnect from wifi
         /*
-            Upload sample files from sampling units (files from the sd card).
-            Files are read by lines this method will be called with its content on each line (line = sampleData)
-            example sample line (you can assume they will be in this format):
-                0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57|0.4 -9.77 -1.57
-            
-            Lines are then written to a file in the firebase storage named "sampling_[timestamp].csv"
-
-            // throw WifiError() in case of an error
+            Upload sample files as is to the cloud.
+            // throw CloudSyncError() in case of a cloud error
         */
-         void uploadSamples(String timestamp, String unitMac, String sensorID, String sensorModel, String samples,HTTPClient* http);
+        void uploadSamples(SDCardHandler::SDCardFileReader sampleFileReader, String timestamp, String unitMac, String sensorID, String sensorModel);
+        //void uploadSamples(String timestamp, String unitMac, String sensorID, String sensorModel, String samples,HTTPClient* http);
 };
 
 

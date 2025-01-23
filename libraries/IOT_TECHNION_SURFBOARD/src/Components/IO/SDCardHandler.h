@@ -41,6 +41,9 @@ class SDCardHandler{
 
         std::map<string, string> readConfigFile(string filePath);
 
+        void deleteFile(string filePath){// todo....
+        };
+
         vector<string> listFilesInDir(string dirName);
 };
 
