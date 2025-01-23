@@ -13,6 +13,8 @@ using namespace std;
 #include "../../Utils/Exceptions.h"
 #include "Logger.h"
 
+
+
 class SDCardHandler{
     private:
         Logger* logger;
@@ -20,11 +22,22 @@ class SDCardHandler{
     public:
         SDCardHandler(const uint8_t SDCardChipSelectPin, Logger* logger);
 
+        class SDCardFileReader{
+            private:
+                File file;
+            public:
+                SDCardFileReader(File file);
+                String readNextLine();
+                void close();
+        };
+
         void init();
 
         void createFolder(string folderName);
         void createFile(string filePath);
         void writeData(string filePath,const char* data);
+
+        SDCardHandler::SDCardFileReader readFile(string filePath);
 
         std::map<string, string> readConfigFile(string filePath);
 

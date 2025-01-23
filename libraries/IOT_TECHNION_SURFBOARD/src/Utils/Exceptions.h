@@ -11,6 +11,7 @@ class NotReadyError: public BaseError {};
 class ESPNowSyncError: public BaseError {};
 class WifiError: public BaseError {};
 class CloudSyncError: public BaseError {};
+class EndOfFileError: public BaseError {};
 class InvalidSyncMessage: public BaseError {};
 
 

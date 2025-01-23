@@ -47,6 +47,15 @@ void SDCardHandler::writeData(string filePath, const char *data){
     file.close();
 }
 
+SDCardHandler::SDCardFileReader SDCardHandler::readFile(string filePath){
+    File file = SD.open(filePath.c_str(), FILE_READ);
+    if (!file) {
+        throw SDCardError();
+    }
+    SDCardFileReader reader = SDCardFileReader(file);
+    return reader;
+}
+
 std::map<string, string> SDCardHandler::readConfigFile(string filePath){
     std::map<string, string> configMap; // Map to store parameter name and value
 
@@ -98,4 +107,20 @@ vector<string> SDCardHandler::listFilesInDir(string dirName){
 
     dir.close(); // Close the directory
     return fileList;
+}
+
+String SDCardHandler::SDCardFileReader::readNextLine(){
+    if(!file){
+        throw SDCardError();
+    }
+    if(file.available()){
+        String line = file.readStringUntil('\n');
+        return line;
+    }else{
+        throw EndOfFileError();
+    }
+}
+
+void SDCardHandler::SDCardFileReader::close(){
+    file.close();
 }
