@@ -44,7 +44,6 @@ class SensorBase{
         virtual void enableSensor(int rate) = 0;
         virtual void disableSensor() = 0;
         virtual string getSample() = 0;
-        virtual void updateSensor(void* param) = 0; // this is mostly used in calibration
         virtual void init() = 0;
 };
 

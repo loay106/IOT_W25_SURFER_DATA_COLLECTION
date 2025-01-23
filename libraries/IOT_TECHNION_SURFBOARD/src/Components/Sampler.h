@@ -37,8 +37,6 @@ class Sampler {
 
         SamplerStatus getStatus();
 
-        void updateSensorParams(int sensorID, void* param);
-
         // use this when you want the unit to enter error state for external reasons
         void enterErrorState();
 

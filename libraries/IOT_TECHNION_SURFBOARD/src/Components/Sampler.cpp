@@ -43,12 +43,6 @@ void Sampler::startSampling(int timestamp, int IMURate){
      return status;
  }
 
- void Sampler::updateSensorParams(int sensorID, void *param){
-     if(sensorID <= sensors.size()){
-         sensors[sensorID]->updateSensor(param);
-     }
- }
-
  void Sampler::enterErrorState(){
      status = SamplerStatus::UNIT_ERROR;
  }

@@ -7,8 +7,11 @@
 class IMU_BNO080: public SensorBase {
     private:
         BNO080 sensor;
+        volatile bool dataReady;
     public:
-        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "BNO080") {}
+        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "BNO080") {
+            this->dataReady = false;
+        }
         void enableSensor(int IMURate) override{
             sensor.enableAccelerometer(IMURate);
         }
@@ -20,14 +23,15 @@ class IMU_BNO080: public SensorBase {
         void init() override{
             Wire.begin(21, 22); // SDA, SCL for ESP32
             if (sensor.begin() == false) {
-                logger->error("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide. Freezing...");
+                logger->error("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide");
                 throw InitError();
             }
             Wire.setClock(400000);
         }
 
         string getSample() override{
-            if (sensor.dataAvailable()) {
+            if (dataReady && sensor.dataAvailable()) {
+                dataReady=false;
                 samples_count++;
                 float accX = sensor.getAccelX();
                 float accY = sensor.getAccelY();

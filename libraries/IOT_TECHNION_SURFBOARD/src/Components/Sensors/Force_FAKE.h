@@ -6,12 +6,6 @@
 
 using namespace std;
 
-//#define CALIBRATION_FACTOR 430
-//#define LOADCELL_DOUT_PIN 12
-//#define LOADCELL_SCK_PIN 13
-
-
-
 class Force_FAKE : public SensorBase { 
     private:
         /*int calibrationFactor;
