@@ -6,6 +6,7 @@
 #include "Components/IO/RGBStatusHandler.h"
 #include "Components/IO/RTCTimeHandler.h"
 #include "Components/IO/SDCardHandler.h"
+#include "Components/IO/WifiHandler.h"
 
 #include "Sync/CloudSyncManager.h"
 #include "Sync/ControlUnitSyncManager.h"

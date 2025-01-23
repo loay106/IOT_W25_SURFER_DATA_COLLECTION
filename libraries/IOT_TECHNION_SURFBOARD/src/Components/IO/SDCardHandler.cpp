@@ -109,7 +109,12 @@ vector<string> SDCardHandler::listFilesInDir(string dirName){
     return fileList;
 }
 
-String SDCardHandler::SDCardFileReader::readNextLine(){
+SDCardHandler::SDCardFileReader::SDCardFileReader(File file){
+    this->file = file;
+}
+
+String SDCardHandler::SDCardFileReader::readNextLine()
+{
     if(!file){
         throw SDCardError();
     }
