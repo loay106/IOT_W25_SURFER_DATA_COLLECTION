@@ -4,44 +4,48 @@
 #include <vector>
 #include <string>
 #include <Arduino.h>
+#include <HTTPClient.h>
+#include <FS.h>
+#include <SD.h>
+#include <WiFi.h>
 using namespace std;
 
-#include "../Utils/Status.h"
-#include "Sensors/SensorBase.h"
-#include "IO/SDCardHandler.h"
+ #include "../Utils/Status.h"
+ #include "Sensors/SensorBase.h"
+ #include "IO/SDCardHandler.h"
+ #include "../Sync/CloudSyncManager.h"
 
 
-class Sampler {
-    // todo: change class to singleton
-    private:
-        vector<SensorBase*> sensors;
-        SamplerStatus status;
-        Logger* logger;
-        SDCardHandler* sdCardHandler;
+ class Sampler {
+     // todo: change class to singleton
+     private:
+         vector<SensorBase*> sensors;
+         SamplerStatus status;
+         Logger* logger;
+         SDCardHandler* sdCardHandler;
+         CloudSyncManager* cloudSyncManager;
 
-    public:      
-        Sampler(Logger* logger, SDCardHandler* sdCardHandler);
+     public:
+         Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager);
 
-        void addSensor(SensorBase* sensor);
+         void addSensor(SensorBase* sensor);
 
-        void init();
+         void init();
 
-        void startSampling(int timestamp, int IMURate);
-        void stopSampling();
+         void startSampling(int timestamp, int IMURate);
+         void stopSampling();
 
-        SamplerStatus getStatus();
+         SamplerStatus getStatus();
 
-        void updateSensorParams(int sensorID, void* param);
+         void updateSensorParams(int sensorID, void* param);
 
-        // use this when you want the unit to enter error state for external reasons
-        void enterErrorState();
+         // use this when you want the unit to enter error state for external reasons
+         void enterErrorState();
 
-        void uploadSampleFiles(string wifi_ssid, string wifi_password){
-            // upload to the cloud
-            // todo: implement...
-            status = SamplerStatus::UNIT_STAND_BY;
-        }; 
+        void uploadSampleFiles(string wifi_ssid, string wifi_password);
 
+         void writeSensorsData();
+ };
         void writeSensorsData();
         void printAcutalRates(unsigned long sampling_time);
 };

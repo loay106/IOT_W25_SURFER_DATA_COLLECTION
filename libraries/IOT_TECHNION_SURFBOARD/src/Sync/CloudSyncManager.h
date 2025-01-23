@@ -31,7 +31,7 @@ class CloudSyncManager{
 
             // throw WifiError() in case of an error
         */
-        void uploadSamples(string timestamp_str, string unitMac_str, string sensorID_str, string sensorModel_str, string samples_str);
+         void uploadSamples(String timestamp, String unitMac, String sensorID, String sensorModel, String samples,HTTPClient* http);
 };
 
 
