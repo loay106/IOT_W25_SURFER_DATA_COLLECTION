@@ -1,13 +1,12 @@
 #include "CloudSyncManager.h"
 
-CloudSyncManager::CloudSyncManager(WifiHandler *wifiHandler, String sampleUploadEndpoint){
+CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler){
     this->wifiHandler=wifiHandler;
-    this->sampleUploadEndpoint = sampleUploadEndpoint;
+    this->logger = logger;
 }
 
 void CloudSyncManager::init() {
-    httpClient.begin(sampleUploadEndpoint);
-    httpClient.addHeader("Content-Type", "application/json");
+    // init firebase client...
 }
 
 void CloudSyncManager::connect(string ssid, string password){

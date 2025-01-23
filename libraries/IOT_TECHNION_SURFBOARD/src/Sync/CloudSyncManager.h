@@ -14,12 +14,14 @@
 using namespace std;
 
 class CloudSyncManager{
+    // todo: add firebase client here.......
     private:
+        Logger* logger;
         WifiHandler* wifiHandler;
         String sampleUploadEndpoint;
         HTTPClient httpClient;
     public:
-        CloudSyncManager(WifiHandler* wifiHandler,String sampleUploadEndpoint);
+        CloudSyncManager(Logger* logger, WifiHandler* wifiHandler);
         void init();
         void connect(string ssid, string password); // connect to wifi
         void disconnect(); // disconnect from wifi
