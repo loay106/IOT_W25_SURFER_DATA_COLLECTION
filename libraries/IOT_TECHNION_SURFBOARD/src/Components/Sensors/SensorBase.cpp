@@ -30,6 +30,7 @@ void SensorBase::stopSampling()
     delete samplingFileName;
     samplingFileName = nullptr;
     disableSensor();
+    samples_count=0;
 }
 
 void SensorBase::writeSamples()
