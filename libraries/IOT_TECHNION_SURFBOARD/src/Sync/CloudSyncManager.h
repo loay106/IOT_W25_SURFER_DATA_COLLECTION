@@ -20,17 +20,13 @@ class CloudSyncManager{
         WifiHandler* wifiHandler;
         String sampleUploadEndpoint;
         HTTPClient httpClient;
+        String unitMacAddress;
     public:
-        CloudSyncManager(Logger* logger, WifiHandler* wifiHandler);
+        CloudSyncManager(Logger* logger, WifiHandler* wifiHandler, String unitMacAddress);
         void init();
-        void connect(string ssid, string password); // connect to wifi
-        void disconnect(); // disconnect from wifi
-        /*
-            Upload sample files as is to the cloud.
-            // throw CloudSyncError() in case of a cloud error
-        */
-        void uploadSamples(SDCardHandler::SDCardFileReader sampleFileReader, String timestamp, String unitMac, String sensorID, String sensorModel);
-        //void uploadSamples(String timestamp, String unitMac, String sensorID, String sensorModel, String samples,HTTPClient* http);
+        void connect(string ssid, string password);
+        void disconnect();
+        void uploadSamples(String timestamp, String sensorID, String sensorModel, String samples);
 };
 
 

@@ -47,28 +47,43 @@ void Sampler::startSampling(int timestamp, int IMURate){
      status = SamplerStatus::UNIT_ERROR;
  }
 
- void Sampler::uploadSampleFiles(string wifi_ssid, string wifi_password){
-    cloudSyncManager->connect(wifi_ssid, wifi_password);
-    vector<string> sampleFiles = sdCardHandler->listFilesInDir("/samplings");
-    for(string sampleFilePath: sampleFiles){
-        SDCardHandler::SDCardFileReader fileReader = sdCardHandler->readFile(sampleFilePath);
-        // todo: get unit mac, sensor id, model etc from here...do this correctly
-        String sensorID = "00";
-        String timestamp = "123";
-        String sensorModel = "model";
-        String unitMac = "000";
-        cloudSyncManager->uploadSamples(fileReader, timestamp, unitMac, sensorID, sensorModel);
-        sdCardHandler->deleteFile(sampleFilePath);
+void Sampler::uploadSampleFiles(string wifi_ssid, string wifi_password){
+     status = SamplerStatus::UNIT_STAND_BY;
+    cloudSyncManager->connect(wifi_ssid,wifi_password);
+    File root;
+    sdCardHandler->getFolder("/samplings",&root);
+    File file = root.openNextFile();
+    while (file) {
+        String fileName = file.name();
+        logger->info("Processing file: " + string(fileName.c_str()));
+        while (file.available()) {
+            String line = file.readStringUntil('\n');
+            line.trim();
+            if (line.length() == 0) continue;
+            String timestamp = fileName.substring(0, fileName.indexOf('_'));
+            String sensorID = fileName.substring(fileName.indexOf('_') + 1, fileName.lastIndexOf('_'));
+            String sensorModel = fileName.substring(fileName.lastIndexOf('_') + 1);
+            try {
+                cloudSyncManager->uploadSamples(timestamp, sensorID, sensorModel,line);
+            } catch (...) {
+                logger->error("Failed to upload samples.");
+                throw CloudSyncError();
+            }
+        }
+        logger->info("Finished uploading file: "+ string(fileName.c_str()));
+        file.close();
+        sdCardHandler->deleteFile("/samplings/" + fileName);
+        file = root.openNextFile();
     }
+    logger->info("Finished uploading all sample files.");
     cloudSyncManager->disconnect();
- }
+}
 
  void Sampler::writeSensorsData(){
      for(int i= 0; i< Sampler::sensors.size(); i++){
          sensors[i]->writeSamples();
      }
  }
-
 void Sampler::printAcutalRates(unsigned long sampling_time){
     string model="";
     unsigned long rate=0;

@@ -32,17 +32,16 @@ class SDCardHandler{
         };
 
         void init();
+        void getFolder(String folderPath , File* root);
 
         void createFolder(string folderName);
         void createFile(string filePath);
+        void deleteFile(String filePath);
         void writeData(string filePath,const char* data);
 
         SDCardHandler::SDCardFileReader readFile(string filePath);
 
         std::map<string, string> readConfigFile(string filePath);
-
-        void deleteFile(string filePath){// todo....
-        };
 
         vector<string> listFilesInDir(string dirName);
 };
