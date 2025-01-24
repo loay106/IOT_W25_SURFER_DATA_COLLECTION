@@ -13,6 +13,18 @@ void SDCardHandler::init(){
     logger->info("SD card initialized successfully.");
 }
 
+void SDCardHandler::deleteFile(String filePath){
+    SD.remove(filePath);
+}
+
+void SDCardHandler::getFolder(String folderPath , File* root){
+    *root = SD.open(folderPath);
+    if (!(*root) || !(*root) .isDirectory()) {
+        logger->error("Failed to open directory");
+        throw SDCardError();
+    }
+}
+
 void SDCardHandler::createFolder(string folderName){
     const char *folderNameCStr = folderName.c_str();
     // Check if the folder already exists

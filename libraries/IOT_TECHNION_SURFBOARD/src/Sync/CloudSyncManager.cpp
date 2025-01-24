@@ -1,50 +1,36 @@
 #include "CloudSyncManager.h"
 
-CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler){
+CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler, String unitMacAddress){
     this->wifiHandler=wifiHandler;
     this->logger = logger;
+    this->sampleUploadEndpoint = "https://us-central1-surfer-data-project.cloudfunctions.net/api/addSamples";
+    this->unitMacAddress = unitMacAddress;
 }
 
-void CloudSyncManager::init() {
-    // init firebase client...
-}
+void CloudSyncManager::init() {}
 
 void CloudSyncManager::connect(string ssid, string password){
     try{
         wifiHandler->connect(ssid, password);
+        httpClient.begin(sampleUploadEndpoint);
+        httpClient.addHeader("Content-Type", "application/json");
     }catch(WifiError& err){
         throw err;
     }
 }
 
 void CloudSyncManager::disconnect() {
+    httpClient.end();
     wifiHandler->disconnect();
 }
 
-void CloudSyncManager::uploadSamples(SDCardHandler::SDCardFileReader sampleFileReader, String timestamp, String unitMac, String sensorID, String sensorModel){
-    /*
-        Upload each line as is! don't convert to json array. Leave the computing to the cloud, that's the whole point.
-    */
-    String lineContent = "";
-    while(true){
-        try{
-            lineContent = sampleFileReader.readNextLine();
-            // todo: upload the entire file by streaming it as a resumeable file in the storage
-            // the customer will call the trigger function on the files to merge them into a single file when he wants to download the file
-        }catch(EndOfFileError& err){
-            // we reached end of file, this means all the content was read successfully and we finished!
-            break;
-        }
-    }
-
-   
-}
-/*
-void CloudSyncManager::uploadSamples(String timestamp, String unitMac, String sensorID, String sensorModel, String samples,HTTPClient* http){
+void CloudSyncManager::uploadSamples(String timestamp, String sensorID, String sensorModel, String samples){
     static String lastTimestamp = "";
+    static String lastSensorID = "";
     static int sampleIndex = 0;
-    if (lastTimestamp != timestamp) {
+    if (lastTimestamp != timestamp || lastSensorID != sensorID ) {
         lastTimestamp = timestamp;
+        lastSensorID = sensorID;
         sampleIndex = 0;
     }
     String sampleArrayJson = "[";
@@ -59,17 +45,16 @@ void CloudSyncManager::uploadSamples(String timestamp, String unitMac, String se
     String lastSample = samples.substring(startIndex);
     sampleArrayJson += "{\"sample\": \"" + lastSample + "\", \"sample_index\": " + String(sampleIndex++) + "}";
     sampleArrayJson += "]";
-    String jsonData = "{\"timestamp\": \"" + timestamp + "\",\"sensorID\": \"" + sensorID + "\",\"sensorModel\": \"" + sensorModel + "\", \"unitMac\": \"" + unitMac + "\",\"samples\": " + sampleArrayJson + "}";
-    Serial.println(jsonData);
-    int httpResponseCode = http->POST(jsonData);
+    String jsonData = "{\"timestamp\": \"" + timestamp + "\",\"sensorID\": \"" + sensorID + "\",\"sensorModel\": \"" + sensorModel + "\", \"unitMac\": \"" + unitMacAddress + "\",\"samples\": " + sampleArrayJson + "}";
+    logger->info(jsonData.c_str());
+    int httpResponseCode = httpClient.POST(jsonData);
     if (httpResponseCode == 200) {
-        Serial.println("Data sent successfully!");
+        logger->info("Data sent successfully!");
     } else {
-        Serial.println("Error sending data: " + String(httpResponseCode));
+        logger->error("Error sending data: " + to_string(httpResponseCode));
         throw CloudSyncError();
     }
 
 }
 
-*/
 
