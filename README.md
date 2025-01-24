@@ -23,6 +23,11 @@
 
    This folder includes a library that is used in SurfboardSamplingUnit and SurfboardMainUnit.
    Make sure to move this library to the Arduino libraries folder locally!
+4. FireStore Files
+
+   This Folder includes the files that were integrated with fireStore to support files uploading and merging and exporting.
+   File index.js includes the endpoints used to connect with FireBase and Storage.
+   File index.HTML is the user interface page hosted in FireStore.
 
 # Arduino/ESP libraries used for the project:
    RTClib (by Adafruit) - version 2.1.4
