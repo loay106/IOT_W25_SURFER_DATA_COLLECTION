@@ -23,7 +23,7 @@
 
    This folder includes a library that is used in SurfboardSamplingUnit and SurfboardMainUnit.
    Make sure to move this library to the Arduino libraries folder locally!
-4. FireStore Files
+4. FireStore Files:
 
    This Folder includes the files that were integrated with fireStore to support files uploading and merging and exporting.
    File index.js includes the endpoints used to connect with FireBase and Storage.
