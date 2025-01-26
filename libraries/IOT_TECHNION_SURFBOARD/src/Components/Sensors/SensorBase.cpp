@@ -19,10 +19,10 @@ unsigned long SensorBase::getSamplesCount()
     return samples_count;
 }
 
-void SensorBase::startSampling(string outputFilePath, int rate)
+void SensorBase::startSampling(string outputFilePath)
 {
     samplingFileName = new string(outputFilePath);
-    enableSensor(rate);
+    enableSensor();
 }
 
 void SensorBase::stopSampling()

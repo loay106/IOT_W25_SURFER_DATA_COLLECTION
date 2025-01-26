@@ -36,12 +36,12 @@ class SensorBase{
         SensorBase(Logger* logger, SDCardHandler* sdcardHandler, string model);
 
         string getModel();
-        void startSampling(string outputFilePath, int rate);
+        void startSampling(string outputFilePath);
         void stopSampling();
         void writeSamples();
         unsigned long getSamplesCount();
 
-        virtual void enableSensor(int rate) = 0;
+        virtual void enableSensor() = 0;
         virtual void disableSensor() = 0;
         virtual string getSample() = 0;
         virtual void init() = 0;

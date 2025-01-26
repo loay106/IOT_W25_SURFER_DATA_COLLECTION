@@ -34,7 +34,7 @@ class Sampler {
 
         void init();
 
-        void startSampling(int timestamp, int IMURate);
+        void startSampling(int timestamp);
         void stopSampling();
 
         SamplerStatus getStatus();
@@ -42,7 +42,7 @@ class Sampler {
         // use this when you want the unit to enter error state for external reasons
         void enterErrorState();
 
-        void uploadSampleFiles();
+        bool uploadSampleFiles();
 
         void writeSensorsData();
 

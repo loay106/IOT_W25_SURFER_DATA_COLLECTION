@@ -24,12 +24,12 @@ class Force_HX711 : public SensorBase {
             this->doutPin = doutPin;
             this->sckPin = sckPin;
         }
-        void enableSensor(int rate) override {
-            double time_delay = 1000000.0/rate;
-            delay_time = ceil(time_delay);
-        };
+        void enableSensor() override {};
 
-        int getDelayTime(){return delay_time;}
+        int getDelayTime(){
+            double time_delay = 1000000.0/80; // max rate for this sensor
+            return delay_time;
+        }
 
         void disableSensor() override {
             sensor.power_down();
@@ -56,11 +56,6 @@ class Force_HX711 : public SensorBase {
             sensor.begin(doutPin, sckPin);
             sensor.set_scale(calibrationFactor);
             sensor.tare(); // Reset scale to zero
-        }
-
-        void updateSensor(void* param){
-            int calibrationF = *(int*) param;
-            calibrationFactor = calibrationF;
         }
 };
 

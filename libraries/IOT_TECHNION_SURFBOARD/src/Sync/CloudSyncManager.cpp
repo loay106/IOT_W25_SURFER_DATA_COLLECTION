@@ -1,10 +1,9 @@
 #include "CloudSyncManager.h"
 
-CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler, String unitMacAddress){
+CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler){
     this->wifiHandler=wifiHandler;
     this->logger = logger;
     this->sampleUploadEndpoint = "https://us-central1-surfer-data-project.cloudfunctions.net/api/addSamples";
-    this->unitMacAddress = unitMacAddress;
 }
 
 void CloudSyncManager::init() {}
@@ -45,7 +44,7 @@ void CloudSyncManager::uploadSamples(String timestamp, String sensorID, String s
     String lastSample = samples.substring(startIndex);
     sampleArrayJson += "{\"sample\": \"" + lastSample + "\", \"sample_index\": " + String(sampleIndex++) + "}";
     sampleArrayJson += "]";
-    String jsonData = "{\"timestamp\": \"" + timestamp + "\",\"sensorID\": \"" + sensorID + "\",\"sensorModel\": \"" + sensorModel + "\", \"unitMac\": \"" + unitMacAddress + "\",\"samples\": " + sampleArrayJson + "}";
+    String jsonData = "{\"timestamp\": \"" + timestamp + "\",\"sensorID\": \"" + sensorID + "\",\"sensorModel\": \"" + sensorModel + "\", \"unitMac\": \"" + wifiHandler->getUnitMac() + "\",\"samples\": " + sampleArrayJson + "}";
     logger->info(jsonData.c_str());
     int httpResponseCode = httpClient.POST(jsonData);
     if (httpResponseCode == 200) {

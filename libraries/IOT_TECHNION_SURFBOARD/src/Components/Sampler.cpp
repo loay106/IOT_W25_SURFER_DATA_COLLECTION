@@ -24,13 +24,13 @@ void Sampler::init(){
     }
 }
 
-void Sampler::startSampling(int timestamp, int IMURate){
+void Sampler::startSampling(int timestamp){
     status = SamplerStatus::UNIT_SAMPLING;
     for(int i=0;i<sensors.size(); i++){
         // sample files have this format:
         // [TIMESTAMP]_[SENSOR_ID]_[SENSOR_MODEL]
         string filePath = "/samplings/" + to_string(timestamp) + "_" + to_string(i) + "_" + sensors[i]->getModel();
-        sensors[i]->startSampling(filePath, IMURate);
+        sensors[i]->startSampling(filePath);
     }
 }
  void Sampler::stopSampling(){
@@ -48,13 +48,13 @@ void Sampler::startSampling(int timestamp, int IMURate){
      status = SamplerStatus::UNIT_ERROR;
  }
 
-void Sampler::uploadSampleFiles(){
+bool Sampler::uploadSampleFiles(){
      status = SamplerStatus::UNIT_STAND_BY;
     cloudSyncManager->connect(WIFI_SSID,WIFI_PASSWORD);
     File root;
     sdCardHandler->getFolder("/samplings",&root);
     File file = root.openNextFile();
-    while (file) {
+    if (file) {
         String fileName = file.name();
         logger->info("Processing file: " + string(fileName.c_str()));
         while (file.available()) {
@@ -74,9 +74,12 @@ void Sampler::uploadSampleFiles(){
         logger->info("Finished uploading file: "+ string(fileName.c_str()));
         file.close();
         sdCardHandler->deleteFile("/samplings/" + fileName);
-        file = root.openNextFile();
+        return false;
+    }else{
+        logger->info("Finished uploading all sample files.");
+        return true;
     }
-    logger->info("Finished uploading all sample files.");
+
     cloudSyncManager->disconnect();
 }
 

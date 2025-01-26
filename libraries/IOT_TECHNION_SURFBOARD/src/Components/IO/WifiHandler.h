@@ -16,6 +16,9 @@ class WifiHandler{
         void init(){
             WiFi.mode(WIFI_STA);
         };
+        String getUnitMac(){
+            return WiFi.macAddress();
+        }
         void connect(string ssid, string password){
             WiFi.begin(ssid.c_str(), password.c_str());
             int timeElapsed = 0;

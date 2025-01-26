@@ -16,6 +16,7 @@ const string CONFIG_FILE_NAME = "main_unit.config";
 typedef struct SamplingUnitRep{
     uint8_t mac[6];
     SamplerStatus status;
+    bool hasFilesToUpload;
 } SamplingUnitRep;
 
 class SurfboardMainUnit {
@@ -28,6 +29,7 @@ class SurfboardMainUnit {
         Logger* logger;
         Sampler* sampler; // internal sampler
         SDCardHandler* sdCardHandler;
+        int currentSamplingSession;
 
         SystemStatus status;
 
@@ -35,7 +37,8 @@ class SurfboardMainUnit {
 
         void startSampling();
         void stopSampling();
-        void UpdateSensorsParams(uint8_t samplingUnitMac[], std::map<string,string> newSensorParams);
+        void uploadSampleFiles();
+        void stopUploadSampleFiles();
     public:
         SurfboardMainUnit(ControlUnitSyncManager* syncManager, RTCTimeHandler* timeHandler, RGBStatusHandler* statusLighthandler, ButtonHandler* buttonHandler, Logger* logger, Sampler* sampler, SDCardHandler* sdCardHandler);
         void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum);

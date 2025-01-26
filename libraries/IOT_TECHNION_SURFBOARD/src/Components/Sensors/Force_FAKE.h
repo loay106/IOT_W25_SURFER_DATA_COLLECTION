@@ -16,9 +16,8 @@ class Force_FAKE : public SensorBase {
     public:
         Force_FAKE(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "FAKE_HX711"),delay_time(0),
         sensor_enabled(false){}
-        void enableSensor(int rate) override {
-            double time_delay = 1000000.0/rate;
-            delay_time = ceil(time_delay);
+        void enableSensor() override {
+
             sensor_enabled=true;
         };
 
@@ -27,7 +26,12 @@ class Force_FAKE : public SensorBase {
             logger->info("Fake HX711 sensor disabled");
         };
 
-        int getDelayTime(){return delay_time;}
+        int getDelayTime(){
+            // what is this for...?
+            double time_delay = 1000000.0/100;
+            delay_time = ceil(time_delay);
+            return delay_time;
+        }
 
         string getSample() override{
             if(sensor_enabled)
@@ -47,8 +51,6 @@ class Force_FAKE : public SensorBase {
         }
 
         void init() override{}
-
-        void updateSensor(void* param)override{}
 };
 
 

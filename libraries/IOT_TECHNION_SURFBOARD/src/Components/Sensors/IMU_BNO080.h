@@ -8,12 +8,14 @@ class IMU_BNO080: public SensorBase {
     private:
         BNO080 sensor;
         volatile bool dataReady;
+        int samplingRate;
     public:
-        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "BNO080") {
+        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler, int rate): SensorBase(logger, sdcardHandler, "BNO080") {
             this->dataReady = false;
+            this->samplingRate = rate;
         }
-        void enableSensor(int IMURate) override{
-            sensor.enableAccelerometer(IMURate);
+        void enableSensor() override{
+            sensor.enableAccelerometer(samplingRate);
         }
 
         void disableSensor() override{
@@ -45,8 +47,6 @@ class IMU_BNO080: public SensorBase {
                 throw NotReadyError();
             }
         }
-
-        void updateSensor(void* param){};
 };
 
 #endif // IMU_BNO080_H

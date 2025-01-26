@@ -20,9 +20,8 @@ class CloudSyncManager{
         WifiHandler* wifiHandler;
         String sampleUploadEndpoint;
         HTTPClient httpClient;
-        String unitMacAddress;
     public:
-        CloudSyncManager(Logger* logger, WifiHandler* wifiHandler, String unitMacAddress);
+        CloudSyncManager(Logger* logger, WifiHandler* wifiHandler);
         void init();
         void connect(string ssid, string password);
         void disconnect();
