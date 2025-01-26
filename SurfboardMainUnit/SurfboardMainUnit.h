@@ -30,8 +30,6 @@ class SurfboardMainUnit {
         SDCardHandler* sdCardHandler;
 
         SystemStatus status;
-        std::map<string,string> WIFI_PARAMS;
-        std::map<string,string> SAMPLING_PARAMS;
 
         void updateStatus(SystemStatus newStatus);
 

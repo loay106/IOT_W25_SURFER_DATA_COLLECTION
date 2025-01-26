@@ -1,12 +1,13 @@
 #include "Sampler.h"
 
 
-Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager){
+Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager, string WIFI_SSID, string WIFI_PASSWORD){
      status = SamplerStatus::UNIT_STAND_BY;
      this->logger = logger;
      this->sdCardHandler = sdCardHandler;
      this->cloudSyncManager = cloudSyncManager;
-
+     this->WIFI_SSID = WIFI_SSID;
+     this->WIFI_PASSWORD = WIFI_PASSWORD;
 }
 
 void Sampler::addSensor(SensorBase *sensor){
@@ -47,9 +48,9 @@ void Sampler::startSampling(int timestamp, int IMURate){
      status = SamplerStatus::UNIT_ERROR;
  }
 
-void Sampler::uploadSampleFiles(string wifi_ssid, string wifi_password){
+void Sampler::uploadSampleFiles(){
      status = SamplerStatus::UNIT_STAND_BY;
-    cloudSyncManager->connect(wifi_ssid,wifi_password);
+    cloudSyncManager->connect(WIFI_SSID,WIFI_PASSWORD);
     File root;
     sdCardHandler->getFolder("/samplings",&root);
     File file = root.openNextFile();

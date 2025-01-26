@@ -36,7 +36,7 @@ class SamplingUnitSyncManager {
         void init(uint8_t controlUnitMac[]);
         void connect();
         void disconnect();
-        void reportStatus(SamplerStatus status);
+        void reportStatus(SamplingUnitStatusMessage status);
 
         CommandMessage getNextCommand();
 

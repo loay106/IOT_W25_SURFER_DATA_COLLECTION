@@ -7,47 +7,28 @@ const char* WIFI_PASSWORD = "WIFI_PASSWORD";
 const int STATUS_REPORT_DELAY_MILLIS = 500;
 
 
-string serializeStatusUpdateMsg(SamplerStatus status){
-    string stat = "STATUS_UPDATE|";
-    if(status == SamplerStatus::UNIT_STAND_BY){
-        stat.append("UNIT_STAND_BY");
-    }else if (status == SamplerStatus::UNIT_SAMPLING){
-        stat.append("UNIT_SAMPLING");
-    }else if(status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
-        stat.append("UNIT_SAMPLE_FILES_UPLOAD");
-    }else{
-        stat.append("ERROR");
-    }
-    return stat;
+string serializeStatusUpdateMsg(SamplingUnitStatusMessage status){
+    stringstream ss;
+    // Add the command
+    ss << status;
+    return ss.str();
 }
 
-SamplerStatus deserializeStatusUpdateMsg(const uint8_t* msg, int len) {
+SamplingUnitStatusMessage deserializeStatusUpdateMsg(const uint8_t* msg, int len) {
     if (msg == nullptr || len <= 0) {
         throw InvalidSyncMessage();
     }
 
     // Convert the message to a string
-    string rawMsg(reinterpret_cast<const char*>(msg), len);
-
-    // Check the message prefix
-    const string prefix = "STATUS_UPDATE|";
-    if (rawMsg.find(prefix) != 0) {
-        throw InvalidSyncMessage();
-    }
-
-    // Extract the status part
-    string statusStr = rawMsg.substr(prefix.length());
+    string statusStr(reinterpret_cast<const char*>(msg), len);
 
     // Match the status string to the enum
-    if (statusStr == "UNIT_STAND_BY") {
-        return SamplerStatus::UNIT_STAND_BY;
-    } else if (statusStr == "UNIT_SAMPLING") {
-        return SamplerStatus::UNIT_SAMPLING;
-    } else if (statusStr == "UNIT_SAMPLE_FILES_UPLOAD") {
-        return SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
-    } else {
-        return SamplerStatus::UNIT_ERROR;
+    int statusValue = stoi(statusStr);
+    if (statusValue < STAND_BY || statusValue > ERROR) {
+        throw InvalidSyncMessage();
     }
+    SamplingUnitStatusMessage status = static_cast<SamplingUnitStatusMessage>(statusValue);
+    return status;
 }
 
 string serializeCommand(const ControlUnitCommand& command, const std::map<string,string>& params) {
@@ -97,7 +78,7 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
     // Extract and parse the command
     string commandPart = rawMsg.substr(0, delimiterPos);
     int commandValue = stoi(commandPart);
-    if (commandValue < START_SAMPLING || commandValue > UPLOAD_SAMPLE_FILES) {
+    if (commandValue < START_SAMPLING || commandValue > STOP_SAMPLE_FILES_UPLOAD) {
         throw InvalidSyncMessage();
     }
     commandMsg.command = static_cast<ControlUnitCommand>(commandValue);

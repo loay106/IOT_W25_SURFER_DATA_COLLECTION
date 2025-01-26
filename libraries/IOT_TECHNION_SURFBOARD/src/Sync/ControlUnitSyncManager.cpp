@@ -89,7 +89,7 @@ StatusUpdateMessage ControlUnitSyncManager::popStatusUpdateMessage() {
 void ControlUnitSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
     try{
-        SamplerStatus status = deserializeStatusUpdateMsg(incomingData, len);
+        SamplingUnitStatusMessage status = deserializeStatusUpdateMsg(incomingData, len);
                 // Create StatusUpdateMessage
         StatusUpdateMessage statusMessage;
         memcpy(statusMessage.from, mac_addr, 6);

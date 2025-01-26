@@ -16,12 +16,6 @@ using namespace std;
 #include "../Utils/Adresses.h"
 #include "SyncMessages.h"
 
-
-typedef struct StatusUpdateMessage{
-    uint8_t from[6]; 
-    SamplerStatus status;
-} StatusUpdateMessage;
-
 class ControlUnitSyncManager{
     // singleton class
     private:

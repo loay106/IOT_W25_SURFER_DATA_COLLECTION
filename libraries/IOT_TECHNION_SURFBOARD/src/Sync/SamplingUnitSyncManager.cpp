@@ -40,8 +40,7 @@ void SamplingUnitSyncManager::disconnect(){
     esp_now_deinit();
 }
 
-void SamplingUnitSyncManager::reportStatus(SamplerStatus status)
-{
+void SamplingUnitSyncManager::reportStatus(SamplingUnitStatusMessage status){
     string message = serializeStatusUpdateMsg(status);
     esp_err_t result = esp_now_send(controlUnitMac, (uint8_t *) message.c_str(), message.length());
     if (result != ESP_OK) {
