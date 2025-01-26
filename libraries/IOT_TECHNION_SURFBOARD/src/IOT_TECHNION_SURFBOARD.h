@@ -14,5 +14,6 @@
 #include "Sync/SyncMessages.h"
 #include "Utils/Adresses.h"
 #include "Utils/Exceptions.h"
+#include "Utils/Parsers.h"
 
 #endif
