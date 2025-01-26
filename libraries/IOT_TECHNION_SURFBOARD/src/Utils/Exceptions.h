@@ -13,6 +13,7 @@ class WifiError: public BaseError {};
 class CloudSyncError: public BaseError {};
 class EndOfFileError: public BaseError {};
 class InvalidSyncMessage: public BaseError {};
+class InvalidConfigFile: public BaseError {};
 
 
 #endif /* UNIT_EXCEPTIONS_H */

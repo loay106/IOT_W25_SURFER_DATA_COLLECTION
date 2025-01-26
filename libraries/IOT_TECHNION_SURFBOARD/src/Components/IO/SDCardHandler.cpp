@@ -68,34 +68,39 @@ SDCardHandler::SDCardFileReader SDCardHandler::readFile(string filePath){
     return reader;
 }
 
-std::map<string, string> SDCardHandler::readConfigFile(string filePath){
-    std::map<string, string> configMap; // Map to store parameter name and value
+#include <map>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
 
-    File configFile = SD.open(filePath.c_str(), FILE_READ); // Open the file in read mode
+std::map<string, string> SDCardHandler::readConfigFile(string filePath) {
+    std::map<std::string, std::string> configMap;
+    File configFile = SD.open(filePath.c_str(), FILE_READ);
     if (!configFile) {
+        logger->error("Config file not found!!");
         throw SDCardError();
     }
-
-    while (configFile.available()) {
-        string line = configFile.readStringUntil('\n').c_str(); // Read a line from the file
-        line.erase(line.find_last_not_of(" \n\r\t") + 1); // Trim trailing whitespace
-
-        if (!line.empty()) {
-            size_t delimiterPos = line.find(':'); // Find the ':' delimiter
-            if (delimiterPos != string::npos) {
-                string paramName = line.substr(0, delimiterPos);        // Extract parameter name
-                string paramValue = line.substr(delimiterPos + 1);     // Extract parameter value
-                configMap[paramName] = paramValue;                     // Insert into map
-            } else {
-                logger->error("invalid line in config file");
-                throw SDCardError();
-            }
+    int lineNum = 1;
+    while(configFile.available()){
+        String line = configFile.readStringUntil('\n');
+        int delimiterPos = line.indexOf('=');
+        if(delimiterPos <= 0){
+            string message = "Invalid line " + to_string(lineNum) + " in config file!";
+            logger->error(message);
+            throw InvalidConfigFile(); 
         }
+        String key = line.substring(0, delimiterPos);
+        key.trim();
+        String value = line.substring(delimiterPos + 1);
+        value.trim();
+        configMap[string(key.c_str())] = string(value.c_str());
+        lineNum++;
     }
-
-    configFile.close(); // Close the file
+    configFile.close();
     return configMap;
 }
+
 
 vector<string> SDCardHandler::listFilesInDir(string dirName){
     vector<string> fileList;
