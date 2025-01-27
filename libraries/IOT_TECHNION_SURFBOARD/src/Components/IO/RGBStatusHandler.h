@@ -4,7 +4,7 @@
 #include "Logger.h"
 #include <Arduino.h>
 
-const int FLICKERING_RATE = 100;
+const int FLICKERING_RATE = 500;
 
 enum RGBColors{
     NO_COLOR,

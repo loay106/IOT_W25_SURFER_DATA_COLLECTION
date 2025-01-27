@@ -26,7 +26,6 @@ void ControlUnitSyncManager::connect(){
         throw ESPNowSyncError();
     }
 
-
     for(esp_now_peer_info_t* peerInfo: peers){
         if (esp_now_add_peer(peerInfo) != ESP_OK) {
             throw ESPNowSyncError();

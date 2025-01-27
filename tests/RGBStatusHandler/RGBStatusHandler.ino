@@ -16,6 +16,6 @@ void setup() {
 }
 
 void loop() {
-    delay(500);
+    delay(50);
     statusLight->flicker();
 }

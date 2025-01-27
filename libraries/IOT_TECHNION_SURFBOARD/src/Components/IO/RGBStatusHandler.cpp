@@ -44,8 +44,7 @@ void RGBStatusHandler::flicker(){
 }
 
 void RGBStatusHandler::showColor(){
-    switch (firstColor)
-    {
+    switch (firstColor){
         case RGBColors::RED:
             ledcWrite(0, 255); 
             ledcWrite(1, 0); 
