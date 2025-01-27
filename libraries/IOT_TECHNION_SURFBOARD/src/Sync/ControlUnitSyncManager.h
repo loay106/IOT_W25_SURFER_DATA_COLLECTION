@@ -24,10 +24,13 @@ class ControlUnitSyncManager{
         static SemaphoreHandle_t queueMutex;
         static vector<esp_now_peer_info_t*> peers;
         static ControlUnitSyncManager* instance;
+        bool isConnected;
 
         static void addStatusUpdateMessage(StatusUpdateMessage msg); 
         static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);  
-        ControlUnitSyncManager(){}; 
+        ControlUnitSyncManager(){
+            isConnected=false;
+        }; 
     public:
         ControlUnitSyncManager(const ControlUnitSyncManager& obj) = delete;
         static ControlUnitSyncManager* getInstance() {

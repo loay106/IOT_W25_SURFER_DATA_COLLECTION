@@ -1,9 +1,5 @@
 #include "SyncMessages.h"
 
-const char* IMU_RATE = "IMU_RATE";
-const char* TIMESTAMP = "TIMESTAMP";
-const char* WIFI_SSID = "WIFI_SSID";
-const char* WIFI_PASSWORD = "WIFI_PASSWORD";
 const int STATUS_REPORT_DELAY_MILLIS = 500;
 
 

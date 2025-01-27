@@ -25,6 +25,9 @@ void SamplingUnitSyncManager::init(uint8_t controlUnitMac[]) {
 }
 
 void SamplingUnitSyncManager::connect(){
+    if(isConnected){
+        return;
+    }
     if (esp_now_init() != ESP_OK) {
         SamplingUnitSyncManager::logger->info("Error initializing ESP-NOW");
         throw InitError();
@@ -33,11 +36,12 @@ void SamplingUnitSyncManager::connect(){
         throw ESPNowSyncError();
     }
     esp_now_register_recv_cb(esp_now_recv_cb_t(SamplingUnitSyncManager::onDataReceivedCallback));
-
+    isConnected=true;
 }
 
 void SamplingUnitSyncManager::disconnect(){
     esp_now_deinit();
+    isConnected=false;
 }
 
 void SamplingUnitSyncManager::reportStatus(SamplingUnitStatusMessage status){

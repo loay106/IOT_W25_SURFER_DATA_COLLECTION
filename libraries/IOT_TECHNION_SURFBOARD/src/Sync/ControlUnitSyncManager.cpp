@@ -19,6 +19,9 @@ void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsN
 }
 
 void ControlUnitSyncManager::connect(){
+    if(isConnected){
+        return;
+    }
     if (esp_now_init() == ESP_OK) {
         ControlUnitSyncManager::logger->info("ESPNow Init success!");
     }else {
@@ -33,10 +36,12 @@ void ControlUnitSyncManager::connect(){
     }
 
     esp_now_register_recv_cb(esp_now_recv_cb_t(ControlUnitSyncManager::processReceivedMessages));
+    isConnected=true;
 }
 
 void ControlUnitSyncManager::disconnect(){
     esp_now_deinit();
+    isConnected=false;
 }
 
 void ControlUnitSyncManager::sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]){

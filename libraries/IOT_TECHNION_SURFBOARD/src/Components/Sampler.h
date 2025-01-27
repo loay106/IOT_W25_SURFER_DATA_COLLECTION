@@ -26,6 +26,7 @@ class Sampler {
         CloudSyncManager* cloudSyncManager;
         string WIFI_SSID;
         string WIFI_PASSWORD;
+        bool hasFilesToUpload;
 
     public:
         Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager, string WIFI_SSID, string WIFI_PASSWORD);
@@ -37,12 +38,16 @@ class Sampler {
         void startSampling(int timestamp);
         void stopSampling();
 
+        bool hasFilesToCloudUpload(){
+            return hasFilesToUpload;
+        }
+
         SamplerStatus getStatus();
 
         // use this when you want the unit to enter error state for external reasons
         void enterErrorState();
 
-        bool uploadSampleFiles();
+        void uploadNextSampleFile();
 
         void writeSensorsData();
 };

@@ -19,10 +19,13 @@ class SamplingUnitSyncManager {
         esp_now_peer_info_t* controlUnitPeer;
         uint8_t controlUnitMac[6];
         static Logger* logger;
+        bool isConnected;
 
         static SamplingUnitSyncManager* instance;
 
-        SamplingUnitSyncManager(){};
+        SamplingUnitSyncManager(){
+            isConnected=false;
+        };
         static void onDataReceivedCallback(const uint8_t* mac, const uint8_t* incomingData, int len);
     public:
         SamplingUnitSyncManager(const SamplingUnitSyncManager& obj) = delete;

@@ -9,10 +9,16 @@
 
 using namespace std;
 
+extern const int CONNECTION_REQUEST_INTERVAL;
+
 class WifiHandler{
+    private:
+        int lastConnectionRequest;
     public:
-        static const int TIME_OUT_MILLIS = 3000;
-        WifiHandler(){};
+        WifiHandler(){
+            lastConnectionRequest=0;
+        };
+
         void init(){
             WiFi.mode(WIFI_STA);
         };
@@ -20,18 +26,20 @@ class WifiHandler{
             return WiFi.macAddress();
         }
         void connect(string ssid, string password){
-            WiFi.begin(ssid.c_str(), password.c_str());
-            int timeElapsed = 0;
-            while (WiFi.status() != WL_CONNECTED) {
-                if(timeElapsed>=TIME_OUT_MILLIS){
-                    throw WifiError();
-                }
-                delay(200);
-                timeElapsed+=200;
+            int current = millis();
+            if((current - lastConnectionRequest) < CONNECTION_REQUEST_INTERVAL){
+                WiFi.begin(ssid.c_str(), password.c_str());
+                lastConnectionRequest=current;
             }
+            
         }
         void disconnect(){
+            lastConnectionRequest=0;
             WiFi.disconnect(true);
+        }
+
+        bool isWifiConnected(){
+            return WiFi.status() == WL_CONNECTED;
         }
 };
 

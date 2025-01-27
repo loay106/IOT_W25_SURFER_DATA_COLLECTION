@@ -31,7 +31,6 @@ enum SamplingUnitStatusMessage{
     STAND_BY,
     SAMPLING,
     SAMPLE_FILES_UPLOAD,
-    SAMPLE_FILES_UPLOAD_ERROR,
     SAMPLE_FILES_UPLOAD_COMPLETE,
     ERROR,
 };

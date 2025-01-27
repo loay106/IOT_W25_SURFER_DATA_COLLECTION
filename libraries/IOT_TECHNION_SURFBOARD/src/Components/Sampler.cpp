@@ -8,6 +8,7 @@ Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager*
      this->cloudSyncManager = cloudSyncManager;
      this->WIFI_SSID = WIFI_SSID;
      this->WIFI_PASSWORD = WIFI_PASSWORD;
+     hasFilesToUpload = false;
 }
 
 void Sampler::addSensor(SensorBase *sensor){
@@ -33,8 +34,14 @@ void Sampler::startSampling(int timestamp){
         string filePath = "/samplings/" + to_string(timestamp) + "_" + to_string(i) + "_" + sensors[i]->getModel();
         sensors[i]->startSampling(filePath);
     }
+    if(sensors.size() > 0){
+        hasFilesToUpload=true;
+    }
+    
 }
- void Sampler::stopSampling(){
+
+
+void Sampler::stopSampling(){
     logger->info("Sampling stopped!");
     for(int i=0; i<sensors.size(); i++){
         string message = "Sensor id=" + to_string(i) + ", model=" + sensors[i]->getModel() + " stopped!";
@@ -52,9 +59,17 @@ void Sampler::startSampling(int timestamp){
      status = SamplerStatus::UNIT_ERROR;
  }
 
-bool Sampler::uploadSampleFiles(){
-     status = SamplerStatus::UNIT_STAND_BY;
-    cloudSyncManager->connect(WIFI_SSID,WIFI_PASSWORD);
+void Sampler::uploadNextSampleFile(){
+    if(!hasFilesToUpload){
+        return;
+    }
+    if(!cloudSyncManager->isWifiConnected()){
+        cloudSyncManager->connect(WIFI_SSID,WIFI_PASSWORD);
+        logger->debug("Wifi not connected yet...");
+        return;
+    }
+    status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
+
     File root;
     sdCardHandler->getFolder("/samplings",&root);
     File file = root.openNextFile();
@@ -78,13 +93,12 @@ bool Sampler::uploadSampleFiles(){
         logger->info("Finished uploading file: "+ string(fileName.c_str()));
         file.close();
         sdCardHandler->deleteFile("/samplings/" + fileName);
-        return false;
+        return;
     }else{
         logger->info("Finished uploading all sample files.");
-        return true;
-    }
-
-    cloudSyncManager->disconnect();
+        cloudSyncManager->disconnect();
+        hasFilesToUpload=false;
+    }    
 }
 
  void Sampler::writeSensorsData(){
