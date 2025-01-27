@@ -20,6 +20,7 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 void setup() {
     Logger* logger = Logger::getInstance();
     logger->init(serialBaudRate);
+    logger->setLogLevel(LogLevel::DEBUG);
     SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
     try{
         sdCardHandler->init();
@@ -68,7 +69,8 @@ void setup() {
         mainUnit->init(samplingUnitsMacAddresses, 1);
 
         // init sensors here..
-        // you can pass params from the config file - sensor[i] should have param sensorsParams[i]
+        // you can pass params from the config file
+        // sensor[i] should have the param in sensorsParams[i]
         fake_force_0->init();
         fake_force_1->init();
         fake_force_2->init();

@@ -26,6 +26,7 @@ void Sampler::init(){
 
 void Sampler::startSampling(int timestamp){
     status = SamplerStatus::UNIT_SAMPLING;
+    logger->info("Sampling started!");
     for(int i=0;i<sensors.size(); i++){
         // sample files have this format:
         // [TIMESTAMP]_[SENSOR_ID]_[SENSOR_MODEL]
@@ -34,14 +35,17 @@ void Sampler::startSampling(int timestamp){
     }
 }
  void Sampler::stopSampling(){
-     for(SensorBase* sensor: sensors){
-         sensor->stopSampling();
-     }
-     status = SamplerStatus::UNIT_STAND_BY;
+    logger->info("Sampling stopped!");
+    for(int i=0; i<sensors.size(); i++){
+        string message = "Sensor id=" + to_string(i) + ", model=" + sensors[i]->getModel() + " stopped!";
+        logger->info(message);
+        sensors[i]->stopSampling();
+    }
+    status = SamplerStatus::UNIT_STAND_BY;
  }
 
  SamplerStatus Sampler::getStatus(){
-     return status;
+    return status;
  }
 
  void Sampler::enterErrorState(){
@@ -88,15 +92,3 @@ bool Sampler::uploadSampleFiles(){
          sensors[i]->writeSamples();
      }
  }
-void Sampler::printAcutalRates(unsigned long sampling_time){
-    string model="";
-    unsigned long rate=0;
-    unsigned long sampling_time_in_sec = sampling_time/1000;
-    string message="";
-    for(int i= 0; i< Sampler::sensors.size(); i++){
-        model = sensors[i]->getModel();
-        rate = (sensors[i]->getSamplesCount()) / (sampling_time_in_sec);
-        message = model + " actual rate is: " + std::to_string(rate) + "Hz";
-        logger->info(message);
-    }
-}

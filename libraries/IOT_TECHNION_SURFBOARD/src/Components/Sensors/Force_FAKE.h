@@ -17,7 +17,6 @@ class Force_FAKE : public SensorBase {
         Force_FAKE(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "FAKE_HX711"),delay_time(0),
         sensor_enabled(false){}
         void enableSensor() override {
-
             sensor_enabled=true;
         };
 
@@ -26,28 +25,15 @@ class Force_FAKE : public SensorBase {
             logger->info("Fake HX711 sensor disabled");
         };
 
-        int getDelayTime(){
-            // what is this for...?
-            double time_delay = 1000000.0/100;
-            delay_time = ceil(time_delay);
-            return delay_time;
-        }
-
         string getSample() override{
-            if(sensor_enabled)
-            {
-                samples_count++;
-                float mass_kg = random(0,1000);
-                float force_N = mass_kg * GRAVITY;
+            if(sensor_enabled){
                 ostringstream oss;
                 oss.precision(2);
-                oss << std::fixed << force_N;
+                oss << std::fixed << random(0,1000) * 9.81;
                 return oss.str();
-            }
-            else{
+            }else{
                 throw NotReadyError();
             }
-         
         }
 
         void init() override{}

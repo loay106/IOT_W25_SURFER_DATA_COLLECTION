@@ -18,18 +18,20 @@ enum class SensorStatus{
 };
 
 const int MAX_SAMPLES_BUFFER_LENGTH = 4096;
-const float GRAVITY = 9.81;
 
 class SensorBase{
     private:
         SDCardHandler* sdcardHandler;
         string* sampleBuffer;
 
+
     protected:
         Logger* logger;
         string model;
         string* samplingFileName;
-        unsigned long samples_count; 
+        unsigned long samplesCount;
+        int samplingStartMillis;
+        void flushSamplesBuffer();
 
     public:
         SensorBase(){};
@@ -39,7 +41,6 @@ class SensorBase{
         void startSampling(string outputFilePath);
         void stopSampling();
         void writeSamples();
-        unsigned long getSamplesCount();
 
         virtual void enableSensor() = 0;
         virtual void disableSensor() = 0;

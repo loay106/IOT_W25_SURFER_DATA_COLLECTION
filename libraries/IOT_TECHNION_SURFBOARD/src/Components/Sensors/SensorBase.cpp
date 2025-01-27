@@ -1,12 +1,14 @@
 #include "SensorBase.h"
 
-SensorBase::SensorBase(Logger* logger, SDCardHandler* sdcardHandler, string model){
+SensorBase::SensorBase(Logger *logger, SDCardHandler *sdcardHandler, string model)
+{
     this->logger = logger;
     this->sdcardHandler = sdcardHandler;
     this->model = model;
     samplingFileName = nullptr;
     sampleBuffer = new string("");
-    samples_count=0;
+    samplesCount=0;
+    samplingStartMillis=0;
 }
 
 string SensorBase::getModel()
@@ -14,27 +16,33 @@ string SensorBase::getModel()
     return model;
 }
 
-unsigned long SensorBase::getSamplesCount()
-{
-    return samples_count;
-}
-
-void SensorBase::startSampling(string outputFilePath)
-{
+void SensorBase::startSampling(string outputFilePath){
     samplingFileName = new string(outputFilePath);
+    string* temp = sampleBuffer;
+    temp = nullptr;
+    sampleBuffer = new string("");
+    delete temp;
+    samplesCount=0;
+    samplingStartMillis=millis();
     enableSensor();
 }
 
-void SensorBase::stopSampling()
-{
+void SensorBase::stopSampling(){
+    flushSamplesBuffer();
     delete samplingFileName;
     samplingFileName = nullptr;
+    int timeElapsed = (millis() - samplingStartMillis)/1000;
+    ostringstream oss;
+    oss.precision(2);
+    float rate = samplesCount/timeElapsed;
+    oss << std::fixed << rate;
+    string message = "Wrote " + to_string(samplesCount) + " samples in " + to_string(timeElapsed) + " seconds. Sensor's rate: " + oss.str() + " Hz";
+    logger->info(message);
+    samplesCount=0;
     disableSensor();
-    samples_count=0;
 }
 
-void SensorBase::writeSamples()
-{
+void SensorBase::writeSamples(){
     if(!samplingFileName){
         logger->error("samplingFileName is empty!");
         return;
@@ -42,15 +50,20 @@ void SensorBase::writeSamples()
     try{
         string sample = getSample();
         sampleBuffer->append(sample);
+        samplesCount++;
         if(sampleBuffer->length() >= MAX_SAMPLES_BUFFER_LENGTH){
-            string* temp = sampleBuffer;
-            sampleBuffer = new string();
-            sdcardHandler->writeData(*samplingFileName, temp->c_str());
-            delete temp;
+            flushSamplesBuffer();
         }else{
             sampleBuffer->append("|");
         }
     }catch(NotReadyError& err){
         return;
     }
+}
+
+void SensorBase::flushSamplesBuffer(){
+    string* temp = sampleBuffer;
+    sampleBuffer = new string();
+    sdcardHandler->writeData(*samplingFileName, temp->c_str());
+    delete temp;
 }

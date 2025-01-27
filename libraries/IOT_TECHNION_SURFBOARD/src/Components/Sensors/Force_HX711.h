@@ -10,6 +10,7 @@ using namespace std;
 //#define LOADCELL_DOUT_PIN 12
 //#define LOADCELL_SCK_PIN 13
 
+const float GRAVITY = 9.81;
 
 class Force_HX711 : public SensorBase { 
     private:
@@ -17,7 +18,6 @@ class Force_HX711 : public SensorBase {
         int calibrationFactor;
         int doutPin;
         int sckPin;
-        int delay_time;
     public:
         Force_HX711(Logger* logger, SDCardHandler* sdcardHandler, int calibrationFactor, int doutPin, int sckPin): SensorBase(logger, sdcardHandler, "HX711"){
             this->calibrationFactor = calibrationFactor;
@@ -26,19 +26,12 @@ class Force_HX711 : public SensorBase {
         }
         void enableSensor() override {};
 
-        int getDelayTime(){
-            double time_delay = 1000000.0/80; // max rate for this sensor
-            return delay_time;
-        }
-
         void disableSensor() override {
-            sensor.power_down();
             logger->info("HX711 sensor disabled");
         };
 
         string getSample() override{
             if (sensor.is_ready()){
-                samples_count++;
                 float mass_kg = sensor.get_units() / 1000;
                 float force_N = mass_kg * GRAVITY;
                 ostringstream oss;

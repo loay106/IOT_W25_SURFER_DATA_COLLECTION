@@ -45,8 +45,6 @@ class Sampler {
         bool uploadSampleFiles();
 
         void writeSensorsData();
-
-        void printAcutalRates(unsigned long sampling_time);
 };
 
 #endif // SAMPLER_H
