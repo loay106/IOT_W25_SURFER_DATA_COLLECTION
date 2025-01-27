@@ -1,52 +1,56 @@
 #include "ButtonHandler.h"
 
-const int ButtonHandler::DEBOUNCE_PERIOD_MILLIS = 50;  // Debounce time
-const int ButtonHandler::LONG_PRESS_THRESHOLD_MILLIS = 1000; // Long press threshold
+const int ButtonHandler::DEBOUNCE_PERIOD_MILLIS = 50;
+const int ButtonHandler::LONG_PRESS_THRESHOLD_MILLIS = 1000;
+
+ButtonHandler::ButtonHandler(Logger* logger, int buttonPin)
+    : logger(logger), buttonPin(buttonPin), pressStartTime(0), pressDuration(0), 
+      isPressHandled(false), isPressing(false), isReleased(false) {}
 
 void IRAM_ATTR ButtonHandler::ButtonISR(void* arg) {
     ButtonHandler* handler = static_cast<ButtonHandler*>(arg);
-    unsigned long currentMillis = millis();
+    unsigned long currentTime = millis();
 
-    if (digitalRead(handler->buttonPin) == LOW) {
-        if (!handler->isPressing && (currentMillis - handler->pressStartTime > ButtonHandler::DEBOUNCE_PERIOD_MILLIS)) {
-            handler->pressStartTime = currentMillis; // Record press start time
+    if (digitalRead(handler->buttonPin) == LOW) { // Button pressed
+        if (!handler->isPressing) {
             handler->isPressing = true;
             handler->isReleased = false;
+            handler->pressStartTime = currentTime;
+            handler->isPressHandled = false;
+            handler->logger->debug("Button pressed. Start time: " + std::to_string(currentTime));
         }
-    }else {
-        if (handler->isPressing && (currentMillis - handler->pressStartTime > ButtonHandler::DEBOUNCE_PERIOD_MILLIS)) {
-            handler->pressDuration = currentMillis - handler->pressStartTime; // Calculate press duration
+    } else { // Button released
+        if (handler->isPressing) {
             handler->isPressing = false;
             handler->isReleased = true;
-            handler->isPressHandled = false; // Ready to process
+            handler->pressDuration = currentTime - handler->pressStartTime;
+            handler->logger->debug("Button released. Duration: " + std::to_string(handler->pressDuration) + " ms");
         }
     }
-}
-
-
-ButtonHandler::ButtonHandler(Logger* logger, int buttonPin) {
-    this->logger = logger;
-    this->buttonPin = buttonPin;
-    this->pressStartTime = 0;
-    this->pressDuration = 0;
-    this->isPressing = false;
-    this->isReleased = false;
-    this->isPressHandled = true;
 }
 
 void ButtonHandler::init() {
     pinMode(buttonPin, INPUT_PULLUP);
-    attachInterruptArg(digitalPinToInterrupt(buttonPin), ButtonHandler::ButtonISR, this, CHANGE);
+    attachInterruptArg(digitalPinToInterrupt(buttonPin), ButtonISR, this, CHANGE);
+    logger->info("ButtonHandler initialized for pin " + std::to_string(buttonPin));
 }
 
-ButtonPressType ButtonHandler::getLastPressType(){
-    if (!isPressing && isReleased && !isPressHandled) {
-        isPressHandled = true; // Mark this press as handled
-        if (pressDuration >= LONG_PRESS_THRESHOLD_MILLIS) {
-            return ButtonPressType::LONG_PRESS; // Detected a soft press
-        }else{
-            return ButtonPressType::SOFT_PRESS;
-        }
+ButtonPressType ButtonHandler::getLastPressType() {
+    if (!isReleased || isPressHandled) {
+        return NO_PRESS;
     }
-    return ButtonPressType::NO_PRESS;
+
+    isPressHandled = true;
+    isReleased = false;
+
+    if (pressDuration >= LONG_PRESS_THRESHOLD_MILLIS) {
+        logger->info("Detected LONG_PRESS on pin " + std::to_string(buttonPin));
+        return LONG_PRESS;
+    } else if (pressDuration >= DEBOUNCE_PERIOD_MILLIS) {
+        logger->info("Detected SOFT_PRESS on pin " + std::to_string(buttonPin));
+        return SOFT_PRESS;
+    }
+
+    logger->debug("Press duration too short. Ignoring.");
+    return NO_PRESS;
 }

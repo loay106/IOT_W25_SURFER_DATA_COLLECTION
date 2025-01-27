@@ -23,6 +23,7 @@ void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUni
         string macString = macToString(samplingUnit.mac);
         samplingUnits[macString] = samplingUnit;
     }
+    syncManager->connect();
     logger->info("System initalization complete!");
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
@@ -121,16 +122,21 @@ void SurfboardMainUnit::stopUploadSampleFiles() {
 
 void SurfboardMainUnit::updateSystem() {
     // update status light flicker
+    logger->debug("flickering light...");
     statusLighthandler->flicker();
 
     // run sampler methods
+    logger->debug("Running sampler methods...");
     if(status == SystemStatus::SYSTEM_SAMPLING || status == SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR){
+        logger->debug("Writing sampler data");
         sampler->writeSensorsData();
     }else if(status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD || status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR){
+        logger->debug("Uploading sampler data");
         sampler->uploadSampleFiles();
     }
 
     // read status update messages from sampling units
+    logger->debug("Updating status methods...");
     while(syncManager->hasStatusUpdateMessages()){
         StatusUpdateMessage statusMessage = ControlUnitSyncManager::popStatusUpdateMessage();
         string unitID = macToString(statusMessage.from);
@@ -139,16 +145,21 @@ void SurfboardMainUnit::updateSystem() {
             switch(statusMessage.status){
                 case SamplingUnitStatusMessage::STAND_BY:
                   samplingUnit.status = SamplerStatus::UNIT_STAND_BY;
+                  break;
                 case SamplingUnitStatusMessage::SAMPLING:
                   samplingUnit.status = SamplerStatus::UNIT_SAMPLING;
+                  break;
                 case SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD:
                   samplingUnit.status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
+                  break;
                 case SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE:
                   samplingUnit.hasFilesToUpload = false;
                   samplingUnit.status = SamplerStatus::UNIT_STAND_BY;
+                  break;
                 case SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_ERROR:
                 case SamplingUnitStatusMessage::ERROR:
                   samplingUnit.status = SamplerStatus::UNIT_ERROR;
+                  break;
             }
         }
         catch(const std::out_of_range& ex){
@@ -157,6 +168,7 @@ void SurfboardMainUnit::updateSystem() {
     };
 
     // handle button press
+    logger->debug("Handling button press...");
     ButtonPressType press = buttonHandler->getLastPressType();
     if(press != ButtonPressType::NO_PRESS){
         switch(status){
@@ -185,31 +197,59 @@ void SurfboardMainUnit::updateSystem() {
     }
 
     // make sure all units are on the same status
-    std::map<string, SamplingUnitRep>::iterator it = samplingUnits.begin();
-    while (it != samplingUnits.end()) {
+    logger->debug("Make sure all units are on the same system status...");
+    std::map<string, SamplingUnitRep>::iterator it;
+    for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
         switch(status){
             case SystemStatus::SYSTEM_SAMPLING:
             case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
                 if(it->second.status != SamplerStatus::UNIT_SAMPLING){
                     std::map<string, string> samplingParams;
                     samplingParams["TIMESTAMP"] = to_string(currentSamplingSession);
-                    syncManager->sendCommand(ControlUnitCommand::START_SAMPLING, samplingParams, it->second.mac);
+                    try{
+                        string message = "Unit " + it->first + " not sampling. Sending START_SAMPLING command...";
+                        logger->info(message);
+                        syncManager->sendCommand(ControlUnitCommand::START_SAMPLING, samplingParams, it->second.mac);
+                    }catch(ESPNowSyncError& error){
+                        // todo: maybe set unit status as disconnected?
+                    } 
                 }
                 break;
             case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
             case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
                 if(it->second.status != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD && it->second.hasFilesToUpload){
-                    std::map<string, string> params; // empty params, just to pass
-                    syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, params, it->second.mac);
+                    try{
+                        string message = "Unit " + it->first + " not uploading files. Sending START_SAMPLE_FILES_UPLOAD command...";
+                        logger->info(message);
+                        std::map<string, string> params; // empty params, just to pass
+                        syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, params, it->second.mac);
+                    }catch(ESPNowSyncError& error){
+                        // todo: maybe set unit status as disconnected?
+                        continue;
+                    }
                 }
                 break;
             case SystemStatus::SYSTEM_STAND_BY:
-                if(it->second.status != SamplerStatus::UNIT_SAMPLING){
-                    std::map<string, string> params; // empty params, just to pass
-                    syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLING, params, it->second.mac);
+                if(it->second.status == SamplerStatus::UNIT_STAND_BY){
+                    continue;
+                }else if(it->second.status == SamplerStatus::UNIT_SAMPLING){
+                    try{
+                        string message = "Unit " + it->first + " is still sampling. Sending STOP_SAMPLING command...";
+                        logger->info(message);
+                        std::map<string, string> params; // empty params, just to pass
+                        syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLING, params, it->second.mac);
+                    }catch(ESPNowSyncError& error){
+                        // todo: maybe set unit status as disconnected?
+                    }
                 }else if(it->second.status != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
-                      std::map<string, string> params; // empty params, just to pass
-                    syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD, params, it->second.mac);
+                    try{
+                        string message = "Unit " + it->first + "is still uploading files. Sending STOP_SAMPLE_FILES_UPLOAD command...";
+                        logger->info(message);
+                        std::map<string, string> params; // empty params, just to pass
+                        syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD, params, it->second.mac);
+                    }catch(ESPNowSyncError& error){
+                        // todo: maybe set unit status as disconnected?
+                    } 
                 }
                 break;
             case SystemStatus::SYSTEM_ERROR:
@@ -218,6 +258,7 @@ void SurfboardMainUnit::updateSystem() {
                 logger->info("Unknown state, shouldn't get here");
             }
         }
-        it++;        
+        logger->debug("Moving to the next unit...");    
     }
+    logger->debug("System update complete...");
 };

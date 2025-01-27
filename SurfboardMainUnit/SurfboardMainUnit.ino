@@ -7,7 +7,7 @@ int RGBRedPin = 26;
 int RGBGreenPin = 25;
 int RGBBluePin = 27;
 
-int buttonPin = 32;
+int buttonPin = 4;
 
 // globals
 SurfboardMainUnit* mainUnit;
@@ -20,7 +20,7 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 void setup() {
     Logger* logger = Logger::getInstance();
     logger->init(serialBaudRate);
-    //logger->setLogLevel(LogLevel::DEBUG);
+    logger->setLogLevel(LogLevel::DEBUG);
     SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
     try{
         sdCardHandler->init();
@@ -87,11 +87,11 @@ void setup() {
     mainUnit->addSensor(fake_force_0);
     mainUnit->addSensor(fake_force_1);
     mainUnit->addSensor(fake_force_2);
-    logger->debug("setup complete!");
+    logger->info("Unit setup complete!");
 }
 
 void loop() {
-    //mainUnit->updateSystem();
-    delay(5); // update as needed
+    mainUnit->updateSystem();
+    delay(50); // update as needed
 }
 

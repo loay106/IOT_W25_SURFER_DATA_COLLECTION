@@ -10,7 +10,6 @@ void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsN
     WiFi.mode(WIFI_STA);
 
     for (int i = 0; i < samplingUnitsNum; i++) {
-
         esp_now_peer_info_t* peerInfo = new esp_now_peer_info_t();
         memcpy(peerInfo->peer_addr, samplingUnits[i], 6);
         peerInfo->channel = 0; // Default channel

@@ -9,6 +9,7 @@ int buttonPin = 4;
 void setup() {
     logger = Logger::getInstance();
     logger->init(57600);
+    logger->setLogLevel(LogLevel::DEBUG);
     buttonHandler = new ButtonHandler(logger, buttonPin);
     buttonHandler->init();
 }
@@ -20,5 +21,5 @@ void loop() {
     }else if (press == ButtonPressType::LONG_PRESS) {
         logger->info("Button was long pressed!");
     }
-    delay(10);
+    delay(1000);
 }

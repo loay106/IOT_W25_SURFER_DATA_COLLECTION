@@ -11,7 +11,6 @@ enum ButtonPressType{
 };
 
 class ButtonHandler {
-    // todo: get a pull up resistor + test the button...
     private:
         Logger* logger;
         int buttonPin;
