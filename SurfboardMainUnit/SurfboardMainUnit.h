@@ -12,11 +12,13 @@ using namespace std;
 
 
 const string CONFIG_FILE_NAME = "main_unit.config";
+const int COMMAND_SEND_MIN_INTERVAL_MILLIS = 500; 
 
 typedef struct SamplingUnitRep{
     uint8_t mac[6];
     SamplerStatus status;
     bool hasFilesToUpload;
+    int lastCommandSentMillis;
 } SamplingUnitRep;
 
 class SurfboardMainUnit {

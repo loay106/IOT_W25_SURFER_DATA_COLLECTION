@@ -92,6 +92,6 @@ void setup() {
 
 void loop() {
     mainUnit->updateSystem();
-    delay(50); // update as needed
+    delay(3000); // update as needed
 }
 
