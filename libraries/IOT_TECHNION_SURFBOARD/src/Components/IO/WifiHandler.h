@@ -26,7 +26,7 @@ class WifiHandler{
             return WiFi.macAddress();
         }
         void connect(string ssid, string password){
-            int current = millis();
+            unsigned long current = millis();
             if((current - lastConnectionRequest) < CONNECTION_REQUEST_INTERVAL){
                 WiFi.begin(ssid.c_str(), password.c_str());
                 lastConnectionRequest=current;

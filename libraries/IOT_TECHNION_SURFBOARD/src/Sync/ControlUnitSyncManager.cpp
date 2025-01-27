@@ -54,6 +54,9 @@ void ControlUnitSyncManager::sendCommand(const ControlUnitCommand& command,const
 }
 
 void ControlUnitSyncManager::broadcastCommand(const ControlUnitCommand& command,const std::map<string,string>& params){
+    if(ControlUnitSyncManager::peers.size() == 0){
+        return;
+    }
     string message = serializeCommand(command, params);
     esp_err_t result = esp_now_send(nullptr, (uint8_t *) message.c_str(), message.length());
     if (result != ESP_OK) {

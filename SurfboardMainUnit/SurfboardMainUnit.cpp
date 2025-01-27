@@ -77,7 +77,7 @@ void SurfboardMainUnit::startSampling() {
         logger->error("Failed to send command to sampling units! Try again!");
         return;
     }
-    int current = millis();
+    unsigned long current = millis();
     std::map<string, SamplingUnitRep>::iterator it;
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
       it->second.hasFilesToUpload = true;
@@ -93,10 +93,9 @@ void SurfboardMainUnit::stopSampling() {
         std::map<string, string> params;
         syncManager->broadcastCommand(ControlUnitCommand::STOP_SAMPLING, params);
     }catch(ESPNowSyncError& error){
-        logger->error("Failed to send command to sampling units! Try again!");
         return;
     }
-    int current = millis();
+    unsigned long current = millis();
     std::map<string, SamplingUnitRep>::iterator it;
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
       it->second.lastCommandSentMillis = current;
@@ -113,7 +112,7 @@ void SurfboardMainUnit::uploadSampleFiles() {
         logger->error("Failed to send command to sampling units! Try again!");
         return;
     }
-    int current = millis();
+    unsigned long current = millis();
     std::map<string, SamplingUnitRep>::iterator it;
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
       it->second.lastCommandSentMillis = current;
@@ -130,7 +129,7 @@ void SurfboardMainUnit::stopUploadSampleFiles() {
         logger->error("Failed to send command to sampling units! Try again!");
         return;
     }
-    int current = millis();
+    unsigned long current = millis();
     std::map<string, SamplingUnitRep>::iterator it;
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
       it->second.lastCommandSentMillis = current;
@@ -140,11 +139,11 @@ void SurfboardMainUnit::stopUploadSampleFiles() {
 
 void SurfboardMainUnit::updateSystem() {
     // update status light flicker
-    logger->debug("flickering light...");
+   // logger->debug("flickering light...");
     statusLighthandler->flicker();
 
     // read status update messages from sampling units
-    logger->debug("Reading status messages...");
+   // logger->debug("Reading status messages...");
     while(syncManager->hasStatusUpdateMessages()){
         StatusUpdateMessage statusMessage = ControlUnitSyncManager::popStatusUpdateMessage();
         string unitID = macToString(statusMessage.from);
@@ -176,7 +175,7 @@ void SurfboardMainUnit::updateSystem() {
     };
 
     // handle button press
-    logger->debug("Handling button press...");
+   // logger->debug("Handling button press...");
     ButtonPressType press = buttonHandler->getLastPressType();
     if(press != ButtonPressType::NO_PRESS){
         switch(status){
@@ -192,11 +191,11 @@ void SurfboardMainUnit::updateSystem() {
                 return;
             case SystemStatus::SYSTEM_STAND_BY:
                 if(press == ButtonPressType::SOFT_PRESS){
-                    logger->debug("Soft press detected while file on standby");
+                    logger->debug("Soft press detected while on standby");
                     startSampling();
                 }else{
                     // long press
-                    logger->debug("Long press detected while file on standby");
+                    logger->debug("Long press detected while on standby");
                     uploadSampleFiles();
                 }
                 return;
@@ -209,9 +208,9 @@ void SurfboardMainUnit::updateSystem() {
     }
 
     // run sampler methods
-    logger->debug("Running sampler methods...");
+   // logger->debug("Running sampler methods...");
     if(status == SystemStatus::SYSTEM_SAMPLING || status == SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR){
-        logger->debug("Writing sampler data");
+       // logger->debug("Writing sampler data");
         sampler->writeSensorsData();
     }else if(status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD || status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR){
         if(sampler->hasFilesToCloudUpload()){
@@ -224,10 +223,10 @@ void SurfboardMainUnit::updateSystem() {
     }
 
     // make sure all units are on the same status
-    logger->debug("Make sure all units are on the same system status...");
+   // logger->debug("Make sure all units are on the same system status...");
     int numUnitsNeedToUpload = 0;
     std::map<string, SamplingUnitRep>::iterator it;
-    int current = millis();
+    unsigned long current = millis();
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
         if((current - it->second.lastStatusUpdateMillis) > MAX_STATUS_UPDATE_DELAY){
             it->second.status = SamplerStatus::UNIT_ERROR;
@@ -297,7 +296,7 @@ void SurfboardMainUnit::updateSystem() {
                 logger->info("Unknown state, shouldn't get here");
             }
         }
-        logger->debug("Moving to the next unit...");    
+       // logger->debug("Moving to the next unit...");    
     }
-    logger->debug("System update complete...");
+    //logger->debug("System update complete...");
 };

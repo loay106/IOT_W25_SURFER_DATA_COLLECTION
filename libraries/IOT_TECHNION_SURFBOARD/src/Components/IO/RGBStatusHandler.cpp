@@ -32,8 +32,8 @@ void RGBStatusHandler::flicker(){
         // nothing to do...
         return;
     }
-    int current = millis();
-    int elapsedMillis = (current - lastFlickerMillis); 
+    unsigned long current = millis();
+    unsigned long elapsedMillis = (current - lastFlickerMillis); 
     if(elapsedMillis >= FLICKERING_RATE){
         RGBColors temp = firstColor;
         firstColor = secondColor;

@@ -59,14 +59,14 @@ void setup() {
 
     try{
         // don't change the order of the init
-        syncManager->init(samplingUnitsMacAddresses, 1);
+        syncManager->init(samplingUnitsMacAddresses, 0);
         timeHandler->init();
         statusLighthandler->init(RGBRedPin, RGBGreenPin, RGBBluePin);
         buttonHandler->init();
         wifiHandler->init();
         cloudSyncManager->init();
         sampler->init();
-        mainUnit->init(samplingUnitsMacAddresses, 1);
+        mainUnit->init(samplingUnitsMacAddresses, 0);
 
         // init sensors here..
         // you can pass params from the config file
@@ -92,6 +92,6 @@ void setup() {
 
 void loop() {
     mainUnit->updateSystem();
-    delay(3000); // update as needed
+    delay(5); // update as needed
 }
 

@@ -10,6 +10,15 @@ using namespace std;
 
 #include <IOT_TECHNION_SURFBOARD.h>
 
+/*
+  todo:
+    1. handle edge cases with wifi/file upload
+    2. fix button press
+    3. finish sampling unit
+    4. test with 1 sampling unit or more
+    5. connect to wifi, get wifi channel and set it for esp now 
+*/
+
 
 const string CONFIG_FILE_NAME = "main_unit.config";
 const int COMMAND_SEND_MIN_INTERVAL_MILLIS = 500; 
@@ -19,8 +28,8 @@ typedef struct SamplingUnitRep{
     uint8_t mac[6];
     SamplerStatus status;
     bool hasFilesToUpload;
-    int lastCommandSentMillis;
-    int lastStatusUpdateMillis;
+    unsigned long lastCommandSentMillis;
+    unsigned long lastStatusUpdateMillis;
 } SamplingUnitRep;
 
 class SurfboardMainUnit {

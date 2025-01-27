@@ -65,7 +65,6 @@ void Sampler::uploadNextSampleFile(){
     }
     if(!cloudSyncManager->isWifiConnected()){
         cloudSyncManager->connect(WIFI_SSID,WIFI_PASSWORD);
-        logger->debug("Wifi not connected yet...");
         return;
     }
     status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;

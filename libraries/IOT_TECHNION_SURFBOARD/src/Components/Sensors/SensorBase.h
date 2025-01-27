@@ -30,7 +30,7 @@ class SensorBase{
         string model;
         string* samplingFileName;
         unsigned long samplesCount;
-        int samplingStartMillis;
+        unsigned long samplingStartMillis;
         void flushSamplesBuffer();
 
     public:

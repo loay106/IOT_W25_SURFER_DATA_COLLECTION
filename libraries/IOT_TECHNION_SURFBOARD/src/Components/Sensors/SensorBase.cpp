@@ -31,12 +31,9 @@ void SensorBase::stopSampling(){
     flushSamplesBuffer();
     delete samplingFileName;
     samplingFileName = nullptr;
-    int timeElapsed = (millis() - samplingStartMillis)/1000;
-    ostringstream oss;
-    oss.precision(2);
+    unsigned long timeElapsed = (millis() - samplingStartMillis)/1000;
     float rate = samplesCount/timeElapsed;
-    oss << std::fixed << rate;
-    string message = "Wrote " + to_string(samplesCount) + " samples in " + to_string(timeElapsed) + " seconds. Sensor's rate: " + oss.str() + " Hz";
+    string message = "Wrote " + to_string(samplesCount) + " samples in " + to_string(timeElapsed) + " seconds. Sensor's rate: " + to_string(rate) + " Hz";
     logger->info(message);
     samplesCount=0;
     disableSensor();
