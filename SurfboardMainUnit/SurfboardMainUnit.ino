@@ -20,7 +20,7 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 void setup() {
     Logger* logger = Logger::getInstance();
     logger->init(serialBaudRate);
-    logger->setLogLevel(LogLevel::DEBUG);
+    //logger->setLogLevel(LogLevel::DEBUG);
     SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
     try{
         sdCardHandler->init();
@@ -87,10 +87,11 @@ void setup() {
     mainUnit->addSensor(fake_force_0);
     mainUnit->addSensor(fake_force_1);
     mainUnit->addSensor(fake_force_2);
+    logger->debug("setup complete!");
 }
 
 void loop() {
-    mainUnit->updateSystem();
+    //mainUnit->updateSystem();
     delay(5); // update as needed
 }
 

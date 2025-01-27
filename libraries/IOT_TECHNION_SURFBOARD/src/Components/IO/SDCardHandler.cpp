@@ -3,13 +3,12 @@
 SDCardHandler::SDCardHandler(const uint8_t SDCardChipSelectPin, Logger* logger): SDCardChipSelectPin(SDCardChipSelectPin), logger(logger){}
 
 void SDCardHandler::init(){
+    // using default sd card pins
     SPI.begin(18,19,23,SDCardChipSelectPin);
     if (!SD.begin(SDCardChipSelectPin)) {
         logger->error("Failed to init SD card!");
         throw InitError();
     }
-    Wire.begin(21,22);
-    Wire.setClock(400000);
     logger->info("SD card initialized successfully.");
 }
 
