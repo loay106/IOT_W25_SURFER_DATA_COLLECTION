@@ -4,7 +4,7 @@ SamplingUnitSyncManager* SamplingUnitSyncManager::instance = nullptr;
 CommandMessage* SamplingUnitSyncManager::nextCommand = nullptr;
 Logger* SamplingUnitSyncManager::logger = Logger::getInstance();
 
-void SamplingUnitSyncManager::onDataReceivedCallback(const uint8_t *mac, const uint8_t *incomingData, int len){
+void SamplingUnitSyncManager::onDataReceivedCallback(const esp_now_recv_info_t* messageInfo, const uint8_t *incomingData, int len){
     try{
         CommandMessage cmd = deserializeCommand(incomingData, len);
         SamplingUnitSyncManager::nextCommand = new CommandMessage();
@@ -22,6 +22,7 @@ void SamplingUnitSyncManager::init(uint8_t controlUnitMac[]) {
     memcpy(controlUnitPeer->peer_addr, controlUnitMac, 6);
     controlUnitPeer->channel = 0; // default channel
     controlUnitPeer->encrypt = false;
+    memcpy(this->controlUnitMac, controlUnitMac,6);
 }
 
 void SamplingUnitSyncManager::connect(){
@@ -35,7 +36,7 @@ void SamplingUnitSyncManager::connect(){
     if (esp_now_add_peer(controlUnitPeer) != ESP_OK) {
         throw ESPNowSyncError();
     }
-    esp_now_register_recv_cb(esp_now_recv_cb_t(SamplingUnitSyncManager::onDataReceivedCallback));
+    esp_now_register_recv_cb(SamplingUnitSyncManager::onDataReceivedCallback);
     isConnected=true;
 }
 
