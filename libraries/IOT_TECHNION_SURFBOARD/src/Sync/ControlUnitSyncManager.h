@@ -27,7 +27,7 @@ class ControlUnitSyncManager{
         bool isConnected;
 
         static void addStatusUpdateMessage(StatusUpdateMessage msg); 
-        static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);  
+        static void processReceivedMessages(const esp_now_recv_info_t* messageInfo, const uint8_t *incomingData, int len);  
         ControlUnitSyncManager(){
             isConnected=false;
         }; 
