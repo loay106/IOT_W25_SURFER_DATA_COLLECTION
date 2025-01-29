@@ -3,8 +3,8 @@
 RGBStatusHandler* statusLight = nullptr;
 Logger* logger = nullptr;
 
-int RGBRedPin = 26;
-int RGBGreenPin = 25;
+int RGBRedPin = 25;
+int RGBGreenPin = 26;
 int RGBBluePin = 27;
 
 void setup() {

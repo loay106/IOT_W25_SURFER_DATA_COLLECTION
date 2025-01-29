@@ -12,7 +12,12 @@ void setup() {
   logger = Logger::getInstance();
   logger->init(serialBaudRate);
   sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
-  sdCardHandler->init();
+  try{
+      sdCardHandler->init();
+  }catch(InitError& err){
+      while(true){delay(500);};
+  }
+
   try{
       vector<string> files = sdCardHandler->listFilesInDir("/");
       for(string f: files){

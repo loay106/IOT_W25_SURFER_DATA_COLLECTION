@@ -17,14 +17,12 @@ void IRAM_ATTR ButtonHandler::ButtonISR(void* arg) {
             handler->isReleased = false;
             handler->pressStartTime = currentTime;
             handler->isPressHandled = false;
-            handler->logger->debug("Button pressed. Start time: " + std::to_string(currentTime));
         }
     } else { // Button released
-        if (handler->isPressing) {
+        if (handler->isPressing && (currentTime - handler->pressStartTime) >= DEBOUNCE_PERIOD_MILLIS) {
             handler->isPressing = false;
             handler->isReleased = true;
             handler->pressDuration = currentTime - handler->pressStartTime;
-            handler->logger->debug("Button released. Duration: " + std::to_string(handler->pressDuration) + " ms");
         }
     }
 }
@@ -44,10 +42,10 @@ ButtonPressType ButtonHandler::getLastPressType() {
     isReleased = false;
 
     if (pressDuration >= LONG_PRESS_THRESHOLD_MILLIS) {
-        logger->info("Detected LONG_PRESS on pin " + std::to_string(buttonPin));
+        logger->debug("Detected long press on pin " + std::to_string(buttonPin));
         return LONG_PRESS;
     } else if (pressDuration >= DEBOUNCE_PERIOD_MILLIS) {
-        logger->info("Detected SOFT_PRESS on pin " + std::to_string(buttonPin));
+        logger->debug("Detected soft press on pin " + std::to_string(buttonPin));
         return SOFT_PRESS;
     }
 

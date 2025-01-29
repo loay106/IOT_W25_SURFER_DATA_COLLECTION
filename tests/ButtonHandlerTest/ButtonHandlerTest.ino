@@ -15,11 +15,6 @@ void setup() {
 }
 
 void loop() {
-    ButtonPressType press = buttonHandler->getLastPressType();
-    if (press == ButtonPressType::SOFT_PRESS) {
-        logger->info("Button was soft pressed!");
-    }else if (press == ButtonPressType::LONG_PRESS) {
-        logger->info("Button was long pressed!");
-    }
-    delay(1000);
+    buttonHandler->getLastPressType();
+    delay(10);
 }
