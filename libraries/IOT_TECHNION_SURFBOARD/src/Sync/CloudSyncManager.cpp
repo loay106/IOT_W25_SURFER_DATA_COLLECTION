@@ -12,10 +12,10 @@ void CloudSyncManager::init() {}
 void CloudSyncManager::connect(string ssid, string password){
     try{
         wifiHandler->connect(ssid, password);
-        logger->info("Successfully connected to Wifi.")
+        logger->info("Successfully connected to Wifi.");
         httpClient.begin(sampleUploadEndpoint);
         httpClient.addHeader("Content-Type", "application/json");
-        logger->info("HTTP connection initiated Successfully.")
+        logger->info("HTTP connection initiated Successfully.");
     }catch(WifiError& err){
         throw err;
     }
@@ -23,9 +23,9 @@ void CloudSyncManager::connect(string ssid, string password){
 
 void CloudSyncManager::disconnect() {
     httpClient.end();
-    logger->info("HTTP connection finished Successfully.")
+    logger->info("HTTP connection finished Successfully.");
     wifiHandler->disconnect();
-    logger->info("Successfully disconnected from Wifi.")
+    logger->info("Successfully disconnected from Wifi.");
 }
 
 void CloudSyncManager::uploadSamples(String timestamp, String sensorID, String sensorModel, String samples){
