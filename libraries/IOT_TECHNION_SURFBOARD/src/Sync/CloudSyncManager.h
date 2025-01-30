@@ -29,7 +29,7 @@ class CloudSyncManager{
         bool isWifiConnected(){
             return wifiHandler->isWifiConnected();
         }
-        void uploadSamples(String timestamp, String sensorID, String sensorModel, String samples);
+        void uploadSamples(String timestamp, String sensorID, String sensorModel, String samples, int* fileSampleIndex);
 };
 
 

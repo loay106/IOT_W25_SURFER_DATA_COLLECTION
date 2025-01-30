@@ -16,6 +16,9 @@ void Sampler::addSensor(SensorBase *sensor){
 void Sampler::init(){
     try{
         sdCardHandler->createFolder("/samplings");
+        if(sdCardHandler->listFilesInDir("/samplings").size() > 0){
+            hasFilesToUpload = true;
+        }
     }catch(SDCardError& err){
         logger->error("Failed to create samplings folder");
         status = SamplerStatus::UNIT_ERROR;
@@ -77,6 +80,7 @@ void Sampler::uploadSampleFiles(){
     File root;
     sdCardHandler->getFolder("/samplings",&root);
     File file = root.openNextFile();
+    int* fileSampleIndex = new int(0);
     while (file) {
         String fileName = file.name();
         String timestamp = fileName.substring(0, fileName.indexOf('_'));
@@ -88,13 +92,14 @@ void Sampler::uploadSampleFiles(){
                 String line = file.readStringUntil('\n');
                 line.trim();
                 if (line.length() == 0) continue;
-                cloudSyncManager->uploadSamples(timestamp, sensorID, sensorModel,line);
+                cloudSyncManager->uploadSamples(timestamp, sensorID, sensorModel,line, fileSampleIndex);
             } catch (CloudSyncError& err) {
                 logger->error("Failed to upload samples from CloudSyncManager");
                 if(file){
                     file.close();
                 }
                 status = SamplerStatus::UNIT_ERROR;
+                delete fileSampleIndex;
                 return;
             } catch(...){
                 logger->error("Failed to upload samples!");
@@ -102,6 +107,7 @@ void Sampler::uploadSampleFiles(){
                     file.close();
                 }
                 status = SamplerStatus::UNIT_ERROR;
+                delete fileSampleIndex;
                 return;
             }
         }
@@ -109,13 +115,14 @@ void Sampler::uploadSampleFiles(){
         file.close();
         sdCardHandler->deleteFile("/samplings/" + fileName);
         file = root.openNextFile();
+        *fileSampleIndex = 0;
     }
     
     // finished uploading files
     logger->info("Finished uploading all sample files.");
     cloudSyncManager->disconnect();
     hasFilesToUpload=false;
-
+    delete fileSampleIndex;
     status = SamplerStatus::UNIT_STAND_BY;
 }
 

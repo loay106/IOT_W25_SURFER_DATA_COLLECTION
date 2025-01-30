@@ -29,29 +29,23 @@ void CloudSyncManager::disconnect() {
     logger->info("Successfully disconnected from Wifi.");
 }
 
-void CloudSyncManager::uploadSamples(String timestamp, String sensorID, String sensorModel, String samples){
-    static String lastTimestamp = "";
-    static String lastSensorID = "";
-    static int sampleIndex = 0;
-    if (lastTimestamp != timestamp || lastSensorID != sensorID ) {
-        lastTimestamp = timestamp;
-        lastSensorID = sensorID;
-        sampleIndex = 0;
-    }
+void CloudSyncManager::uploadSamples(String timestamp, String sensorID, String sensorModel, String samples, int* fileSampleIndex){
     String sampleArrayJson = "[";
     int startIndex = 0;
     int endIndex = samples.indexOf('|');
     while (endIndex > 0) {
         String sample = samples.substring(startIndex, endIndex);
-        sampleArrayJson += "{\"sample\": \"" + sample + "\", \"sample_index\": " + String(sampleIndex++) + "},";
+        sampleArrayJson += "{\"sample\": \"" + sample + "\", \"sample_index\": " + String(*fileSampleIndex) + "},";
+        *fileSampleIndex = (*fileSampleIndex)++;
         startIndex = endIndex + 1;
         endIndex = samples.indexOf('|', startIndex);
     }
     String lastSample = samples.substring(startIndex);
-    sampleArrayJson += "{\"sample\": \"" + lastSample + "\", \"sample_index\": " + String(sampleIndex++) + "}";
+    sampleArrayJson += "{\"sample\": \"" + lastSample + "\", \"sample_index\": " + String(*fileSampleIndex) + "}";
+    *fileSampleIndex = (*fileSampleIndex)++;
     sampleArrayJson += "]";
     String jsonData = "{\"timestamp\": \"" + timestamp + "\",\"sensorID\": \"" + sensorID + "\",\"sensorModel\": \"" + sensorModel + "\", \"unitMac\": \"" + wifiHandler->getUnitMac() + "\",\"samples\": " + sampleArrayJson + "}";
-    logger->info(jsonData.c_str());
+    //logger->info(jsonData.c_str());
     int httpResponseCode = httpClient.POST(jsonData);
     if (httpResponseCode == 200) {
         logger->info("Data sent successfully!");
