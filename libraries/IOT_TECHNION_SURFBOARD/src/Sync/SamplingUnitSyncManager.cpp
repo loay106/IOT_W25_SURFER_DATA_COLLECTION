@@ -4,7 +4,7 @@ SamplingUnitSyncManager* SamplingUnitSyncManager::instance = nullptr;
 CommandMessage* SamplingUnitSyncManager::nextCommand = nullptr;
 Logger* SamplingUnitSyncManager::logger = Logger::getInstance();
 
-void SamplingUnitSyncManager::onDataReceivedCallback(const esp_now_recv_info_t* messageInfo, const uint8_t *incomingData, int len){
+void SamplingUnitSyncManager::onDataReceivedCallback(const uint8_t *mac_addr, const uint8_t *incomingData, int len){
     try{
         CommandMessage cmd = deserializeCommand(incomingData, len);
         SamplingUnitSyncManager::nextCommand = new CommandMessage();

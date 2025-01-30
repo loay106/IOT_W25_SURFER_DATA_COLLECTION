@@ -92,13 +92,13 @@ StatusUpdateMessage ControlUnitSyncManager::popStatusUpdateMessage() {
     return msg;
 }
 
-void ControlUnitSyncManager::processReceivedMessages(const esp_now_recv_info_t* messageInfo, const uint8_t *incomingData, int len)
+void ControlUnitSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
     try{
         SamplingUnitStatusMessage status = deserializeStatusUpdateMsg(incomingData, len);
                 // Create StatusUpdateMessage
         StatusUpdateMessage statusMessage;
-        memcpy(statusMessage.from, messageInfo->src_addr, 6);
+        memcpy(statusMessage.from, mac_addr, 6);
         statusMessage.status = status;
         ControlUnitSyncManager::addStatusUpdateMessage(statusMessage);
     }catch(InvalidSyncMessage& err){
