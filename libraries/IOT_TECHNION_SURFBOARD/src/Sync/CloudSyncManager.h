@@ -20,10 +20,11 @@ class CloudSyncManager{
         WifiHandler* wifiHandler;
         String sampleUploadEndpoint;
         HTTPClient httpClient;
+        String unitMac;
     public:
-        CloudSyncManager(Logger* logger, WifiHandler* wifiHandler);
+        CloudSyncManager(Logger* logger, WifiHandler* wifiHandler, String unitMac);
         void init();
-        void connect(string ssid, string password);
+        void connect();
         void disconnect();
         bool isWifiConnected(){
             return wifiHandler->isWifiConnected();

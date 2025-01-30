@@ -1,16 +1,18 @@
 #include "CloudSyncManager.h"
 
-CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler){
+CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler, String unitMac){
     this->wifiHandler=wifiHandler;
     this->logger = logger;
     this->sampleUploadEndpoint = "https://us-central1-surfer-data-project.cloudfunctions.net/api/addSamples";
+    this->unitMac = unitMac;
 }
 
 void CloudSyncManager::init() {}
 
-void CloudSyncManager::connect(string ssid, string password){
+void CloudSyncManager::connect(){
     try{
-        wifiHandler->connect(ssid, password);
+        logger->info("Connecting to wifi...");
+        wifiHandler->connect();
         logger->info("Successfully connected to Wifi.");
         httpClient.begin(sampleUploadEndpoint);
         httpClient.addHeader("Content-Type", "application/json");

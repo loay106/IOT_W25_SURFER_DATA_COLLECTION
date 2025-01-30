@@ -1,71 +1,77 @@
 #include <IOT_TECHNION_SURFBOARD.h>
 
 // constants
-int serialBaudRate = 115200;
+int serialBaudRate = 57600;
 int SDCardChipSelectPin = 5;
+Sampler* sampler;
+Logger* logger;
 uint8_t CONTROL_UNIT_MAC[6] = {0xCC, 0xDB, 0xA7, 0x5A, 0x7F, 0xC0};
 String macAddress = "CC:DB:A7:5A:7F:C0";
-const char* ssid = "your ssid";
-const char* password = "your password";
+const string ssid = "Loay's phone";
+const string password = "deirhanna123";
+
+void FileUpload(void *param) {
+    Sampler* samp = static_cast<Sampler*>(param);
+    samp->uploadSampleFiles();
+    vTaskDelete(NULL);
+}
 
 // globals
 
 void setup() {
-    Logger* logger = Logger::getInstance();
-    SamplingUnitSyncManager* syncManager = SamplingUnitSyncManager::getInstance();
+    logger = Logger::getInstance();
     SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
-    WifiHandler* wifiHandler = new WifiHandler();
+    WifiHandler* wifiHandler = new WifiHandler(ssid, password);
     CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger,wifiHandler,macAddress);
-    Sampler* sampler = new Sampler(logger, sdCardHandler, cloudSyncManager);
-
+    sampler = new Sampler(logger, sdCardHandler, cloudSyncManager);
+    Force_FAKE* fake_force_0 = new Force_FAKE(logger,sdCardHandler);
+    Force_FAKE* fake_force_1 = new Force_FAKE(logger,sdCardHandler);
 
     logger->init(serialBaudRate);
-    syncManager->init(CONTROL_UNIT_MAC);
     wifiHandler->init();
     cloudSyncManager->init();
     sdCardHandler->init();
     sampler->init();
-    sampler->uploadSampleFiles(ssid,password);
+
+    sampler->addSensor(fake_force_0);
+    sampler->addSensor(fake_force_1);
+
+    unsigned long startTimeMillis = millis();
+    sampler->startSampling(1738229619);
+
+    while(millis() - startTimeMillis < 3000){
+      sampler->writeSensorsData();
+      delay(5);
+    }
+
+    sampler->stopSampling();
+  
+    xTaskCreatePinnedToCore(
+        FileUpload,      // Task function
+        "FileUpload",    // Task name
+        32768,        // Stack size (bytes) - 32kb
+        sampler,        // Task parameters (can pass a struct or value)
+        1,           // Priority (higher value = higher priority)
+        NULL, // Task handle (can be NULL if not needed)
+        1            // Core ID (0 or 1 for dual-core ESP32)
+    );
+    
+    //sampler->uploadSampleFiles();
 
 }
 
-void loop() {}
+void loop() {
+  /*
+  if(sampler->getStatus() == SamplerStatus::UNIT_ERROR){
+    logger->error("Failed to upload files!");
+    delay(1000);
+  }else if(sampler->getStatus() == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+    logger->error("Uploading files in progress!");
+    delay(40);
+  }else if(sampler->getStatus() == SamplerStatus::UNIT_STAND_BY){
+    logger->error("Uploading files complete!");
+    delay(5000);
+  }
+  */
+}
 
-
-//#include <IOT_TECHNION_SURFBOARD.h>
-//
-//CloudSyncManager* cloudSyncManager = nullptr;
-//Logger* logger = nullptr;
-//SDCardHandler* sdCardHandler = nullptr;
-//uint8_t SDCardChipSelectPin = 5;
-//
-//string WIFIssid = "";
-//string WIFIpassword = "";
-//
-//
-//void setup() {
-//    WifiHandler* wifiHandler = new WifiHandler();
-//    wifiHandler->init();
-//    logger = Logger::getInstance();
-//    logger->init(57600);
-//    cloudSyncManager = new CloudSyncManager(logger, wifiHandler);
-//    cloudSyncManager->init();
-//    cloudSyncManager->connect(WIFIssid, WIFIpassword);
-//
-//    sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
-//
-//    vector<string> sampleFiles = sdCardHandler->listFilesInDir("/samplings");
-//    for(string sampleFilePath: sampleFiles){
-//        SDCardHandler::SDCardFileReader fileReader = sdCardHandler->readFile(sampleFilePath);
-//        // todo: get unit mac, sensor id, model etc from here...do this correctly
-//        String sensorID = "00";
-//        String timestamp = "123";
-//        String sensorModel = "model";
-//        String unitMac = "000";
-//        cloudSyncManager->uploadSamples(fileReader, timestamp, unitMac, sensorID, sensorModel);
-//        sdCardHandler->deleteFile(sampleFilePath);
-//    }
-//    cloudSyncManager->disconnect();
-//}
-//
-//void loop() {}

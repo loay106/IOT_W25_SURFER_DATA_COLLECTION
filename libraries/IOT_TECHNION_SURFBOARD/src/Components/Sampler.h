@@ -24,12 +24,10 @@ class Sampler {
         Logger* logger;
         SDCardHandler* sdCardHandler;
         CloudSyncManager* cloudSyncManager;
-        string WIFI_SSID;
-        string WIFI_PASSWORD;
         bool hasFilesToUpload;
 
     public:
-        Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager, string WIFI_SSID, string WIFI_PASSWORD);
+        Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager);
 
         void addSensor(SensorBase* sensor);
 
@@ -47,7 +45,7 @@ class Sampler {
         // use this when you want the unit to enter error state for external reasons
         void enterErrorState();
 
-        void uploadNextSampleFile();
+        void uploadSampleFiles();
 
         void writeSensorsData();
 };

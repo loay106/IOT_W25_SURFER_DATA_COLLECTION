@@ -1,13 +1,11 @@
 #include "Sampler.h"
 
 
-Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager, string WIFI_SSID, string WIFI_PASSWORD){
+Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager){
      status = SamplerStatus::UNIT_STAND_BY;
      this->logger = logger;
      this->sdCardHandler = sdCardHandler;
      this->cloudSyncManager = cloudSyncManager;
-     this->WIFI_SSID = WIFI_SSID;
-     this->WIFI_PASSWORD = WIFI_PASSWORD;
      hasFilesToUpload = false;
 }
 
@@ -52,52 +50,73 @@ void Sampler::stopSampling(){
  }
 
  SamplerStatus Sampler::getStatus(){
-    return status;
+    SamplerStatus res = status;
+    return res;
  }
 
  void Sampler::enterErrorState(){
      status = SamplerStatus::UNIT_ERROR;
  }
 
-void Sampler::uploadNextSampleFile(){
+void Sampler::uploadSampleFiles(){
     if(!hasFilesToUpload){
+        status = SamplerStatus::UNIT_STAND_BY;
         return;
     }
-    if(!cloudSyncManager->isWifiConnected()){
-        cloudSyncManager->connect(WIFI_SSID,WIFI_PASSWORD);
+    try{
+        if(!cloudSyncManager->isWifiConnected()){
+            cloudSyncManager->connect();
+        }
+    }catch(...){ 
+        status = SamplerStatus::UNIT_ERROR;
+        logger->error("Connecting to wifi failed!");
         return;
     }
-    status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
 
+    status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
     File root;
     sdCardHandler->getFolder("/samplings",&root);
     File file = root.openNextFile();
-    if (file) {
+    while (file) {
         String fileName = file.name();
+        String timestamp = fileName.substring(0, fileName.indexOf('_'));
+        String sensorID = fileName.substring(fileName.indexOf('_') + 1, fileName.lastIndexOf('_'));
+        String sensorModel = fileName.substring(fileName.lastIndexOf('_') + 1);
         logger->info("Processing file: " + string(fileName.c_str()));
         while (file.available()) {
-            String line = file.readStringUntil('\n');
-            line.trim();
-            if (line.length() == 0) continue;
-            String timestamp = fileName.substring(0, fileName.indexOf('_'));
-            String sensorID = fileName.substring(fileName.indexOf('_') + 1, fileName.lastIndexOf('_'));
-            String sensorModel = fileName.substring(fileName.lastIndexOf('_') + 1);
             try {
+                String line = file.readStringUntil('\n');
+                line.trim();
+                if (line.length() == 0) continue;
                 cloudSyncManager->uploadSamples(timestamp, sensorID, sensorModel,line);
-            } catch (...) {
-                logger->error("Failed to upload samples.");
-                throw CloudSyncError();
+            } catch (CloudSyncError& err) {
+                logger->error("Failed to upload samples from CloudSyncManager");
+                if(file){
+                    file.close();
+                }
+                status = SamplerStatus::UNIT_ERROR;
+                return;
+            } catch(...){
+                logger->error("Failed to upload samples!");
+                if(file){
+                    file.close();
+                }
+                status = SamplerStatus::UNIT_ERROR;
+                return;
             }
         }
         logger->info("Finished uploading file: "+ string(fileName.c_str()));
         file.close();
         sdCardHandler->deleteFile("/samplings/" + fileName);
-        return;
-    }else{
-        logger->info("Finished uploading all sample files.");
-        cloudSyncManager->disconnect();
-        hasFilesToUpload=false;
-    }    
+        file = root.openNextFile();
+    }
+    
+    // finished uploading files
+    logger->info("Finished uploading all sample files.");
+    cloudSyncManager->disconnect();
+    hasFilesToUpload=false;
+
+    status = SamplerStatus::UNIT_STAND_BY;
 }
 
  void Sampler::writeSensorsData(){

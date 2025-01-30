@@ -14,7 +14,7 @@ class Force_FAKE : public SensorBase {
         int delay_time;
         bool sensor_enabled;
     public:
-        Force_FAKE(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "FAKE_HX711"),delay_time(0),
+        Force_FAKE(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "FAKE-HX711"),delay_time(0),
         sensor_enabled(false){}
         void enableSensor() override {
             sensor_enabled=true;
