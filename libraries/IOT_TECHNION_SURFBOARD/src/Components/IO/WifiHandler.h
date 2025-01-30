@@ -2,6 +2,7 @@
 #define WIFI_HANDLER_H
 
 #include <Arduino.h>
+#include "../../Utils/Adresses.h"
 #include <WiFi.h>
 #include "../../Utils/Exceptions.h"
 #include "Logger.h"
@@ -42,6 +43,20 @@ class WifiHandler{
         }
         void disconnect(){
             WiFi.disconnect(true);
+        }
+
+        String getMacAddress() {
+            uint8_t mac[6];
+            WiFi.macAddress(mac);
+            return macToString(mac).c_str();
+        }
+
+        int getChannel() {
+            if(isWifiConnected()) {
+                return WiFi.channel();
+            }else{
+                throw WifiError();
+            }
         }
 
         bool isWifiConnected(){

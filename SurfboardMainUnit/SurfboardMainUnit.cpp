@@ -137,6 +137,13 @@ void SurfboardMainUnit::stopUploadSampleFiles() {
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
 
+
+void SamplerFileUploadTask(void *param) {
+    Sampler* samp = static_cast<Sampler*>(param);
+    samp->uploadSampleFiles();
+    vTaskDelete(NULL);
+}
+
 void SurfboardMainUnit::updateSystem() {
     // update status light flicker
    // logger->debug("flickering light...");
@@ -214,14 +221,22 @@ void SurfboardMainUnit::updateSystem() {
         sampler->writeSensorsData();
     }else if(status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD || status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR){
         if(sampler->hasFilesToCloudUpload()){
-            logger->debug("Uploading sampler data");
-            sampler->uploadNextSampleFile();
-            return;
-        }else{
-            syncManager->connect();
+            if(sampler->getStatus() == SamplerStatus::UNIT_ERROR){
+                updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
+            }else if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+                logger->debug("Uploading sampler data");
+                xTaskCreatePinnedToCore(
+                    SamplerFileUploadTask,      // Task function
+                    "SamplerFileUploadTask",    // Task name
+                    32768,        // Stack size (bytes) - 32kb
+                    sampler,        // Task param
+                    1,           // Priority (higher value = higher priority)
+                    NULL, // Task handle (can be NULL if not needed)
+                    1            // Core ID (0 or 1 for dual-core ESP32)
+                );
+            }
         }
     }
-
     // make sure all units are on the same status
    // logger->debug("Make sure all units are on the same system status...");
     int numUnitsNeedToUpload = 0;

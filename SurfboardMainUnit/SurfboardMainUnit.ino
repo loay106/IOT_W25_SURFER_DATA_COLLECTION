@@ -3,8 +3,8 @@
 // constants
 uint8_t SDCardChipSelectPin = 5;
 int serialBaudRate = 57600;
-int RGBRedPin = 26;
-int RGBGreenPin = 25;
+int RGBRedPin = 25;
+int RGBGreenPin = 26;
 int RGBBluePin = 27;
 
 int buttonPin = 4;
@@ -47,9 +47,9 @@ void setup() {
     RTCTimeHandler* timeHandler = new RTCTimeHandler(logger);
     RGBStatusHandler* statusLighthandler = new RGBStatusHandler(logger);
     ButtonHandler* buttonHandler = new ButtonHandler(logger, buttonPin);
-    WifiHandler* wifiHandler = new WifiHandler();
-    CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger, wifiHandler);
-    Sampler* sampler = new Sampler(logger, sdCardHandler, cloudSyncManager, WIFI_SSID, WIFI_PASSWORD);
+    WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
+    CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger, wifiHandler, wifiHandler->getMacAddress());
+    Sampler* sampler = new Sampler(logger, sdCardHandler, cloudSyncManager);
     mainUnit = new SurfboardMainUnit(syncManager, timeHandler, statusLighthandler, buttonHandler, logger, sampler, sdCardHandler);
 
     // declare sensors here....
