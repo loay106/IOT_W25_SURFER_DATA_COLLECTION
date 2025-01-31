@@ -83,8 +83,12 @@ void ControlUnitSyncManager::addStatusUpdateMessage(StatusUpdateMessage msg) {
 StatusUpdateMessage ControlUnitSyncManager::popStatusUpdateMessage() {
     StatusUpdateMessage msg;
     if (xSemaphoreTake(ControlUnitSyncManager::queueMutex, portMAX_DELAY) == pdTRUE) {
-        msg = statusUpdateQueue.front(); // Get the front message
-        statusUpdateQueue.pop();   
+        if(!statusUpdateQueue.empty())
+        {
+            msg = statusUpdateQueue.front(); // Get the front message
+            statusUpdateQueue.pop(); 
+        }
+        ControlUnitSyncManager::logger->error("No status message available");     
         xSemaphoreGive(ControlUnitSyncManager::queueMutex); // Release the mutex
     } else {
         ControlUnitSyncManager::logger->error("Deadlock in queue mutex");
