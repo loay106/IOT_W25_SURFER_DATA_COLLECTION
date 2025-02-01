@@ -1,5 +1,5 @@
-const { https } = require('firebase-functions');  // Fix: Use https from firebase-functions
-const functions = require('firebase-functions');  // Firebase functions (only required once)
+const { https } = require('firebase-functions');  
+const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const express = require('express');
 const { Storage } = require("@google-cloud/storage");
@@ -41,75 +41,71 @@ app.post('/addSamples', async (req, res) => {
 });
 
 
+const { onRequest } = require("firebase-functions/v2/https");
 const storage = new Storage();
 const bucket = admin.storage().bucket();
 
-exports.exportAllToCSV = functions.https.onRequest((req, res) => {
-    cors(req, res, async () => {
-        try {
-            const collections = await db.listCollections();
-            const timestampCollections = collections.filter((col) =>
-                col.id.startsWith("Sampling_")
-            );
 
-            if (timestampCollections.length === 0) {
-                return res.status(404).send({ message: "No uploaded data found to export." });
-            }
+exports.exportAllToCSV = onRequest(async (req, res) => {
+    try {
+        const collections = await db.listCollections();
+        const timestampCollections = collections.filter(col => col.id.startsWith("Sampling_"));
 
-            for (const collection of timestampCollections) {
-                const collectionName = collection.id;
-
-                const snapshot = await db.collection(collectionName)
-                    .orderBy("sample_index", "asc")
-                    .get();
-
-                if (snapshot.empty) {
-                    console.log(`No data in collection ${collectionName}`);
-                    continue;
-                }
-
-                const rows = [];
-                rows.push(["TIMESTAMP", "SENSOR_ID", "SENSOR_MODEL", "UNIT_MAC", "SAMPLE", "SAMPLE_INDEX"]); // CSV headers
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    rows.push([data.timestamp, data.sensorID, data.sensorModel, data.unitMac, data.sample, data.sample_index]);
-                });
-
-                const csvString = stringify(rows, { header: false });
-                const fileName = `${collectionName}.csv`;
-                const file = bucket.file(fileName);
-
-                await file.save(csvString);
-                console.log(`Exported ${collectionName} to ${fileName}`);
-
-                await deleteCollection(collectionName);
-                console.log(`Deleted collection ${collectionName}`);
-            }
-
-            res.status(200).send({ message: "Exported data to Cloud Storage successfully." });
-        } catch (error) {
-            console.error("Error exporting collections:", error);
-            res.status(500).send({ error: "An error occurred while exporting data." });
+        if (timestampCollections.length === 0) {
+            return res.status(404).send({ message: "No uploaded data found to export." });
         }
-    });
+
+        for (const collection of timestampCollections) {
+            const collectionName = collection.id;
+            const fileName = `${collectionName}.csv`;
+            const file = bucket.file(fileName);
+            const writeStream = file.createWriteStream({ contentType: "text/csv" });
+
+            writeStream.write("TIMESTAMP,SENSOR_ID,SENSOR_MODEL,UNIT_MAC,SAMPLE,SAMPLE_INDEX\n");
+
+            const snapshot = await db.collection(collectionName).orderBy("sample_index", "asc").stream();
+
+            for await (const doc of snapshot) {
+                const data = doc.data();
+                writeStream.write(`${data.timestamp},${data.sensorID},${data.sensorModel},${data.unitMac},${data.sample},${data.sample_index}\n`);
+            }
+
+            writeStream.end();
+
+            console.log(`Exported ${collectionName} to ${fileName}`);
+            await deleteCollection(collectionName);
+            console.log(`Deleted collection ${collectionName}`);
+        }
+
+        res.status(200).send({ message: "Exported data to Cloud Storage successfully." });
+    } catch (error) {
+        console.error("Error exporting collections:", error);
+        res.status(500).send({ error: "An error occurred while exporting data." });
+    }
 });
-// Function to delete documents in a collection
+
+
+// Function to delete all documents in a collection in batches
 async function deleteCollection(collectionPath) {
     const collectionRef = db.collection(collectionPath);
-    const snapshot = await collectionRef.get();
+    let deleted = 0;
 
-    if (snapshot.empty) {
-        console.log(`No documents found in collection ${collectionPath}`);
-        return;
+    while (true) {
+        const snapshot = await collectionRef.limit(500).get();
+
+        if (snapshot.empty) {
+            console.log(`Deleted ${deleted} documents from ${collectionPath}`);
+            break;
+        }
+
+        const batch = db.batch();
+        snapshot.docs.forEach(doc => batch.delete(doc.ref));
+
+        await batch.commit();
+        deleted += snapshot.size;
     }
 
-    const batch = db.batch();
-    snapshot.forEach(doc => {
-        batch.delete(doc.ref);
-    });
-
-    await batch.commit();
-    console.log(`All documents deleted from ${collectionPath}`);
+    console.log(`Collection ${collectionPath} deleted.`);
 }
 
 app.get('/exportAll', exports.exportAllToCSV);

@@ -111,6 +111,7 @@ void Sampler::uploadSampleFiles(){
                 return;
             }
         }
+        cloudSyncManager->uploadLastSamples(timestamp,sensorID,sensorModel);
         logger->info("Finished uploading file: "+ string(fileName.c_str()));
         file.close();
         sdCardHandler->deleteFile("/samplings/" + fileName);
