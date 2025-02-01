@@ -29,6 +29,8 @@ class CloudSyncManager{
         bool isWifiConnected(){
             return wifiHandler->isWifiConnected();
         }
+        void sendBuffer(String timestamp, String sensorID, String sensorModel);
+        void uploadLastSamples(String timestamp, String sensorID, String sensorModel);
         void uploadSamples(String timestamp, String sensorID, String sensorModel, String samples, int* fileSampleIndex);
 };
 

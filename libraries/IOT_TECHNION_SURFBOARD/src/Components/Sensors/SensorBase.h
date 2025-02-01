@@ -31,7 +31,7 @@ class SensorBase{
         string* samplingFileName;
         unsigned long samplesCount;
         unsigned long samplingStartMillis;
-        void flushSamplesBuffer();
+        void flushSamplesBuffer(bool isLastLine);
 
     public:
         SensorBase(){};

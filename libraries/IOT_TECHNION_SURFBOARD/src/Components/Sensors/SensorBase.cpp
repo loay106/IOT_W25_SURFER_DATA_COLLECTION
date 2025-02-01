@@ -28,7 +28,7 @@ void SensorBase::startSampling(string outputFilePath){
 }
 
 void SensorBase::stopSampling(){
-    flushSamplesBuffer();
+    flushSamplesBuffer(true);
     delete samplingFileName;
     samplingFileName = nullptr;
     unsigned long timeElapsed = (millis() - samplingStartMillis)/1000;
@@ -49,7 +49,7 @@ void SensorBase::writeSamples(){
         sampleBuffer->append(sample);
         samplesCount++;
         if(sampleBuffer->length() >= MAX_SAMPLES_BUFFER_LENGTH){
-            flushSamplesBuffer();
+            flushSamplesBuffer(false);
         }else{
             sampleBuffer->append("|");
         }
@@ -58,8 +58,13 @@ void SensorBase::writeSamples(){
     }
 }
 
-void SensorBase::flushSamplesBuffer(){
+void SensorBase::flushSamplesBuffer(bool isLastLine){
     string* temp = sampleBuffer;
+    if(isLastLine){
+        if (!temp->empty()) {
+            temp->pop_back();
+        }
+    }
     sampleBuffer = new string();
     sdcardHandler->writeData(*samplingFileName, temp->c_str());
     delete temp;
