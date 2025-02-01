@@ -1,7 +1,6 @@
 #include "SensorBase.h"
 
-SensorBase::SensorBase(Logger *logger, SDCardHandler *sdcardHandler, string model)
-{
+SensorBase::SensorBase(Logger *logger, SDCardHandler *sdcardHandler, string model){
     this->logger = logger;
     this->sdcardHandler = sdcardHandler;
     this->model = model;
@@ -11,8 +10,7 @@ SensorBase::SensorBase(Logger *logger, SDCardHandler *sdcardHandler, string mode
     samplingStartMillis=0;
 }
 
-string SensorBase::getModel()
-{
+string SensorBase::getModel(){
     return model;
 }
 

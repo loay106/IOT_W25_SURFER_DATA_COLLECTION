@@ -10,9 +10,37 @@ SurfboardSamplingUnit* samplingUnit;
 
 void setup() {
     Logger* logger = Logger::getInstance();
-    SamplingUnitSyncManager* syncManager = SamplingUnitSyncManager::getInstance();
+    logger->init(serialBaudRate);
+    logger->setLogLevel(LogLevel::DEBUG);
     SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
-    Sampler* sampler = new Sampler(logger, sdCardHandler);
+    try{
+        sdCardHandler->init();
+    }catch(InitError& err){
+        logger->error("SD Card init error! Check your SD card wiring!");
+        while(true){delay(500);};
+    }
+
+    string WIFI_SSID = "";
+    string WIFI_PASSWORD = "";
+    vector<string> sensorsParams;
+
+
+    try{
+        std::map<string, string> configMap = sdCardHandler->readConfigFile("//unit.config");
+        WIFI_SSID = configMap["WIFI_SSID"];
+        WIFI_PASSWORD = configMap["WIFI_PASSWORD"];
+        sensorsParams = parseSensorParams(configMap["SENSORS_PARAMS"]);
+    }catch(exception& e){
+        logger->error("Error reading config file! Place unit.config in your sd card top level with the required configs!");
+        while(true){delay(500);};
+    }
+
+
+    WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
+    CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger, wifiHandler, wifiHandler->getMacAddress());
+    Sampler* sampler = new Sampler(logger, sdCardHandler, cloudSyncManager);
+
+    SamplingUnitSyncManager* syncManager = SamplingUnitSyncManager::getInstance();
     samplingUnit = new SurfboardSamplingUnit(syncManager,sdCardHandler,sampler, logger);
 
     // declare sensors here....
@@ -22,11 +50,11 @@ void setup() {
         // don't change the order of the init
         logger->init(serialBaudRate);
         syncManager->init(CONTROL_UNIT_MAC);
-        sdCardHandler->init();
         sampler->init();
 
         // init sensors here..
-        // sensor0.init();
+        // you can pass params from the config file
+        // sensor[i] should have the param in sensorsParams[i]
     }catch(InitError& err){
         while(true){
             // don't proceed, there's a wiring error!
@@ -38,9 +66,26 @@ void setup() {
 
     // add sensors here....
     //samplingUnit->addSensor(sensor0);
+
+    logger->info("Unit setup complete!");
 }
 
 void loop() {
-    samplingUnit->updateSystem();
-    delay(5); // update delay as needed
+    samplingUnit->handleNextCommand();
+    SamplerStatus status = samplingUnit->getStatus();
+    switch(status){
+        case UNIT_STAND_BY:
+        case UNIT_ERROR:
+            delay(5);
+            break;
+        case UNIT_SAMPLING:
+            samplingUnit->loopSampling();
+            delay(2);
+            break;
+        case UNIT_SAMPLE_FILES_UPLOAD:
+            samplingUnit->loopFileUpload();
+            delay(10);
+            break;
+    }
+    samplingUnit->reportStatus();
 }

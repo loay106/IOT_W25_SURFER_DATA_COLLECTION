@@ -8,6 +8,7 @@ using namespace std;
 #include <IOT_TECHNION_SURFBOARD.h>
 
 const string CONFIG_FILE_NAME = "sampling_unit.config";
+const int REPORT_STATUS_INTERVAL_MILLIS = 1000;
 
 class SurfboardSamplingUnit {
     /*  
@@ -23,6 +24,10 @@ class SurfboardSamplingUnit {
     public:
         SurfboardSamplingUnit(SamplingUnitSyncManager* syncManager, SDCardHandler* sdCardHandler, Sampler* sampler, Logger* logger);
         void addSensor(SensorBase* sensor);
-        void updateSystem();
+        SamplerStatus getStatus();
+        void handleNextCommand();
+        void loopSampling();
+        void loopFileUpload();
+        void reportStatus();
 };
 #endif // SURFBOARD_SAMPLING_UNIT_H

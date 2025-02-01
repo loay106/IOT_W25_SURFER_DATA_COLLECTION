@@ -83,12 +83,8 @@ void ControlUnitSyncManager::addStatusUpdateMessage(StatusUpdateMessage msg) {
 StatusUpdateMessage ControlUnitSyncManager::popStatusUpdateMessage() {
     StatusUpdateMessage msg;
     if (xSemaphoreTake(ControlUnitSyncManager::queueMutex, portMAX_DELAY) == pdTRUE) {
-        if(!statusUpdateQueue.empty())
-        {
-            msg = statusUpdateQueue.front(); // Get the front message
-            statusUpdateQueue.pop(); 
-        }
-        ControlUnitSyncManager::logger->error("No status message available");     
+        msg = statusUpdateQueue.front(); // Get the front message
+        statusUpdateQueue.pop();   
         xSemaphoreGive(ControlUnitSyncManager::queueMutex); // Release the mutex
     } else {
         ControlUnitSyncManager::logger->error("Deadlock in queue mutex");
@@ -96,13 +92,13 @@ StatusUpdateMessage ControlUnitSyncManager::popStatusUpdateMessage() {
     return msg;
 }
 
-void ControlUnitSyncManager::processReceivedMessages(const esp_now_recv_info_t* messageInfo, const uint8_t *incomingData, int len)
+void ControlUnitSyncManager::processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
     try{
         SamplingUnitStatusMessage status = deserializeStatusUpdateMsg(incomingData, len);
                 // Create StatusUpdateMessage
         StatusUpdateMessage statusMessage;
-        memcpy(statusMessage.from, messageInfo->src_addr, 6);
+        memcpy(statusMessage.from, mac_addr, 6);
         statusMessage.status = status;
         ControlUnitSyncManager::addStatusUpdateMessage(statusMessage);
     }catch(InvalidSyncMessage& err){

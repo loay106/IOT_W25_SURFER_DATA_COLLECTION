@@ -13,13 +13,6 @@
 
 using namespace std;
 
-// constant params
-extern const char* IMU_RATE;
-extern const char* TIMESTAMP;
-extern const char* WIFI_SSID;
-extern const char* WIFI_PASSWORD;
-extern const int STATUS_REPORT_DELAY_MILLIS;
-
 enum ControlUnitCommand {
     START_SAMPLING, // attached TIMESTAMP
     STOP_SAMPLING,

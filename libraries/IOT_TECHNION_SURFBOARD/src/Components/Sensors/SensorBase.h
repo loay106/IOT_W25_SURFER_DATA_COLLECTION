@@ -24,7 +24,6 @@ class SensorBase{
         SDCardHandler* sdcardHandler;
         string* sampleBuffer;
 
-
     protected:
         Logger* logger;
         string model;

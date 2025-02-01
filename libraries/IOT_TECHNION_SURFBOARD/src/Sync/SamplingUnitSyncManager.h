@@ -26,7 +26,7 @@ class SamplingUnitSyncManager {
         SamplingUnitSyncManager(){
             isConnected=false;
         };
-        static void onDataReceivedCallback(const esp_now_recv_info_t* messageInfo, const uint8_t* incomingData, int len);
+        static void onDataReceivedCallback(const uint8_t *mac_addr, const uint8_t* incomingData, int len);
     public:
         SamplingUnitSyncManager(const SamplingUnitSyncManager& obj) = delete;
         static SamplingUnitSyncManager* getInstance() {

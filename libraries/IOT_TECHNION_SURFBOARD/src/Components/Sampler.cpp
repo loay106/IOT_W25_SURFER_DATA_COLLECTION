@@ -6,7 +6,8 @@ Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager*
      this->logger = logger;
      this->sdCardHandler = sdCardHandler;
      this->cloudSyncManager = cloudSyncManager;
-     hasFilesToUpload = false;
+     this->hasFilesToUpload = false;
+     this->stopUpload=false;
 }
 
 void Sampler::addSensor(SensorBase *sensor){
@@ -77,6 +78,7 @@ void Sampler::uploadSampleFiles(){
     }
 
     status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
+    stopUpload=false;
     File root;
     sdCardHandler->getFolder("/samplings",&root);
     File file = root.openNextFile();
@@ -115,8 +117,16 @@ void Sampler::uploadSampleFiles(){
         logger->info("Finished uploading file: "+ string(fileName.c_str()));
         file.close();
         sdCardHandler->deleteFile("/samplings/" + fileName);
-        file = root.openNextFile();
-        *fileSampleIndex = 0;
+        if(stopUpload){
+            logger->info("File upload stopped!");
+            cloudSyncManager->disconnect();
+            delete fileSampleIndex;
+            status = SamplerStatus::UNIT_STAND_BY;
+            return;
+        }else{
+            file = root.openNextFile();
+            *fileSampleIndex = 0;
+        }        
     }
     
     // finished uploading files

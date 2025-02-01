@@ -25,6 +25,7 @@ class Sampler {
         SDCardHandler* sdCardHandler;
         CloudSyncManager* cloudSyncManager;
         bool hasFilesToUpload;
+        volatile bool stopUpload;
 
     public:
         Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager);
@@ -46,6 +47,8 @@ class Sampler {
         void enterErrorState();
 
         void uploadSampleFiles();
+
+        void stopUploadSampleFiles();
 
         void writeSensorsData();
 };

@@ -20,7 +20,7 @@ using namespace std;
 */
 
 
-const string CONFIG_FILE_NAME = "main_unit.config";
+const string CONFIG_FILE_NAME = "unit.config";
 const int COMMAND_SEND_MIN_INTERVAL_MILLIS = 500; 
 const int MAX_STATUS_UPDATE_DELAY = 5000;
 
