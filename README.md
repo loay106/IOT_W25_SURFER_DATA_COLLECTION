@@ -1,10 +1,11 @@
 # IOT Winter 2024/2025 Surfer Data Collector by:
-1. Loay
-2. Shada
-3. Mousa
+1. Loay Khateeb
+2. Shada Hijazi
+3. Mousa Abu Alhija
 
 # Details about the project
-// to be added later
+Surfer Data Collection, a project under the ICST Lab at the Technion – Israel Institute of Technology, captures acceleration force data using multiple sensors strategically placed on the surfer's board. This innovative system provides deep insights into athlete movements and maneuvers, enhancing training and performance analysis with precise data collection.
+Our project seamlessly manages wireless connectivity between sensors, ensuring efficient data transmission to the cloud for processing and analysis.
 
 # Folder description:
 1. SurfboardMainUnit:
@@ -23,11 +24,20 @@
 
    This folder includes a library that is used in SurfboardSamplingUnit and SurfboardMainUnit.
    Make sure to move this library to the Arduino libraries folder locally!
-4. FireStore Files:
+   
+5. FireStore Files:
 
-   This Folder includes the files that were integrated with fireStore to support files uploading and merging and exporting.
-   File index.js includes the endpoints used to connect with FireBase and Storage.
-   File index.HTML is the user interface page hosted in FireStore.
+   This folder contains files integrated with Firestore to support file uploading, merging, and exporting.
+   index.js includes the endpoints used to connect with Firebase and Cloud Storage.
+   index.html is the user interface page hosted on Firestore.
+
+6. tests:
+
+   This folder includes tests for different parts of our project.
+   
+8. unit.config:
+
+   This file includes WIFI details and sensor params that need to be privided.
 
 # Arduino/ESP libraries used for the project:
    RTClib (by Adafruit) - version 2.1.4
