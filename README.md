@@ -51,6 +51,9 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
 4. Open SurfboardMainUnit/SurfboardMainUnit.ino file in your Arduino IDE and compile the code into your main unit
 5. For every sampling unit open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
    
+# wiring Diagrams:
+<img src="Downloads/MainUnit.png" alt="My Image" width="300">
+   
 # Project Poster:
 // to be edited later - saved for template use
 
