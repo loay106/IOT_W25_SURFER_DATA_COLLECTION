@@ -37,7 +37,7 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
    
 8. unit.config:
 
-   This file includes WIFI details and sensor params that need to be privided.
+   This file includes WIFI details and sensor params that need to be provided.
 
 # Arduino/ESP libraries used for the project:
    RTClib (by Adafruit) - version 2.1.4
