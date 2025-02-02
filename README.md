@@ -52,8 +52,11 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
 5. For every sampling unit open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
    
 # wiring Diagrams:
+Main Unit Wiring Diagram:
 
 <img src="https://github.com/user-attachments/assets/a86154c1-af3f-4eb6-b046-5d46ad49b0bc" alt="Image" width="600">
+
+Sampling Unit Wiring Diagram:
 
 <img src="https://github.com/user-attachments/assets/d2808a2c-2120-4290-80fc-dc2f74cc72e5" alt="Image" width="600">
    
