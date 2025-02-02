@@ -37,7 +37,7 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
    
 8. unit.config:
 
-   This file includes WIFI details and sensor params that need to be privided.
+   This file includes WIFI details and sensor params that need to be provided.
 
 # Arduino/ESP libraries used for the project:
    RTClib (by Adafruit) - version 2.1.4
@@ -50,7 +50,25 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
 3. Add your parameters to device.config file and move it to the SD card attached to the main unit
 4. Open SurfboardMainUnit/SurfboardMainUnit.ino file in your Arduino IDE and compile the code into your main unit
 5. For every sampling unit open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
-   
+
+# Hardware:
+
+note : in our project we had 1 Main unit and 2 Sampling units.
+* Main Unit Hardware:
+   1. Esp32 X1
+   2. RTC X1
+   3. Push Button X1
+   4. RGB led light X1
+   5. SD card X1
+      
+* sampling Unit Harware:
+   1. Esp32 X1
+   2. BNO080 IMU sensor X1
+   3. Strain Gauge sensor X1
+   4. HX711 X1
+   5. SD card X1
+
+  
 # wiring Diagrams:
 Sampling Unit Wiring Diagram:
 
