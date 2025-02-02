@@ -21,6 +21,7 @@ class SurfboardSamplingUnit {
         Logger* logger;
         SDCardHandler* sdCardHandler;
         int lastStatusReportTime;
+        SamplerStatus lastStatusReported;
     public:
         SurfboardSamplingUnit(SamplingUnitSyncManager* syncManager, SDCardHandler* sdCardHandler, Sampler* sampler, Logger* logger);
         void addSensor(SensorBase* sensor);
