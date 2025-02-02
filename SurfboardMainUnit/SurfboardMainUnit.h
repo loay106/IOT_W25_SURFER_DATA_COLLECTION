@@ -50,13 +50,25 @@ class SurfboardMainUnit {
 
         void startSampling();
         void stopSampling();
-        void uploadSampleFiles();
-        void stopUploadSampleFiles();
+
+        void startSampleFilesUpload();
+        void stopSampleFilesUpload();
+
+        void sendCommand(SamplingUnitRep& unit, ControlUnitCommand command);
     public:
         SurfboardMainUnit(ControlUnitSyncManager* syncManager, RTCTimeHandler* timeHandler, RGBStatusHandler* statusLighthandler, ButtonHandler* buttonHandler, Logger* logger, Sampler* sampler, SDCardHandler* sdCardHandler);
         void init(uint8_t samplingUnitsAdresses[][6], int samplingUnitsNum);
         void addSensor(SensorBase* sensor);
-        void updateSystem(); // update system periodically (i.e call this method every 20 ms..)
+
+        SystemStatus getStatus();
+
+        void handleButtonPress();
+        void readStatusUpdateMessages();
+
+        void loopStatusLight();
+        void loopSampling();
+        void loopFileUpload();
+
 
 };
 

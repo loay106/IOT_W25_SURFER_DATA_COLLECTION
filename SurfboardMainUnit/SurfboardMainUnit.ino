@@ -43,11 +43,23 @@ void setup() {
         while(true){delay(500);};
     }
 
+    WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
+    try{
+        logger->info("Checking wifi connection...");
+        wifiHandler->connect();
+        logger->info("Wifi connection established!");
+    }catch(WifiError& err){
+          logger->error("Wifi connection failed! Check your ssid and password!");
+          while(true){delay(500);};
+    }
+
+    int WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
+
     ControlUnitSyncManager* syncManager = ControlUnitSyncManager::getInstance();
     RTCTimeHandler* timeHandler = new RTCTimeHandler(logger);
     RGBStatusHandler* statusLighthandler = new RGBStatusHandler(logger);
     ButtonHandler* buttonHandler = new ButtonHandler(logger, buttonPin);
-    WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
+
     CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger, wifiHandler, wifiHandler->getMacAddress());
     Sampler* sampler = new Sampler(logger, sdCardHandler, cloudSyncManager);
     mainUnit = new SurfboardMainUnit(syncManager, timeHandler, statusLighthandler, buttonHandler, logger, sampler, sdCardHandler);
@@ -83,6 +95,8 @@ void setup() {
         
     }
 
+
+
     // add sensors here....
     mainUnit->addSensor(fake_force_0);
     mainUnit->addSensor(fake_force_1);
@@ -91,7 +105,26 @@ void setup() {
 }
 
 void loop() {
-    mainUnit->updateSystem();
-    delay(5); // update as needed
+    mainUnit->loopStatusLight();
+    mainUnit->handleButtonPress();
+    mainUnit->readStatusUpdateMessages();
+    SystemStatus status = mainUnit->getStatus();
+    switch(status){
+      case SystemStatus::SYSTEM_STAND_BY:
+      case SystemStatus::SYSTEM_STARTING:
+      case SystemStatus::SYSTEM_ERROR: 
+        delay(10);
+        break;
+      case SystemStatus::SYSTEM_SAMPLING:
+      case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
+        mainUnit->loopSampling();
+        delay(3);
+        break;
+      case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
+      case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
+        mainUnit->loopFileUpload();
+        delay(10);
+        break;
+    }
 }
 

@@ -85,7 +85,7 @@ void SurfboardMainUnit::startSampling() {
     }
     sampler->startSampling(currentSamplingSession);
     updateStatus(SystemStatus::SYSTEM_SAMPLING);
-    logger->info("Sampling started...");
+    //logger->info("Sampling started...");
 }
 
 void SurfboardMainUnit::stopSampling() {
@@ -104,7 +104,13 @@ void SurfboardMainUnit::stopSampling() {
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
 
-void SurfboardMainUnit::uploadSampleFiles() {
+void SamplerFileUploadTask(void *param) {
+    Sampler* samp = static_cast<Sampler*>(param);
+    samp->uploadSampleFiles();
+    vTaskDelete(NULL);
+}
+
+void SurfboardMainUnit::startSampleFilesUpload() {
     try{
         std::map<string, string> params;
         syncManager->broadcastCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, params);
@@ -117,11 +123,25 @@ void SurfboardMainUnit::uploadSampleFiles() {
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
       it->second.lastCommandSentMillis = current;
     }
-    updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
-    syncManager->disconnect();
+
+    if(sampler->hasFilesToCloudUpload()){
+      if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+          logger->debug("Uploading sampler data");
+          xTaskCreatePinnedToCore(
+              SamplerFileUploadTask,      // Task function
+              "SamplerFileUploadTask",    // Task name
+              32768,        // Stack size (bytes) - 32kb
+              sampler,        // Task param
+              1,           // Priority (higher value = higher priority)
+              NULL, // Task handle (can be NULL if not needed)
+              1            // Core ID (0 or 1 for dual-core ESP32)
+          );
+      }
+  }
+  updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
 }
 
-void SurfboardMainUnit::stopUploadSampleFiles() {
+void SurfboardMainUnit::stopSampleFilesUpload() {
     try{
         std::map<string, string> params;
         syncManager->broadcastCommand(ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD, params);
@@ -134,24 +154,47 @@ void SurfboardMainUnit::stopUploadSampleFiles() {
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
       it->second.lastCommandSentMillis = current;
     }
+    sampler->stopUploadSampleFiles();
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
 
-
-void SamplerFileUploadTask(void *param) {
-    Sampler* samp = static_cast<Sampler*>(param);
-    samp->uploadSampleFiles();
-    vTaskDelete(NULL);
+SystemStatus SurfboardMainUnit::getStatus(){
+    SystemStatus res = status;
+    return res;
 }
 
-void SurfboardMainUnit::updateSystem() {
-    // update status light flicker
-   // logger->debug("flickering light...");
-    statusLighthandler->flicker();
+void SurfboardMainUnit::handleButtonPress(){
+    ButtonPressType press = buttonHandler->getLastPressType();
+    if(press != ButtonPressType::NO_PRESS){
+        switch(status){
+            case SystemStatus::SYSTEM_SAMPLING:
+            case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
+                logger->debug("Soft or long press detected while sampling");
+                stopSampling();
+                break;
+            case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
+            case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
+                logger->debug("Soft or long press detected while file uploading");
+                stopSampleFilesUpload();
+                break;
+            case SystemStatus::SYSTEM_STAND_BY:
+                if(press == ButtonPressType::SOFT_PRESS){
+                    logger->debug("Soft press detected while on standby");
+                    startSampling();
+                }else{
+                    // long press
+                    logger->debug("Long press detected while on standby");
+                    startSampleFilesUpload();
+                }
+                break;
+        }
+      delay(200); // give some time for status messages
+    }
+}
 
-    // read status update messages from sampling units
-   // logger->debug("Reading status messages...");
+void SurfboardMainUnit::readStatusUpdateMessages(){
     while(syncManager->hasStatusUpdateMessages()){
+        // todo: update in ControlUnitSyncManager and throw error in case is empty
         StatusUpdateMessage statusMessage = ControlUnitSyncManager::popStatusUpdateMessage();
         string unitID = macToString(statusMessage.from);
         try{
@@ -181,137 +224,90 @@ void SurfboardMainUnit::updateSystem() {
         }
     };
 
-    // handle button press
-   // logger->debug("Handling button press...");
-    ButtonPressType press = buttonHandler->getLastPressType();
-    if(press != ButtonPressType::NO_PRESS){
-        switch(status){
-            case SystemStatus::SYSTEM_SAMPLING:
-            case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
-                logger->debug("Soft or long press detected while sampling");
-                stopSampling();
-                return;
-            case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
-            case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
-                logger->debug("Soft or long press detected while file uploading");
-                stopUploadSampleFiles();
-                return;
-            case SystemStatus::SYSTEM_STAND_BY:
-                if(press == ButtonPressType::SOFT_PRESS){
-                    logger->debug("Soft press detected while on standby");
-                    startSampling();
-                }else{
-                    // long press
-                    logger->debug("Long press detected while on standby");
-                    uploadSampleFiles();
-                }
-                return;
-            case SystemStatus::SYSTEM_ERROR:
-                return;
-            default:{
-                logger->info("Unknown state, shouldn't get here");
-            }
+}
+
+void SurfboardMainUnit::loopStatusLight(){
+    statusLighthandler->flicker();
+}
+
+void SurfboardMainUnit::sendCommand(SamplingUnitRep& unit, ControlUnitCommand command){
+    unsigned long current = millis();
+    if((current - unit.lastCommandSentMillis) < COMMAND_SEND_MIN_INTERVAL_MILLIS){
+        return;
+    }
+    try{
+        std::map<string, string> commandParams;
+        switch(command){
+            case ControlUnitCommand::START_SAMPLING:
+                commandParams["TIMESTAMP"] = to_string(currentSamplingSession);
+                logger->info("Sending START_SAMPLING command to unit " + macToString(unit.mac));
+                syncManager->sendCommand(ControlUnitCommand::START_SAMPLING, commandParams, unit.mac);
+                break;
+            case ControlUnitCommand::STOP_SAMPLING:
+                logger->info("Sending STOP_SAMPLING command to unit " + macToString(unit.mac));
+                syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLING, commandParams, unit.mac);
+                break;
+            case ControlUnitCommand::START_SAMPLE_FILES_UPLOAD:
+                logger->info("Sending START_SAMPLE_FILES_UPLOAD command to unit " + macToString(unit.mac));
+                syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, commandParams, unit.mac);
+                break;
+            case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
+                logger->info("Sending STOP_SAMPLE_FILES_UPLOAD command to unit " + macToString(unit.mac));
+                syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, commandParams, unit.mac);
+                break;
+
+        }
+        unit.lastCommandSentMillis = millis();
+    }catch(ESPNowSyncError& error){
+        unit.status = SamplerStatus::UNIT_ERROR;
+        return;
+    } 
+}
+
+void SurfboardMainUnit::loopFileUpload(){
+    if(sampler->hasFilesToCloudUpload() && sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+        updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
+    }
+
+    int finishedCount = 0;
+
+    if(!sampler->hasFilesToCloudUpload()){
+        finishedCount++;
+    }
+
+    std::map<string, SamplingUnitRep>::iterator it;
+    for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
+        SamplerStatus unitStatus = it->second.status;
+        if(unitStatus == SamplerStatus::UNIT_ERROR){
+            updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
+        }
+        if(!it->second.hasFilesToUpload){
+            finishedCount++;
+        }else if(unitStatus != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+            sendCommand(it->second, ControlUnitCommand::START_SAMPLE_FILES_UPLOAD);
         }
     }
 
-    // run sampler methods
-   // logger->debug("Running sampler methods...");
-    if(status == SystemStatus::SYSTEM_SAMPLING || status == SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR){
-       // logger->debug("Writing sampler data");
+    if(finishedCount == samplingUnits.size() + 1){
+        updateStatus(SystemStatus::SYSTEM_STAND_BY);
+    }
+}
+
+void SurfboardMainUnit::loopSampling(){
+    if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLING){
+        sampler->startSampling(currentSamplingSession);
+    }else{
         sampler->writeSensorsData();
-    }else if(status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD || status == SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR){
-        if(sampler->hasFilesToCloudUpload()){
-            if(sampler->getStatus() == SamplerStatus::UNIT_ERROR){
-                updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
-            }else if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
-                logger->debug("Uploading sampler data");
-                xTaskCreatePinnedToCore(
-                    SamplerFileUploadTask,      // Task function
-                    "SamplerFileUploadTask",    // Task name
-                    32768,        // Stack size (bytes) - 32kb
-                    sampler,        // Task param
-                    1,           // Priority (higher value = higher priority)
-                    NULL, // Task handle (can be NULL if not needed)
-                    1            // Core ID (0 or 1 for dual-core ESP32)
-                );
-            }
-        }
     }
-    // make sure all units are on the same status
-   // logger->debug("Make sure all units are on the same system status...");
-    int numUnitsNeedToUpload = 0;
+    
     std::map<string, SamplingUnitRep>::iterator it;
-    unsigned long current = millis();
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
-        if((current - it->second.lastStatusUpdateMillis) > MAX_STATUS_UPDATE_DELAY){
-            it->second.status = SamplerStatus::UNIT_ERROR;
+        SamplerStatus unitStatus = it->second.status;
+        if(unitStatus == SamplerStatus::UNIT_ERROR){
+            updateStatus(SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR);
         }
-        switch(status){
-            case SystemStatus::SYSTEM_SAMPLING:
-            case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
-                if(it->second.status == SamplerStatus::UNIT_ERROR){
-                  updateStatus(SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR);
-                }else if(it->second.status != SamplerStatus::UNIT_SAMPLING && (millis() - it->second.lastCommandSentMillis) >= COMMAND_SEND_MIN_INTERVAL_MILLIS){
-                    std::map<string, string> samplingParams;
-                    samplingParams["TIMESTAMP"] = to_string(currentSamplingSession);
-                    try{
-                        string message = "Unit " + it->first + " not sampling. Sending START_SAMPLING command...";
-                        logger->info(message);
-                        syncManager->sendCommand(ControlUnitCommand::START_SAMPLING, samplingParams, it->second.mac);
-                        it->second.lastCommandSentMillis = millis();
-                    }catch(ESPNowSyncError& error){
-                        it->second.status = SamplerStatus::UNIT_ERROR;
-                    } 
-                }
-                break;
-            case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
-            case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
-                if(it->second.status == SamplerStatus::UNIT_ERROR){
-                  updateStatus(SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR);
-                }else if(it->second.status != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD && it->second.hasFilesToUpload && (millis() - it->second.lastCommandSentMillis) >= COMMAND_SEND_MIN_INTERVAL_MILLIS){
-                    try{
-                        string message = "Unit " + it->first + " not uploading files. Sending START_SAMPLE_FILES_UPLOAD command...";
-                        logger->info(message);
-                        std::map<string, string> params; // empty params, just to pass
-                        syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, params, it->second.mac);
-                        it->second.lastCommandSentMillis = millis();
-                    }catch(ESPNowSyncError& error){
-                        it->second.status = SamplerStatus::UNIT_ERROR;
-                    }
-                }
-                break;
-            case SystemStatus::SYSTEM_STAND_BY:
-                if(it->second.status == SamplerStatus::UNIT_STAND_BY){
-                    continue;
-                }else if(it->second.status == SamplerStatus::UNIT_SAMPLING && (millis() - it->second.lastCommandSentMillis) >= COMMAND_SEND_MIN_INTERVAL_MILLIS){
-                    try{
-                        string message = "Unit " + it->first + " is still sampling. Sending STOP_SAMPLING command...";
-                        logger->info(message);
-                        std::map<string, string> params; // empty params, just to pass
-                        syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLING, params, it->second.mac);
-                        it->second.lastCommandSentMillis = millis();
-                    }catch(ESPNowSyncError& error){
-                        it->second.status = SamplerStatus::UNIT_ERROR;
-                    }
-                }else if(it->second.status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD && (millis() - it->second.lastCommandSentMillis) >= COMMAND_SEND_MIN_INTERVAL_MILLIS){
-                    try{
-                        string message = "Unit " + it->first + " is still uploading files. Sending STOP_SAMPLE_FILES_UPLOAD command...";
-                        logger->info(message);
-                        std::map<string, string> params; // empty params, just to pass
-                        syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD, params, it->second.mac);
-                        it->second.lastCommandSentMillis = millis();
-                    }catch(ESPNowSyncError& error){
-                        it->second.status = SamplerStatus::UNIT_ERROR;
-                    } 
-                }
-                break;
-            case SystemStatus::SYSTEM_ERROR:
-                return;
-            default:{
-                logger->info("Unknown state, shouldn't get here");
-            }
+        if(unitStatus != SamplerStatus::UNIT_SAMPLING){
+            sendCommand(it->second, ControlUnitCommand::START_SAMPLING);
         }
-       // logger->debug("Moving to the next unit...");    
     }
-    //logger->debug("System update complete...");
-};
+}
