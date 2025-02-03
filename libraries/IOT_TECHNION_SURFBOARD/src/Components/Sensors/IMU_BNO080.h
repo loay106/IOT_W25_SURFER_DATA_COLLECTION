@@ -8,14 +8,13 @@ class IMU_BNO080: public SensorBase {
     private:
         BNO080 sensor;
         int sampleDelay;
-        int intPin;
         static void IRAM_ATTR IMU_BNO080_ISR(void* arg) {
             bool* flag = static_cast<bool*>(arg);
             *flag=true;
         }
     public:
-        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler, int rate, int intPin)
-            : SensorBase(logger, sdcardHandler, "BNO080"), intPin(intPin) {
+        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler, int rate)
+            : SensorBase(logger, sdcardHandler, "BNO080") {
             sampleDelay = 1000/rate;
         }
         void enableSensor() override {
