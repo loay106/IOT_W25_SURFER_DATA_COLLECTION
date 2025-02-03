@@ -67,9 +67,12 @@ void SurfboardSamplingUnit::handleNextCommand(){
                                 1            // Core ID (0 or 1 for dual-core ESP32)
                             );
                         }
+                    }else{
+                        syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE);
                     }
                     break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
+                    syncManager->reportStatus(SamplingUnitStatusMessage::STAND_BY);
                     //sampler->stopUploadSampleFiles();
                     break;
         }
