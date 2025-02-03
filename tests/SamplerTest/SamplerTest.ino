@@ -20,11 +20,14 @@ void setup() {
   sdCardHandler->init();
 
   IMU_BNO080* IMU0 = new IMU_BNO080(logger,sdCardHandler, 100, 4);
+  Force_HX711* force1 = new Force_HX711(logger,sdCardHandler, 300, 12, 13);
 
   sampler = new Sampler(logger,sdCardHandler, nullptr);
   sampler->init();
-  IMU0->init();
-  sampler->addSensor(IMU0);
+  //IMU0->init();
+  force1->init();
+  //sampler->addSensor(IMU0);
+  sampler->addSensor(force1);
 
   startTimeMillis = millis();
   sampler->startSampling(rand());
