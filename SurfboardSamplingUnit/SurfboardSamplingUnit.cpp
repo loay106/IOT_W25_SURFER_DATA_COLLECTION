@@ -6,6 +6,7 @@ SurfboardSamplingUnit::SurfboardSamplingUnit(SamplingUnitSyncManager *syncManage
     this->sampler=sampler;
     this->sdCardHandler;
     lastStatusReportTime = 0;
+    lastStatusReported = UNIT_STAND_BY;
 }
 
 void SurfboardSamplingUnit::addSensor(SensorBase *sensor){
@@ -30,17 +31,30 @@ void SurfboardSamplingUnit::handleNextCommand(){
         switch(command.command){
             case ControlUnitCommand::START_SAMPLING:
                 try{
-                    int timestamp = stoi(command.params["TIMESTAMP"]);
-                    sampler->startSampling(timestamp);
+                    if(sampler->getStatus()!=SamplerStatus::UNIT_SAMPLING)
+                    {
+                        int timestamp = stoi(command.params["TIMESTAMP"]);
+                        sampler->startSampling(timestamp);
+                        syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLING);
+                        lastStatusReported = SamplerStatus::UNIT_SAMPLING;
+                    }
+                   
                 }catch(const exception& ex){
                     logger->error("Invalid command params");
+                    syncManager->reportStatus(SamplingUnitStatusMessage::ERROR);
+                    lastStatusReported = SamplerStatus::UNIT_ERROR;                   
                     return;
                 }
+                break;
             case ControlUnitCommand::STOP_SAMPLING:
                     sampler->stopSampling();
+                    syncManager->reportStatus(SamplingUnitStatusMessage::STAND_BY);
+                    lastStatusReported = SamplerStatus::UNIT_STAND_BY;
                     return;
             case ControlUnitCommand::START_SAMPLE_FILES_UPLOAD:
                     if(sampler->hasFilesToCloudUpload()){
+                        syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD);
+                        lastStatusReported = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
                         if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
                             logger->debug("Uploading sampler data");
                             xTaskCreatePinnedToCore(
@@ -56,7 +70,7 @@ void SurfboardSamplingUnit::handleNextCommand(){
                     }
                     break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
-                    sampler->stopUploadSampleFiles();
+                    //sampler->stopUploadSampleFiles();
                     break;
         }
     }catch(NotReadyError& err){
@@ -74,8 +88,35 @@ void SurfboardSamplingUnit::loopFileUpload(){
 }
 
 void SurfboardSamplingUnit::reportStatus(){
+    unsigned long currentTime = millis(); 
+    SamplerStatus currentStatus = sampler->getStatus();
+    if ( (currentTime - lastStatusReportTime >= REPORT_STATUS_INTERVAL_MILLIS) || lastStatusReported!=currentStatus ) 
+    {
+        switch (currentStatus)
+        {
+            case UNIT_STAND_BY:
+                syncManager->reportStatus(SamplingUnitStatusMessage::STAND_BY);
+                break;
+
+            case UNIT_SAMPLING:
+                syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLING);
+                break;
+
+            case UNIT_ERROR:
+                syncManager->reportStatus(SamplingUnitStatusMessage::ERROR);
+                break;
+
+            case UNIT_SAMPLE_FILES_UPLOAD: 
+                syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD);
+                break;
+            
+            default:
+                break;
+        }
+        lastStatusReportTime = currentTime;
+        lastStatusReported = currentStatus;     
+    }
     // todo: report status to main unit every REPORT_STATUS_INTERVAL_MILLIS
     // *AND* everytime the status changes
     // *AND* everytime a command is received
-
 }
