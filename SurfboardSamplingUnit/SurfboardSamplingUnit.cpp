@@ -18,11 +18,11 @@ SamplerStatus SurfboardSamplingUnit::getStatus(){
     return stat;
 }
 
-void SamplerFileUploadTask(void *param) {
+/*void SamplerFileUploadTask(void *param) {
     Sampler* samp = static_cast<Sampler*>(param);
     samp->uploadSampleFiles();
     vTaskDelete(NULL);
-}
+}*/
 
 void SurfboardSamplingUnit::handleNextCommand(){
   // todo: add status report here after each command handling
@@ -31,49 +31,66 @@ void SurfboardSamplingUnit::handleNextCommand(){
         switch(command.command){
             case ControlUnitCommand::START_SAMPLING:
                 try{
-                    if(sampler->getStatus()!=SamplerStatus::UNIT_SAMPLING)
+                    int timestamp = stoi(command.params["TIMESTAMP"]);
+                    if(sampler->getStatus()==UNIT_ERROR || sampler->getStatus()==UNIT_STAND_BY )
                     {
-                        int timestamp = stoi(command.params["TIMESTAMP"]);
                         sampler->startSampling(timestamp);
-                        syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLING);
-                        lastStatusReported = SamplerStatus::UNIT_SAMPLING;
+                        reportStatus(SamplingUnitStatusMessage::SAMPLING,true);
+                    } 
+                    if(sampler->getStatus()==UNIT_SAMPLE_FILES_UPLOAD)
+                    {
+                        sampler->disconnect();
+                        sampler->startSampling(timestamp);
+                        reportStatus(SamplingUnitStatusMessage::SAMPLING,true);
                     }
-                   
                 }catch(const exception& ex){
                     logger->error("Invalid command params");
-                    syncManager->reportStatus(SamplingUnitStatusMessage::ERROR);
-                    lastStatusReported = SamplerStatus::UNIT_ERROR;                   
+                    reportStatus(SamplingUnitStatusMessage::ERROR,true);                  
                     return;
                 }
                 break;
             case ControlUnitCommand::STOP_SAMPLING:
+                if(sampler->getStatus()==SamplerStatus::UNIT_SAMPLING)
+                {
                     sampler->stopSampling();
-                    syncManager->reportStatus(SamplingUnitStatusMessage::STAND_BY);
-                    lastStatusReported = SamplerStatus::UNIT_STAND_BY;
+                    reportStatus(SamplingUnitStatusMessage::STAND_BY,true);
                     return;
+                }
+                break;        
             case ControlUnitCommand::START_SAMPLE_FILES_UPLOAD:
-                    if(sampler->hasFilesToCloudUpload()){
-                      if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
-                          logger->debug("Uploading internal sampler data started");
-                          try{
-                              sampler->connect();
-                          }catch(WifiError& er){
-                              updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
-                              syncManager->reportStatus(SamplingUnitStatusMessage::ERROR);
-                              lastStatusReported = SamplerStatus::UNIT_ERROR;     
-                              return;
-                          }
-                    }else{
-                        syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE);
-                        lastStatusReported = SamplerStatus::STAND_BY;     
-                        return;
+                if(sampler->hasFilesToCloudUpload()){
+                    if(sampler->getStatus() == SamplerStatus::UNIT_SAMPLING)
+                    {
+                        sampler->stopSampling();
                     }
-                    break;
+                    if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+                        logger->debug("Uploading internal sampler data started");
+                        try{
+                            sampler->connect();
+                            reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD,true);
+                        }
+                        catch(WifiError& er){
+                            reportStatus(SamplingUnitStatusMessage::ERROR,true);
+                            lastStatusReported = SamplerStatus::UNIT_ERROR;     
+                            return;
+                        }
+                    }
+                }
+                else{
+                    reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE,true);
+                    lastStatusReported = SamplerStatus::UNIT_STAND_BY;     
+                    return;
+                }
+                break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
+                if(sampler->getStatus() == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD)
+                {
                     sampler->disconnect();
-                    syncManager->reportStatus(SamplingUnitStatusMessage::STAND_BY);
-                    lastStatusReported = SamplerStatus::STAND_BY;   
+                    reportStatus(SamplingUnitStatusMessage::STAND_BY,true);
+                    lastStatusReported = SamplerStatus::UNIT_STAND_BY;   
                     break;
+                }
+                break;
         }
     }catch(NotReadyError& err){
         // ignore, no command received yet
@@ -89,47 +106,22 @@ void SurfboardSamplingUnit::loopFileUpload(){
     if(sampler->hasFilesToCloudUpload()){
         if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
             logger->debug("Error in internal sampler file upload");
-            updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
         }else{
             logger->debug("Uploading next file batch...");
             sampler->uploadNextSamples();
         }
-    }else{
-        // all file uploading is complete here....
-        // todo: report SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE here
+    }
+    else{
+        reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE,true);
     }
 }
 
-void SurfboardSamplingUnit::reportStatus(){
+void SurfboardSamplingUnit::reportStatus(SamplingUnitStatusMessage status_message , bool force ){
     unsigned long currentTime = millis(); 
     SamplerStatus currentStatus = sampler->getStatus();
-    if ( (currentTime - lastStatusReportTime >= REPORT_STATUS_INTERVAL_MILLIS) || lastStatusReported!=currentStatus ) 
+    if ( (currentTime - lastStatusReportTime >= REPORT_STATUS_INTERVAL_MILLIS) || force ) 
     {
-        switch (currentStatus)
-        {
-            case UNIT_STAND_BY:
-                syncManager->reportStatus(SamplingUnitStatusMessage::STAND_BY);
-                break;
-
-            case UNIT_SAMPLING:
-                syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLING);
-                break;
-
-            case UNIT_ERROR:
-                syncManager->reportStatus(SamplingUnitStatusMessage::ERROR);
-                break;
-
-            case UNIT_SAMPLE_FILES_UPLOAD: 
-                syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD);
-                break;
-            
-            default:
-                break;
-        }
-        lastStatusReportTime = currentTime;
-        lastStatusReported = currentStatus;     
+        syncManager->reportStatus(status_message);
+        lastStatusReportTime = currentTime;     
     }
-    // todo: report status to main unit every REPORT_STATUS_INTERVAL_MILLIS
-    // *AND* everytime the status changes
-    // *AND* everytime a command is received
 }

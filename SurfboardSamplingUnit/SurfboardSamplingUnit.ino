@@ -1,7 +1,7 @@
 #include "SurfboardSamplingUnit.h"
 
 // constants
-int serialBaudRate = 57600;
+int serialBaudRate = 115200;
 int SDCardChipSelectPin = 5;
 //uint8_t CONTROL_UNIT_MAC[6] = {0xCC, 0xDB, 0xA7, 0x5A, 0x7F, 0xC0};
 uint8_t CONTROL_UNIT_MAC[6] = {0x10, 0x06, 0x1C, 0x86, 0x00, 0x18};
@@ -47,6 +47,7 @@ void setup() {
         wifiHandler->connect();
         logger->info("Wifi connection established!");
         WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
+        Serial.println(WIFI_ESP_NOW_CHANNEL);
         //logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
         wifiHandler->disconnect();
         logger->info("Wifi disconnected!");
@@ -118,5 +119,27 @@ void loop() {
             delay(10);
             break;
     }
-    samplingUnit->reportStatus();
+
+    switch (status)
+    {
+        case UNIT_STAND_BY:
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::STAND_BY);
+            break;
+
+        case UNIT_SAMPLING:
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::SAMPLING);
+            break;
+
+        case UNIT_ERROR:
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::ERROR);
+            break;
+
+        case UNIT_SAMPLE_FILES_UPLOAD: 
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD);
+            break;
+        
+        default:
+            break;
+    }
+
 }

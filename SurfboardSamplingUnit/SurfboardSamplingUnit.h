@@ -24,6 +24,6 @@ class SurfboardSamplingUnit {
         void handleNextCommand();
         void loopSampling();
         void loopFileUpload();
-        void reportStatus();
+        void reportStatus(SamplingUnitStatusMessage status_message , bool force=false);
 };
 #endif // SURFBOARD_SAMPLING_UNIT_H
