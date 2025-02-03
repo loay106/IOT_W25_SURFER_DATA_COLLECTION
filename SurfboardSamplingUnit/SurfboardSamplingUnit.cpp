@@ -53,27 +53,26 @@ void SurfboardSamplingUnit::handleNextCommand(){
                     return;
             case ControlUnitCommand::START_SAMPLE_FILES_UPLOAD:
                     if(sampler->hasFilesToCloudUpload()){
-                        syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD);
-                        lastStatusReported = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
-                        if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
-                            logger->debug("Uploading sampler data");
-                            xTaskCreatePinnedToCore(
-                                SamplerFileUploadTask,      // Task function
-                                "SamplerFileUploadTask",    // Task name
-                                32768,        // Stack size (bytes) - 32kb
-                                sampler,        // Task param
-                                1,           // Priority (higher value = higher priority)
-                                NULL, // Task handle (can be NULL if not needed)
-                                1            // Core ID (0 or 1 for dual-core ESP32)
-                            );
-                        }
+                      if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+                          logger->debug("Uploading internal sampler data started");
+                          try{
+                              sampler->connect();
+                          }catch(WifiError& er){
+                              updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
+                              syncManager->reportStatus(SamplingUnitStatusMessage::ERROR);
+                              lastStatusReported = SamplerStatus::UNIT_ERROR;     
+                              return;
+                          }
                     }else{
                         syncManager->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE);
+                        lastStatusReported = SamplerStatus::STAND_BY;     
+                        return;
                     }
                     break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
+                    sampler->disconnect();
                     syncManager->reportStatus(SamplingUnitStatusMessage::STAND_BY);
-                    //sampler->stopUploadSampleFiles();
+                    lastStatusReported = SamplerStatus::STAND_BY;   
                     break;
         }
     }catch(NotReadyError& err){
@@ -87,7 +86,18 @@ void SurfboardSamplingUnit::loopSampling(){
 }
 
 void SurfboardSamplingUnit::loopFileUpload(){
-    // todo: report SAMPLE_FILES_UPLOAD_COMPLETE here when its complete - add this functionality
+    if(sampler->hasFilesToCloudUpload()){
+        if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+            logger->debug("Error in internal sampler file upload");
+            updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
+        }else{
+            logger->debug("Uploading next file batch...");
+            sampler->uploadNextSamples();
+        }
+    }else{
+        // all file uploading is complete here....
+        // todo: report SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE here
+    }
 }
 
 void SurfboardSamplingUnit::reportStatus(){

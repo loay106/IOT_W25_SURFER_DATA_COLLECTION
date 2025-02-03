@@ -25,7 +25,9 @@ class Sampler {
         SDCardHandler* sdCardHandler;
         CloudSyncManager* cloudSyncManager;
         bool hasFilesToUpload;
-        volatile bool stopUpload;
+
+        File currentUploadFile;
+        int fileSampleIndex;
 
     public:
         Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager* cloudSyncManager);
@@ -46,9 +48,14 @@ class Sampler {
         // use this when you want the unit to enter error state for external reasons
         void enterErrorState();
 
-        void uploadSampleFiles();
+        void connect();
 
-        void stopUploadSampleFiles();
+        void disconnect();
+
+        bool isConnected();
+
+        // upload the next samples batch
+        void uploadNextSamples(); 
 
         void writeSensorsData();
 };

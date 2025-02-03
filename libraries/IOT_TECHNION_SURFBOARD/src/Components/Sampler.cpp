@@ -7,7 +7,7 @@ Sampler::Sampler(Logger* logger, SDCardHandler* sdCardHandler, CloudSyncManager*
      this->sdCardHandler = sdCardHandler;
      this->cloudSyncManager = cloudSyncManager;
      this->hasFilesToUpload = false;
-     this->stopUpload=false;
+     this->fileSampleIndex = 0;
 }
 
 void Sampler::addSensor(SensorBase *sensor){
@@ -62,87 +62,111 @@ void Sampler::stopSampling(){
      status = SamplerStatus::UNIT_ERROR;
  }
 
-void Sampler::uploadSampleFiles(){
-    if(!hasFilesToUpload){
-        status = SamplerStatus::UNIT_STAND_BY;
-        return;
-    }
+ void Sampler::connect(){
     try{
         if(!cloudSyncManager->isWifiConnected()){
             cloudSyncManager->connect();
         }
+        status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
     }catch(...){ 
         status = SamplerStatus::UNIT_ERROR;
         logger->error("Connecting to wifi failed!");
+        throw;
+    }
+}
+
+void Sampler::disconnect() {
+    cloudSyncManager->disconnect();
+    if (currentUploadFile) { 
+        currentUploadFile.close();
+        fileSampleIndex = 0;
+    }
+}
+
+
+ bool Sampler::isConnected(){
+    return cloudSyncManager->isWifiConnected();
+ }
+
+ void Sampler::uploadNextSamples(){
+    if(!hasFilesToUpload){
+        logger->info("No sample files to upload!");
+        status = SamplerStatus::UNIT_STAND_BY;
+        return; // finished
+    }
+
+    if(!isConnected()){
+        connect();
         return;
     }
 
-    status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
-    stopUpload=false;
-    File root;
-    sdCardHandler->getFolder("/samplings",&root);
-    File file = root.openNextFile();
-    int* fileSampleIndex = new int(0);
-    while (file) {
-        String fileName = file.name();
-        String timestamp = fileName.substring(0, fileName.indexOf('_'));
-        String sensorID = fileName.substring(fileName.indexOf('_') + 1, fileName.lastIndexOf('_'));
-        String sensorModel = fileName.substring(fileName.lastIndexOf('_') + 1);
-        logger->info("Processing file: " + string(fileName.c_str()));
-        while (file.available()) {
-            try {
-                String line = file.readStringUntil('\n');
-                line.trim();
-                if (line.length() == 0) continue;
-                cloudSyncManager->uploadSamples(timestamp, sensorID, sensorModel,line, fileSampleIndex);
-            } catch (CloudSyncError& err) {
-                logger->error("Failed to upload samples from CloudSyncManager");
-                if(file){
-                    file.close();
-                }
-                status = SamplerStatus::UNIT_ERROR;
-                delete fileSampleIndex;
-                return;
-            } catch(...){
-                logger->error("Failed to upload samples!");
-                if(file){
-                    file.close();
-                }
-                status = SamplerStatus::UNIT_ERROR;
-                delete fileSampleIndex;
-                return;
+    String fileName;
+    String timestamp;
+    String sensorID;
+    String sensorModel;
+
+    if(!currentUploadFile){
+        // try to open the next file
+        File root;
+        sdCardHandler->getFolder("/samplings",&root);
+        currentUploadFile = root.openNextFile();
+        fileSampleIndex=0;
+
+        if(currentUploadFile){
+            fileName = currentUploadFile.name();
+            logger->info("Processing file: " + string(fileName.c_str()));
+        }else{
+            // finished uploading all *files*
+            hasFilesToUpload=false;
+            if(currentUploadFile){
+                currentUploadFile.close();
+                fileSampleIndex=0;
             }
+            fileSampleIndex=0;
+            status = SamplerStatus::UNIT_STAND_BY;
+            logger->info("Finished uploading all sample files!");
+            return;
         }
+    }
+
+    fileName = currentUploadFile.name();
+    timestamp = fileName.substring(0, fileName.indexOf('_'));
+    sensorID = fileName.substring(fileName.indexOf('_') + 1, fileName.lastIndexOf('_'));
+    sensorModel = fileName.substring(fileName.lastIndexOf('_') + 1);
+
+    if(currentUploadFile.available()){
+        // file has lines to upload
+        try {
+            String line = currentUploadFile.readStringUntil('\n');
+            line.trim();
+            if (line.length() == 0){
+                // skip this invalid line
+            }else{
+                cloudSyncManager->uploadSamples(timestamp, sensorID, sensorModel,line, &fileSampleIndex);
+            }
+        } catch (...) {
+            logger->error("Failed to upload samples from CloudSyncManager");
+            if(currentUploadFile){
+                currentUploadFile.close();
+                fileSampleIndex=0;
+            }
+            status = SamplerStatus::UNIT_ERROR;
+        }
+    }else{
+        // current file finished uploading
         cloudSyncManager->uploadLastSamples(timestamp,sensorID,sensorModel);
         logger->info("Finished uploading file: "+ string(fileName.c_str()));
-        file.close();
-        sdCardHandler->deleteFile("/samplings/" + fileName);
-        if(stopUpload){
-            logger->info("File upload stopped!");
-            cloudSyncManager->disconnect();
-            delete fileSampleIndex;
-            status = SamplerStatus::UNIT_STAND_BY;
-            return;
-        }else{
-            file = root.openNextFile();
-            *fileSampleIndex = 0;
-        }        
+        currentUploadFile.close();
+        // delete file *AFTER* it was uploaded to the cloud to free up SD card space
+        sdCardHandler->deleteFile("/samplings/" + fileName); 
+        fileSampleIndex=0;
     }
-    
-    // finished uploading files
-    logger->info("Finished uploading all sample files.");
-    cloudSyncManager->disconnect();
-    hasFilesToUpload=false;
-    delete fileSampleIndex;
-    status = SamplerStatus::UNIT_STAND_BY;
 }
 
-void Sampler::stopUploadSampleFiles(){
-    stopUpload=true;
-}
+
 
 void Sampler::writeSensorsData(){
      for(int i= 0; i< Sampler::sensors.size(); i++){
          sensors[i]->writeSamples();
      }
- }
+}

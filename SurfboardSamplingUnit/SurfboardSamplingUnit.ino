@@ -104,6 +104,7 @@ void loop() {
     SamplerStatus status = samplingUnit->getStatus();
     switch(status){
         case UNIT_STAND_BY:
+            delay(5);
             break;
         case UNIT_ERROR:
             delay(5);
