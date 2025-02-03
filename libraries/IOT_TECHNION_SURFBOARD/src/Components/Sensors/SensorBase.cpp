@@ -30,7 +30,7 @@ void SensorBase::stopSampling(){
     delete samplingFileName;
     samplingFileName = nullptr;
     unsigned long timeElapsed = (millis() - samplingStartMillis)/1000;
-    float rate = samplesCount/timeElapsed;
+    int rate = samplesCount/timeElapsed;
     string message = "Wrote " + to_string(samplesCount) + " samples in " + to_string(timeElapsed) + " seconds. Sensor's rate: " + to_string(rate) + " Hz";
     logger->info(message);
     samplesCount=0;

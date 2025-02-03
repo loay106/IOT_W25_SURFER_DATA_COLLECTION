@@ -8,9 +8,6 @@ using namespace std;
 
 class Force_FAKE : public SensorBase { 
     private:
-        /*int calibrationFactor;
-        int doutPin;
-        int sckPin;*/
         bool sensor_enabled;
     public:
         Force_FAKE(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "FAKE-HX711"),

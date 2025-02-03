@@ -25,11 +25,13 @@ class ControlUnitSyncManager{
         static vector<esp_now_peer_info_t*> peers;
         static ControlUnitSyncManager* instance;
         bool isConnected;
+        int channel;
 
         static void addStatusUpdateMessage(StatusUpdateMessage msg); 
         static void processReceivedMessages(const uint8_t *mac_addr, const uint8_t *incomingData, int len);  
         ControlUnitSyncManager(){
             isConnected=false;
+            channel=0; // default
         }; 
     public:
         ControlUnitSyncManager(const ControlUnitSyncManager& obj) = delete;
@@ -39,7 +41,7 @@ class ControlUnitSyncManager{
             }
             return instance;
         }
-        void init(uint8_t samplingUnits[][6], int samplingUnitsNum);
+        void init(uint8_t samplingUnits[][6], int samplingUnitsNum, int channel);
         void connect();
         void disconnect();
         void sendCommand(const ControlUnitCommand& command,const std::map<string,string>& params, uint8_t samplingUnitMac[6]);

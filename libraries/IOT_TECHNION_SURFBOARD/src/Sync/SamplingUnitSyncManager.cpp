@@ -16,11 +16,12 @@ void SamplingUnitSyncManager::onDataReceivedCallback(const uint8_t *mac_addr, co
     }
 }
 
-void SamplingUnitSyncManager::init(uint8_t controlUnitMac[]) {
+void SamplingUnitSyncManager::init(uint8_t controlUnitMac[], int channel) {
     WiFi.mode(WIFI_STA);
+    this->channel = channel;
     controlUnitPeer = new esp_now_peer_info_t();
     memcpy(controlUnitPeer->peer_addr, controlUnitMac, 6);
-    controlUnitPeer->channel = 0; // default channel
+    controlUnitPeer->channel = channel;
     controlUnitPeer->encrypt = false;
     memcpy(this->controlUnitMac, controlUnitMac,6);
 }
@@ -31,7 +32,9 @@ void SamplingUnitSyncManager::connect(){
     }
     if (esp_now_init() != ESP_OK) {
         SamplingUnitSyncManager::logger->info("Error initializing ESP-NOW");
-        throw InitError();
+        throw ESPNowSyncError();
+    }else{
+        SamplingUnitSyncManager::logger->info("ESP Now Init success! Connected to channel " + to_string(channel));
     }
     if (esp_now_add_peer(controlUnitPeer) != ESP_OK) {
         throw ESPNowSyncError();

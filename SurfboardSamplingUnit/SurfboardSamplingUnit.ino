@@ -27,7 +27,7 @@ void setup() {
     string WIFI_SSID = "";
     string WIFI_PASSWORD = "";
     vector<string> sensorsParams;
-
+    int WIFI_ESP_NOW_CHANNEL = 0;
 
     try{
         std::map<string, string> configMap = sdCardHandler->readConfigFile("/unit.config");
@@ -41,6 +41,20 @@ void setup() {
 
 
     WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
+    try{
+        logger->info("Checking wifi connection...");
+        wifiHandler->init();
+        wifiHandler->connect();
+        logger->info("Wifi connection established!");
+        WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
+        //logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
+        wifiHandler->disconnect();
+        logger->info("Wifi disconnected!");
+    }catch(...){
+          logger->error("Wifi connection failed! Check your ssid and password!");
+          while(true){delay(500);};
+    }
+
     CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger, wifiHandler, wifiHandler->getMacAddress());
     Sampler* sampler = new Sampler(logger, sdCardHandler, cloudSyncManager);
 
@@ -55,7 +69,7 @@ void setup() {
     try{
         // don't change the order of the init
         logger->init(serialBaudRate);
-        syncManager->init(CONTROL_UNIT_MAC);
+        syncManager->init(CONTROL_UNIT_MAC, WIFI_ESP_NOW_CHANNEL);
         sampler->init();
         sensor0->init();
         sensor1->init();
@@ -76,7 +90,12 @@ void setup() {
     //samplingUnit->addSensor(sensor0);
     samplingUnit->addSensor(sensor1);
     //samplingUnit->addSensor(sensor2);
-    syncManager->connect();
+    try{
+        syncManager->connect();
+    }catch(ESPNowSyncError& err){
+        while(true){delay(500);};
+    }
+    
     logger->info("Unit setup complete!");
 }
 

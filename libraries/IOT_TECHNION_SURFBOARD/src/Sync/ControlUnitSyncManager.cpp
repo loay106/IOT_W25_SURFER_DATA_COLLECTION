@@ -6,13 +6,15 @@ queue<StatusUpdateMessage> ControlUnitSyncManager::statusUpdateQueue;
 SemaphoreHandle_t ControlUnitSyncManager::queueMutex  = xSemaphoreCreateMutex();
 vector<esp_now_peer_info_t*> ControlUnitSyncManager::peers;
 
-void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsNum){
+void ControlUnitSyncManager::init(uint8_t samplingUnits[][6], int samplingUnitsNum, int channel){
     WiFi.mode(WIFI_STA);
+
+    this->channel = channel;
 
     for (int i = 0; i < samplingUnitsNum; i++) {
         esp_now_peer_info_t* peerInfo = new esp_now_peer_info_t();
         memcpy(peerInfo->peer_addr, samplingUnits[i], 6);
-        peerInfo->channel = 0; // Default channel
+        peerInfo->channel = channel;
         peerInfo->encrypt = false;
         ControlUnitSyncManager::peers.push_back(peerInfo);
     }
@@ -23,7 +25,7 @@ void ControlUnitSyncManager::connect(){
         return;
     }
     if (esp_now_init() == ESP_OK) {
-        ControlUnitSyncManager::logger->info("ESPNow Init success!");
+        ControlUnitSyncManager::logger->info("ESP Now Init success! Connected to channel " + to_string(channel));
     }else {
         ControlUnitSyncManager::logger->error("ESPNow Init failed!");
         throw ESPNowSyncError();

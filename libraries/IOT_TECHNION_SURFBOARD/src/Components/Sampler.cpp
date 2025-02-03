@@ -137,7 +137,11 @@ void Sampler::uploadSampleFiles(){
     status = SamplerStatus::UNIT_STAND_BY;
 }
 
- void Sampler::writeSensorsData(){
+void Sampler::stopUploadSampleFiles(){
+    stopUpload=true;
+}
+
+void Sampler::writeSensorsData(){
      for(int i= 0; i< Sampler::sensors.size(); i++){
          sensors[i]->writeSamples();
      }

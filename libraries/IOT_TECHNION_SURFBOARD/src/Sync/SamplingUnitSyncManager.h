@@ -20,11 +20,13 @@ class SamplingUnitSyncManager {
         uint8_t controlUnitMac[6];
         static Logger* logger;
         bool isConnected;
+        int channel;
 
         static SamplingUnitSyncManager* instance;
 
         SamplingUnitSyncManager(){
             isConnected=false;
+            channel=0; // default channel
         };
         static void onDataReceivedCallback(const uint8_t *mac_addr, const uint8_t* incomingData, int len);
     public:
@@ -36,7 +38,7 @@ class SamplingUnitSyncManager {
             return instance;
         }
 
-        void init(uint8_t controlUnitMac[]);
+        void init(uint8_t controlUnitMac[], int channel);
         void connect();
         void disconnect();
         void reportStatus(SamplingUnitStatusMessage status);

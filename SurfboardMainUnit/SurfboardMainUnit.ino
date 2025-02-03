@@ -32,9 +32,10 @@ void setup() {
     string WIFI_SSID = "";
     string WIFI_PASSWORD = "";
     vector<string> sensorsParams;
+    int WIFI_ESP_NOW_CHANNEL = 0;
 
     try{
-        std::map<string, string> configMap = sdCardHandler->readConfigFile("//main_unit.config");
+        std::map<string, string> configMap = sdCardHandler->readConfigFile("//unit.config");
         WIFI_SSID = configMap["WIFI_SSID"];
         WIFI_PASSWORD = configMap["WIFI_PASSWORD"];
         sensorsParams = parseSensorParams(configMap["SENSORS_PARAMS"]);
@@ -46,14 +47,18 @@ void setup() {
     WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
     try{
         logger->info("Checking wifi connection...");
+        wifiHandler->init();
         wifiHandler->connect();
         logger->info("Wifi connection established!");
-    }catch(WifiError& err){
+        WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
+        logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
+        wifiHandler->disconnect();
+        logger->info("Wifi disconnected!");
+    }catch(...){
           logger->error("Wifi connection failed! Check your ssid and password!");
           while(true){delay(500);};
     }
 
-    int WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
 
     ControlUnitSyncManager* syncManager = ControlUnitSyncManager::getInstance();
     RTCTimeHandler* timeHandler = new RTCTimeHandler(logger);
@@ -71,11 +76,11 @@ void setup() {
 
     try{
         // don't change the order of the init
-        syncManager->init(samplingUnitsMacAddresses, 0);
+        // todo: add WIFI_ESP_NOW_CHANNEL param here to syncManager and update the channel used to this channel
+        syncManager->init(samplingUnitsMacAddresses, 0, WIFI_ESP_NOW_CHANNEL);
         timeHandler->init();
         statusLighthandler->init(RGBRedPin, RGBGreenPin, RGBBluePin);
         buttonHandler->init();
-        wifiHandler->init();
         cloudSyncManager->init();
         sampler->init();
         mainUnit->init(samplingUnitsMacAddresses, 0);
@@ -95,12 +100,16 @@ void setup() {
         
     }
 
-
-
     // add sensors here....
     mainUnit->addSensor(fake_force_0);
     mainUnit->addSensor(fake_force_1);
     mainUnit->addSensor(fake_force_2);
+
+    try{
+        syncManager->connect();
+    }catch(ESPNowSyncError& err){
+        while(true){delay(500);};
+    }
     logger->info("Unit setup complete!");
 }
 
