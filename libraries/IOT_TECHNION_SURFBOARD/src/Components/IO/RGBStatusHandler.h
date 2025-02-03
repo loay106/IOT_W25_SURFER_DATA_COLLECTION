@@ -10,6 +10,7 @@ enum RGBColors{
     NO_COLOR,
     RED,
     BLUE, 
+    YELLOW,
     GREEN
 };
 

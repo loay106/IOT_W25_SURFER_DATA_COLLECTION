@@ -7,7 +7,7 @@ Logger* logger;
 SDCardHandler* sdCardHandler;
 Sampler* sampler;
 
-const long samplingIntervalMillis = 60000;
+const long samplingIntervalMillis = 5000;
 int startTimeMillis;
 bool isSampling;
 
@@ -19,14 +19,12 @@ void setup() {
   sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
   sdCardHandler->init();
 
-  Force_FAKE* fake_force_0 = new Force_FAKE(logger,sdCardHandler);
-  Force_FAKE* fake_force_1 = new Force_FAKE(logger,sdCardHandler);
-  Force_FAKE* fake_force_2 = new Force_FAKE(logger,sdCardHandler);
-  sampler = new Sampler(logger,sdCardHandler, nullptr, "-", "-");
+  IMU_BNO080* IMU0 = new IMU_BNO080(logger,sdCardHandler, 100, 4);
+
+  sampler = new Sampler(logger,sdCardHandler, nullptr);
   sampler->init();
-  sampler->addSensor(fake_force_0);
-  sampler->addSensor(fake_force_1);
-  sampler->addSensor(fake_force_2);
+  IMU0->init();
+  sampler->addSensor(IMU0);
 
   startTimeMillis = millis();
   sampler->startSampling(rand());

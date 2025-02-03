@@ -60,6 +60,11 @@ void RGBStatusHandler::showColor(){
             ledcWrite(1, 0);
             ledcWrite(2, 255); 
             break;
+        case RGBColors::YELLOW:
+            ledcWrite(0, 255); 
+            ledcWrite(1, 255);
+            ledcWrite(2, 0); 
+            break;      
         default:
             // defaulting to NO_COLOR
             ledcWrite(0, 0); 

@@ -7,34 +7,35 @@
 class IMU_BNO080: public SensorBase {
     private:
         BNO080 sensor;
-        volatile bool dataReady;
-        int samplingRate;
+        int sampleDelay;
+        int intPin;
+        static void IRAM_ATTR IMU_BNO080_ISR(void* arg) {
+            bool* flag = static_cast<bool*>(arg);
+            *flag=true;
+        }
     public:
-        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler, int rate): SensorBase(logger, sdcardHandler, "BNO080") {
-            this->dataReady = false;
-            this->samplingRate = rate;
+        IMU_BNO080(Logger* logger, SDCardHandler* sdcardHandler, int rate, int intPin)
+            : SensorBase(logger, sdcardHandler, "BNO080"), intPin(intPin) {
+            sampleDelay = 1000/rate;
         }
-        void enableSensor() override{
-            sensor.enableAccelerometer(samplingRate);
+        void enableSensor() override {
+            sensor.enableAccelerometer(sampleDelay);
         }
-
-        void disableSensor() override{
+        void disableSensor() override {
             sensor.enableAccelerometer(0);
             logger->info("BNO080 sensor disabled");
         }
-
-        void init() override{
-            Wire.begin(21, 22); // SDA, SCL for ESP32
-            if (sensor.begin() == false) {
+        void init() override {
+            Wire.begin(21, 22);
+            if (sensor.begin() == false){
                 logger->error("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide");
                 throw InitError();
             }
             Wire.setClock(400000);
         }
 
-        string getSample() override{
-            if (dataReady && sensor.dataAvailable()) {
-                dataReady=false;
+        string getSample() override {
+            if(sensor.dataAvailable()) {
                 float accX = sensor.getAccelX();
                 float accY = sensor.getAccelY();
                 float accZ = sensor.getAccelZ();
@@ -42,7 +43,7 @@ class IMU_BNO080: public SensorBase {
                 oss.precision(2);
                 oss << std::fixed << accX << " " << accY << " " << accZ;
                 return oss.str();
-            }else{
+            } else {
                 throw NotReadyError();
             }
         }
