@@ -50,7 +50,6 @@ This project is the version 2.0 of the [previous](https://github.com/Moamena2/IO
 8. unit.config:
 
    This file includes WIFI details and sensor parameters that need to be provided.
-   To configure the calibration factor, edit the first value in the SENSORS_PARAMS list located in the unit.config file.
    
 # Arduino/ESP libraries used for the project:
    1. RTClib (by Adafruit) - version 2.1.4
@@ -73,6 +72,7 @@ This project is the version 2.0 of the [previous](https://github.com/Moamena2/IO
 1. Sensors receive their IDs in the order they were added to the unit, starting from 0.
 2. The sensor's parameters can be set in the unit.config file, in the same order they were inserted in
 3. A Wi-Fi connection is required in the setup stage
+4. To configure the calibration factor, edit the first value in the SENSORS_PARAMS list located in the unit.config file. For more details about how to calculate the calibration factor you can 
 
 
 # Hardware:
