@@ -37,8 +37,9 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
    
 8. unit.config:
 
-   This file includes WIFI details and sensor params that need to be provided.
-
+   This file includes WIFI details and sensor parameters that need to be provided.
+   To configure the calibration factor, simply edit the first value in the SENSORS_PARAMS list located in the unit.config file.
+   
 # Arduino/ESP libraries used for the project:
    RTClib (by Adafruit) - version 2.1.4
    HX711 (by Rob Tillaart) - version 0.5.2
