@@ -2,30 +2,35 @@
 #define FORCE_FAKE_H
 
 #include "SensorBase.h"
-#include "HX711.h"
 
 using namespace std;
 
-class Force_FAKE : public SensorBase { 
+class Mock_HX711 : public SensorBase { 
     private:
         bool sensor_enabled;
+        unsigned long lastRetrieved;
+        int delayBetweenSamples;
     public:
-        Force_FAKE(Logger* logger, SDCardHandler* sdcardHandler): SensorBase(logger, sdcardHandler, "FAKE-HX711"),
-        sensor_enabled(false){}
+        Mock_HX711(Logger* logger, SDCardHandler* sdcardHandler, int rate): SensorBase(logger, sdcardHandler, "Mock-HX711"),
+        sensor_enabled(false), lastRetrieved(0){
+            delayBetweenSamples = 1000/rate;
+        }
         void enableSensor() override {
             sensor_enabled=true;
         };
 
         void disableSensor() override {
             sensor_enabled=false;
-            logger->info("Fake HX711 sensor disabled");
+            logger->debug("Mock HX711 sensor disabled");
         };
 
         string getSample() override{
-            if(sensor_enabled){
+            unsigned long current = millis();
+            if(sensor_enabled && (current - lastRetrieved) >= delayBetweenSamples){
                 ostringstream oss;
                 oss.precision(2);
                 oss << std::fixed << random(0,1000) * 9.81;
+                lastRetrieved = current;
                 return oss.str();
             }else{
                 throw NotReadyError();

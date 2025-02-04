@@ -1,7 +1,7 @@
 #include <IOT_TECHNION_SURFBOARD.h>
 
 uint8_t SDCardChipSelectPin = 5;
-const int serialBaudRate = 57600;
+const int serialBaudRate = 115200;
 
 Logger* logger;
 SDCardHandler* sdCardHandler;
@@ -19,15 +19,18 @@ void setup() {
   sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
   sdCardHandler->init();
 
-  IMU_BNO080* IMU0 = new IMU_BNO080(logger,sdCardHandler, 100);
-  Force_HX711* force1 = new Force_HX711(logger,sdCardHandler, 300, 12, 13);
+  //IMU_BNO080* IMU0 = new IMU_BNO080(logger,sdCardHandler, 100);
+  //Force_HX711* force1 = new Force_HX711(logger,sdCardHandler, 300, 12, 13);
+  Mock_HX711* mock2 = new Mock_HX711(logger,sdCardHandler, 30);
 
   sampler = new Sampler(logger,sdCardHandler, nullptr);
   sampler->init();
-  IMU0->init();
-  force1->init();
-  sampler->addSensor(IMU0);
-  sampler->addSensor(force1);
+  //IMU0->init();
+  //force1->init();
+  mock2->init();
+ // sampler->addSensor(IMU0);
+ // sampler->addSensor(force1);
+  sampler->addSensor(mock2);
 
   startTimeMillis = millis();
   sampler->startSampling(rand());
