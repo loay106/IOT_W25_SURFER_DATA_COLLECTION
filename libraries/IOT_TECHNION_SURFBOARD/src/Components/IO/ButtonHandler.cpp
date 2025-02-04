@@ -42,13 +42,13 @@ ButtonPressType ButtonHandler::getLastPressType() {
     isReleased = false;
 
     if (pressDuration >= LONG_PRESS_THRESHOLD_MILLIS) {
-        logger->debug("Detected long press on pin " + std::to_string(buttonPin));
+       // logger->debug("Detected long press on pin " + std::to_string(buttonPin));
         return LONG_PRESS;
     } else if (pressDuration >= DEBOUNCE_PERIOD_MILLIS) {
-        logger->debug("Detected soft press on pin " + std::to_string(buttonPin));
+       // logger->debug("Detected soft press on pin " + std::to_string(buttonPin));
         return SOFT_PRESS;
     }
 
-    logger->debug("Press duration too short. Ignoring.");
+    //logger->debug("Press duration too short. Ignoring.");
     return NO_PRESS;
 }

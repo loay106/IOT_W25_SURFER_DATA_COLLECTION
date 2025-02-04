@@ -25,9 +25,9 @@ void ControlUnitSyncManager::connect(){
         return;
     }
     if (esp_now_init() == ESP_OK) {
-        ControlUnitSyncManager::logger->info("ESP Now Init success! Connected to channel " + to_string(channel));
+        ControlUnitSyncManager::logger->info("ESP Now init success! Connected to channel " + to_string(channel));
     }else {
-        ControlUnitSyncManager::logger->error("ESPNow Init failed!");
+        ControlUnitSyncManager::logger->error("ESPNow init failed!");
         throw ESPNowSyncError();
     }
 

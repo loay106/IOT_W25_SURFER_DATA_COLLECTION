@@ -67,12 +67,15 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
 
     // Split by '|' to separate command and parameters
     size_t delimiterPos = rawMsg.find('|');
+    string commandPart;
     if (delimiterPos == string::npos) {
-        throw InvalidSyncMessage();
+        // no parameters sent
+        commandPart = rawMsg;
+    }else{
+        commandPart = rawMsg.substr(0, delimiterPos);
     }
 
     // Extract and parse the command
-    string commandPart = rawMsg.substr(0, delimiterPos);
     int commandValue = stoi(commandPart);
     if (commandValue < START_SAMPLING || commandValue > STOP_SAMPLE_FILES_UPLOAD) {
         throw InvalidSyncMessage();
@@ -80,20 +83,21 @@ CommandMessage deserializeCommand(const uint8_t* msg, int len) {
     commandMsg.command = static_cast<ControlUnitCommand>(commandValue);
 
     // Extract and parse the parameters
-    string paramsPart = rawMsg.substr(delimiterPos + 1);
-    stringstream paramsStream(paramsPart);
-    string param;
+    if (delimiterPos != string::npos) {
+        string paramsPart = rawMsg.substr(delimiterPos + 1);
+        stringstream paramsStream(paramsPart);
+        string param;
 
-    while (getline(paramsStream, param, ';')) {
-        size_t colonPos = param.find(':');
-        if (colonPos == string::npos) {
-            throw InvalidSyncMessage();
+        while (getline(paramsStream, param, ';')) {
+            size_t colonPos = param.find(':');
+            if (colonPos == string::npos) {
+                throw InvalidSyncMessage();
+            }
+
+            string key = param.substr(0, colonPos);
+            string value = param.substr(colonPos + 1);
+            commandMsg.params[key] = value;
         }
-
-        string key = param.substr(0, colonPos);
-        string value = param.substr(colonPos + 1);
-        commandMsg.params[key] = value;
     }
-
     return commandMsg;
 }

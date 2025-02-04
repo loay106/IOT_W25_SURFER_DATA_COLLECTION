@@ -196,18 +196,23 @@ void SurfboardMainUnit::readStatusUpdateMessages(){
             switch(statusMessage.status){
                 case SamplingUnitStatusMessage::STAND_BY:
                   samplingUnit.status = SamplerStatus::UNIT_STAND_BY;
+                  logger->info("Unit " + unitID + " reported STAND BY");
                   break;
                 case SamplingUnitStatusMessage::SAMPLING:
+                  logger->info("Unit " + unitID + " reported SAMPLING");
                   samplingUnit.status = SamplerStatus::UNIT_SAMPLING;
                   break;
                 case SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD:
+                  logger->info("Unit " + unitID + " reported SAMPLING FILE UPLOADING");
                   samplingUnit.status = SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD;
                   break;
                 case SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE:
+                  logger->info("Unit " + unitID + " reported SAMPLING FILE UPLOAD COMPLETED!");
                   samplingUnit.hasFilesToUpload = false;
                   samplingUnit.status = SamplerStatus::UNIT_STAND_BY;
                   break;
                 case SamplingUnitStatusMessage::ERROR:
+                  logger->info("Unit " + unitID + " reported ERROR");
                   samplingUnit.status = SamplerStatus::UNIT_ERROR;
                   break;
             }
@@ -300,6 +305,26 @@ void SurfboardMainUnit::loopSampling(){
         }
         if(unitStatus != SamplerStatus::UNIT_SAMPLING){
             sendCommand(it->second, ControlUnitCommand::START_SAMPLING);
+        }
+    }
+}
+
+void SurfboardMainUnit::loopStandby(){
+    if(sampler->getStatus() == SamplerStatus::UNIT_SAMPLING){
+        sampler->stopSampling();
+    }else if(sampler->getStatus() == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+        sampler->disconnect();
+    }
+    
+    std::map<string, SamplingUnitRep>::iterator it;
+    for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
+        SamplerStatus unitStatus = it->second.status;
+        if(unitStatus == SamplerStatus::UNIT_SAMPLING){
+           // logger->info("Unit " + it->first + " is still sampling, sending STOP_SAMPLING command");
+            sendCommand(it->second, ControlUnitCommand::STOP_SAMPLING);
+        }else if(unitStatus == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
+          //  logger->info("Unit " + it->first + " is still uploading sample files, sending STOP_SAMPLING command");
+            sendCommand(it->second, ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD);
         }
     }
 }

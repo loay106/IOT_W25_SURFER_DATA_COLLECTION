@@ -67,6 +67,7 @@ class SurfboardMainUnit {
         
         void loopSampling();
         void loopFileUpload();
+        void loopStandby();
 
 
 };

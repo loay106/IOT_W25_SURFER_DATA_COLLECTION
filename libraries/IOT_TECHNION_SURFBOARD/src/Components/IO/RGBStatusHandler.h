@@ -12,6 +12,7 @@ enum RGBColors{
     GREEN,
     BLUE, 
     CYAN,
+    WHITE
 };
 
 class RGBStatusHandler{

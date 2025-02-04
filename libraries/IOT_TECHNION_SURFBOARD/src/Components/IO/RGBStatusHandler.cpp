@@ -11,9 +11,7 @@ volatile RGBColors firstColor = RGBColors::NO_COLOR;
 volatile RGBColors secondColor = RGBColors::NO_COLOR;
 volatile bool flickerState = false;
 
-void showColor(){
-    portENTER_CRITICAL_ISR(&colorChangeMux);
-    RGBColors color = flickerState ? firstColor : secondColor;
+void showColor(RGBColors color){
     switch (color){
         case RGBColors::RED:
             ledcWrite(0, 255); 
@@ -35,6 +33,11 @@ void showColor(){
             ledcWrite(1, 255);
             ledcWrite(2, 255); 
             break;      
+        case RGBColors::WHITE:
+            ledcWrite(0, 255); 
+            ledcWrite(1, 255);
+            ledcWrite(2, 255); 
+            break;      
         default:
             // defaulting to NO_COLOR
             ledcWrite(0, 0); 
@@ -42,8 +45,18 @@ void showColor(){
             ledcWrite(2, 0); 
             break;
     }
+}
+
+void flicker(){
     flickerState = !flickerState;
+    portENTER_CRITICAL_ISR(&colorChangeMux);
+    if(firstColor == secondColor){
+        portEXIT_CRITICAL_ISR(&colorChangeMux);
+        return;
+    }
     portEXIT_CRITICAL_ISR(&colorChangeMux);
+    RGBColors color = flickerState ? firstColor : secondColor;
+    showColor(color);
 }
 
 void RGBStatusHandler::init(int redPin, int greenPin, int bluePin) {
@@ -57,7 +70,7 @@ void RGBStatusHandler::init(int redPin, int greenPin, int bluePin) {
 
 
     hw_timer_t* timer = timerBegin(0, 80, true); // 80 prescaler gives 1us per tick
-    timerAttachInterrupt(timer, &showColor, true);
+    timerAttachInterrupt(timer, &flicker, true);
     timerAlarmWrite(timer, FLICKERING_RATE * 1000, true); // FLICKERING_RATE in milliseconds
     timerAlarmEnable(timer);
 }
@@ -71,5 +84,6 @@ void RGBStatusHandler::updateColors(RGBColors first, RGBColors second){
         secondColor = second;
     }
     portEXIT_CRITICAL_ISR(&colorChangeMux);
+    showColor(first);
 }
 
