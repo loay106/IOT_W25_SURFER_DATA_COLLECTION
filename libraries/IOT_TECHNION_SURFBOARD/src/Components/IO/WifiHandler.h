@@ -27,7 +27,7 @@ class WifiHandler{
         }
 
         void connect(){
-
+            WiFi.mode(WIFI_STA);
             if(isWifiConnected()){
                 return;
             }else{
@@ -43,6 +43,7 @@ class WifiHandler{
         }
         void disconnect(){
             WiFi.disconnect(true);
+            delay(100); // wait for wifi to disconnect fully
             WiFi.mode(WIFI_STA);
         }
 

@@ -125,7 +125,7 @@ void SurfboardMainUnit::startSampleFilesUpload() {
           logger->debug("Uploading internal sampler data started");
           try{
               sampler->connect();
-          }catch(WifiError& er){
+          }catch(...){
               updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
               return;
           }
@@ -269,7 +269,7 @@ void SurfboardMainUnit::loopFileUpload(){
         if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
             logger->debug("Error in internal sampler file upload");
             try{
-               logger->debug("Trying to reconnect to wifi and retry again...");
+              logger->debug("Trying to reconnect to wifi and retry again...");
               sampler->connect();
             }catch(WifiError& er){
               // ignore...
@@ -278,7 +278,14 @@ void SurfboardMainUnit::loopFileUpload(){
             uploadingUnitsErrorNum++;
         }else{
             logger->debug("Uploading next file batch...");
-            sampler->uploadNextSamples();
+            try{
+                sampler->uploadNextSamples();
+            }catch(...){
+              // try to reconnect to wifi
+              sampler->disconnect();
+              sampler->connect();
+            }
+            
         }
     }else{
         sampler->disconnect();
@@ -345,9 +352,10 @@ void SurfboardMainUnit::loopStandby(){
         }else if(unitStatus == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
           //  logger->info("Unit " + it->first + " is still uploading sample files, sending STOP_SAMPLING command");
             sendCommand(it->second, ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD);
-        }else if(unitStatus == SamplerStatus::UNIT_ERROR){
-            sendCommand(it->second, ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD);
         }
+        //else if(unitStatus == SamplerStatus::UNIT_ERROR){
+            //sendCommand(it->second, ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD);
+        //}
     }
 }
 

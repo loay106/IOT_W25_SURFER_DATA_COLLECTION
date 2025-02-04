@@ -18,7 +18,8 @@ void CloudSyncManager::connect(){
         httpClient.addHeader("Content-Type", "application/json");
         logger->info("HTTP connection initiated Successfully.");
     }catch(WifiError& err){
-        throw err;
+        logger->debug("Wifi connection failed!");
+        throw;
     }
 }
 
