@@ -12,10 +12,16 @@ void setup() {
     logger->init(57600);
     statusLight = RGBStatusHandler::getInstance();
     statusLight->init(RGBRedPin, RGBGreenPin, RGBBluePin);
-    statusLight->updateColors(RGBColors::GREEN, RGBColors::RED);
 }
 
 void loop() {
-    delay(50);
-    statusLight->flicker();
+    statusLight->updateColors(RGBColors::GREEN, RGBColors::NO_COLOR);
+    delay(3000);
+    statusLight->updateColors(RGBColors::GREEN, RGBColors::RED);
+    delay(3000);
+    statusLight->updateColors(RGBColors::CYAN, RGBColors::NO_COLOR);
+    delay(3000);
+    statusLight->updateColors(RGBColors::CYAN, RGBColors::RED);
+    delay(3000);
+    //statusLight->flicker();
 }

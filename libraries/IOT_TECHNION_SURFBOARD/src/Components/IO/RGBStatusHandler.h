@@ -28,7 +28,6 @@ class RGBStatusHandler{
         }
         void init(int redPin, int greenPin, int bluePin);
         void updateColors(RGBColors first, RGBColors second);
-        void flicker();
 };
 
 
