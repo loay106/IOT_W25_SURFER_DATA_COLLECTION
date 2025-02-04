@@ -1,139 +1,147 @@
+#include "SurfboardSamplingUnit.h"
 
-/*#include "HX711.h"
+// constants
+int serialBaudRate = 57600;
+int SDCardChipSelectPin = 5;
+uint8_t CONTROL_UNIT_MAC[6] = {0xA8, 0x42, 0xE3, 0x46, 0xE0, 0x64};
 
-#define DOUT_PIN 12
-#define CLK_PIN 13
+int doutPin = 12;
+ int sckPin = 13;
 
-HX711 scale;
-float data_loss_percentage = 0;
-static int total = 0;
-static int data_loss = 0;
-
-// Calibration factor (adjust this based on your calibration)
-float calibration_factor = 438;
-
-// Gravity constant (m/s^2)
-const float GRAVITY = 9.81;
+// globals
+SurfboardSamplingUnit* samplingUnit; 
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("HX711 Force Measurement Test");
-
-  scale.begin(DOUT_PIN, CLK_PIN);
-  scale.set_scale(calibration_factor);
-  scale.tare(); // Reset scale to zero
-
-  delay(5000);
-}
-
-void loop() {
-  
-  unsigned long startTime = millis();
-  unsigned long currentTime;
-  int sampleCount = 0; 
-  // Count samples for exactly one second
-  do {
-    if (scale.is_ready()) {
-    sampleCount++;
-    float mass_kg = scale.get_units() / 1000;
-
-    /*float force_N = mass_kg * GRAVITY;
-    Serial.print("Mass: ");
-    Serial.print(mass_kg, 3);
-    Serial.print(" kg, Force: ");
-    Serial.print(force_N, 2);
-    Serial.println(" N");
-  } 
-  else 
-  {
-    Serial.println("HX711 not found.");
-  }
-
-    delay(13);
-    currentTime = millis();
-  } while (currentTime - startTime < 1000);  // Run for 1 second
-  
-  // The sampling rate is equal to the number of samples taken in one second
-  float samplingRate = sampleCount;
-  if (scale.is_ready()) {
-    float mass_kg = scale.get_units() / 1000;
-
-    float force_N = mass_kg * GRAVITY;
-    Serial.print("Mass: ");
-    Serial.print(mass_kg, 3);
-    Serial.print(" kg, Force: ");
-    Serial.print(force_N, 2);
-    Serial.println(" N");
-  } 
-  else {
-    Serial.println("HX711 not found.");
-  }
-  Serial.print("Sample Count : ");
-  Serial.println(sampleCount);
-  //delay(20);
-}*/
-
-
-#include "HX711.h"
-
-#define DOUT_PIN 12
-#define CLK_PIN 13
-
-HX711 scale;
-
-// Make these static to maintain their values across loop iterations
-static int total = 0;
-static int data_loss = 0;
-
-// Calibration factor (adjust this based on your calibration)
-float calibration_factor = 438;
-
-// Gravity constant (m/s^2)
-const float GRAVITY = 9.81;
-
-void setup() {
-  Serial.begin(115200);
-  Serial.println("HX711 Force Measurement Test");
-
-  scale.begin(DOUT_PIN, CLK_PIN);
-  scale.set_scale(calibration_factor);
-  scale.tare(); // Reset scale to zero
-
-  Serial.println("Place known mass on scale to calculate force");
-  delay(5000);
-}
-
-void loop() {
-  unsigned long startTime = millis();
-  unsigned long currentTime;
-  int sampleCount = 0;
-
-  // Count samples for exactly one second
-  do {
-    if (scale.is_ready()) {
-      sampleCount++;
-      // Your measurement code here
-    } else {
-      Serial.println("HX711 not found.");
-      data_loss++;
+    Logger* logger = Logger::getInstance();
+    logger->init(serialBaudRate);
+    logger->setLogLevel(LogLevel::DEBUG);
+    SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
+    try{
+        sdCardHandler->init();
+    }catch(InitError& err){
+        logger->error("SD Card init error! Check your SD card wiring!");
+        while(true){delay(500);};
     }
-    total++;
-    delay(13);
-    currentTime = millis();
-  } while (currentTime - startTime < 1000);  // Run for 1 second
 
-  // Calculate and print data loss percentage every 100 samples
-  if (total >= 100) {
-    float data_loss_percentage = (float)data_loss / total * 100;
-    Serial.print("Data loss percentage: ");
-    Serial.print(data_loss_percentage);
-    Serial.println("%");
+    string WIFI_SSID = "";
+    string WIFI_PASSWORD = "";
+    vector<string> sensorsParams;
+    int WIFI_ESP_NOW_CHANNEL = 0;
 
-    // Reset counters
-    total = 0;
-    data_loss = 0;
-  }
+    try{
+        std::map<string, string> configMap = sdCardHandler->readConfigFile("/unit.config");
+        WIFI_SSID = configMap["WIFI_SSID"];
+        WIFI_PASSWORD = configMap["WIFI_PASSWORD"];
+        sensorsParams = parseSensorParams(configMap["SENSORS_PARAMS"]);
+    }catch(exception& e){
+        logger->error("Error reading config file! Place unit.config in your sd card top level with the required configs!");
+        while(true){delay(500);};
+    }
 
-  Serial.print("Sample Count: ");
-  Serial.println(sampleCount);
+
+    WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
+    try{
+        logger->info("Checking wifi connection...");
+        wifiHandler->init();
+        wifiHandler->connect();
+        logger->info("Wifi connection established!");
+        WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
+        logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
+        wifiHandler->disconnect();
+        logger->info("Wifi disconnected!");
+    }catch(...){
+          logger->error("Wifi connection failed! Check your ssid and password!");
+          while(true){delay(500);};
+    }
+
+    CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger, wifiHandler, wifiHandler->getMacAddress());
+    Sampler* sampler = new Sampler(logger, sdCardHandler, cloudSyncManager);
+
+    SamplingUnitSyncManager* syncManager = SamplingUnitSyncManager::getInstance();
+    samplingUnit = new SurfboardSamplingUnit(syncManager,sdCardHandler,sampler, logger);
+
+    // declare sensors here....
+    Force_HX711* sensor0 = new Force_HX711(logger,sdCardHandler,stoi(sensorsParams[0]) ,doutPin,sckPin);
+    IMU_BNO080* sensor1 = new IMU_BNO080(logger, sdCardHandler,stoi(sensorsParams[1]));
+    //Force_FAKE* sensor2 = new Force_FAKE(logger,sdCardHandler);
+    //Force_FAKE* sensor3 = new Force_FAKE(logger,sdCardHandler);
+
+    try{
+        // don't change the order of the init
+        logger->init(serialBaudRate);
+        syncManager->init(CONTROL_UNIT_MAC, WIFI_ESP_NOW_CHANNEL);
+        sampler->init();
+        sensor0->init();
+        sensor1->init();
+        //sensor2->init();
+        //sensor3->init();
+        // init sensors here..
+        // you can pass params from the config file
+        // sensor[i] should have the param in sensorsParams[i]
+    }catch(InitError& err){
+        while(true){
+            // don't proceed, there's a wiring error!
+            logger->error("Init error! Check your wiring!");
+            delay(100);
+        }
+        
+    }
+
+    // add sensors here....
+    samplingUnit->addSensor(sensor0);
+    samplingUnit->addSensor(sensor1);
+    //samplingUnit->addSensor(sensor2);
+    //samplingUnit->addSensor(sensor3);
+
+    try{
+        syncManager->connect();
+    }catch(ESPNowSyncError& err){
+        while(true){delay(500);};
+    }
+    
+    logger->info("Unit setup complete!");
+}
+
+void loop() {
+    samplingUnit->handleNextCommand();
+    SamplerStatus status = samplingUnit->getStatus();
+    switch(status){
+        case UNIT_STAND_BY:
+            delay(5);
+            break;
+        case UNIT_ERROR:
+            delay(5);
+            break;
+        case UNIT_SAMPLING:
+            samplingUnit->loopSampling();
+            delay(5);
+            break;
+        case UNIT_SAMPLE_FILES_UPLOAD:
+            samplingUnit->loopFileUpload();
+            delay(10);
+            break;
+    }
+
+    switch (status)
+    {
+        case UNIT_STAND_BY:
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::STAND_BY);
+            break;
+
+        case UNIT_SAMPLING:
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::SAMPLING);
+            break;
+
+        case UNIT_ERROR:
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::ERROR);
+            break;
+
+        case UNIT_SAMPLE_FILES_UPLOAD: 
+            samplingUnit->reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD);
+            break;
+        
+        default:
+            break;
+    }
+
 }
