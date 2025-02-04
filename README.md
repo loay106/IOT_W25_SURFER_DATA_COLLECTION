@@ -7,6 +7,8 @@
 Surfer Data Collection, a project under the ICST Lab at the Technion – Israel Institute of Technology, captures acceleration force data using multiple sensors strategically placed on the surfer's board. This innovative system provides deep insights into athlete movements and maneuvers, enhancing training and performance analysis with precise data collection.
 Our project seamlessly manages wireless connectivity between sensors, ensuring efficient data transmission to the cloud for processing and analysis.
 
+The project offers a *robust* and *efficient* solution for the surfer! It consists of a single main unit and multiple sampling units (up to 20) that can read and write data from a variety of sensors, to better and enhance the surfer's experience and performance!
+
 # Folder description:
 1. SurfboardMainUnit:
    
@@ -38,47 +40,55 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
 8. unit.config:
 
    This file includes WIFI details and sensor parameters that need to be provided.
-   To configure the calibration factor, simply edit the first value in the SENSORS_PARAMS list located in the unit.config file.
+   To configure the calibration factor, edit the first value in the SENSORS_PARAMS list located in the unit.config file.
    
 # Arduino/ESP libraries used for the project:
-   RTClib (by Adafruit) - version 2.1.4
-   HX711 (by Rob Tillaart) - version 0.5.2
-   SparkFun BNO080 Cortex Based IMU (by SparkFun) - version 1.1.12
+   1. RTClib (by Adafruit) - version 2.1.4
+   2. HX711 (by Rob Tillaart) - version 0.5.2
+   3. SparkFun BNO080 Cortex Based IMU (by SparkFun) - version 1.1.12
 
 # Installation:
-1. Wire the necessary hardware as seen in the diagram below and assemble your main and sampling units boxes
+1. Wire the necessary hardware as seen in the example diagram below and assemble your main and sampling units boxes
 2. Move the libraries/IOT_TECHNION_SURFBOARD to your Arduino libraries folder (Documents\Arduino\libraries folder in Windows)
-3. Add your parameters to device.config file and move it to the SD card attached to the main unit
-4. Open SurfboardMainUnit/SurfboardMainUnit.ino file in your Arduino IDE and compile the code into your main unit
-5. For every sampling unit open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
+3. Add your parameters to unit.config file and move it to the top level in your SD card for each unit
+4. Open SurfboardMainUnit/SurfboardMainUnit.ino file in your Arduino IDE, choose your wiring pins, and compile the code into your main unit
+5. For every sampling unit desired, open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
+6. Setup your Firebase account, endpoints, storage, and host the index.html file
+7. [RECOMMENDED] Press the button (Soft press) in your main unit and validate that the sampling process works.
+8. [RECOMMENDED] Press the button (Long press) in your main unit and validate that the file uploading process works.
+9. [RECOMMENDED] Write and keep track of your esp32's MAC address as it identifies the unit.
+
+## Notes:
+1. Sensors receive their IDs in the order they were added to the unit, starting from 0.
+2. The sensor's parameters can be set in the unit.config file, in the same order they were inserted in
+3. A Wi-Fi connection is required in the setup stage
 
 # Hardware:
+      
+* The sampling unit's required hardware:
+   1. Esp32 X1
+   5. SD card X1
 
-note : in our project we had 1 Main unit and 2 Sampling units.
-* Main Unit Hardware:
+   Add sensors to this unit as desired
+
+* The main unit's required hardware:
    1. Esp32 X1
    2. RTC X1
    3. Push Button X1
    4. RGB led light X1
    5. SD card X1
-      
-* sampling Unit Harware:
-   1. Esp32 X1
-   2. BNO080 IMU sensor X1
-   3. Strain Gauge sensor X1
-   4. HX711 X1
-   5. SD card X1
-
+ 
+   You can add sensors to this unit as well
   
-# wiring Diagrams:
-Sampling Unit Wiring Diagram:
+# wiring Diagram Example:
+Example Sampling Unit Wiring Diagram:
 
 <img src="https://github.com/user-attachments/assets/a86154c1-af3f-4eb6-b046-5d46ad49b0bc" alt="Image" width="600">
 
-Main Unit Wiring Diagram:
+Example Main Unit Wiring Diagram:
 
 <img src="https://github.com/user-attachments/assets/d2808a2c-2120-4290-80fc-dc2f74cc72e5" alt="Image" width="600">
-   
+
 # Project Poster:
 // to be edited later - saved for template use
 
