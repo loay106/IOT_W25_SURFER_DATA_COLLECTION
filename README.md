@@ -9,10 +9,10 @@ Our project seamlessly manages wireless connectivity between sensors, ensuring e
 
 The project strives to offer an *efficient* and *robust* technological solution for the surfer! It consists of a single main unit and multiple sampling units (up to 20) that can read and write data from a variety of sensors, to better and enhance the surfer's experience and performance!
 
+The project also utilizes the use of esp32's interrupts to maximize and offer a stable performance of the hardware.
+
 The device can handle sensors with extremely high sampling rates, with high-frequency polling of approximately 1380 Hz.
 Although the device offers this functionality, it's highly recommended to match the delay time with the highest sensor rate to save on CPU usage and extend the device's lifetime.
-
-The device is also designed to use the minimal hardware required (excluding sensors).
 
 This project is the version 2.0 of the [previous](https://github.com/Moamena2/IOT---Surfboard-Data-Recorder.git) project.
 
