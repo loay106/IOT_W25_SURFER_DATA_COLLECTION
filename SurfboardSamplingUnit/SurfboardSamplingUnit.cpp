@@ -6,7 +6,6 @@ SurfboardSamplingUnit::SurfboardSamplingUnit(SamplingUnitSyncManager *syncManage
     this->sampler=sampler;
     this->sdCardHandler;
     lastStatusReportTime = 0;
-    lastStatusReported = UNIT_STAND_BY;
 }
 
 void SurfboardSamplingUnit::addSensor(SensorBase *sensor){
@@ -28,6 +27,7 @@ void SurfboardSamplingUnit::handleNextCommand(){
   // todo: add status report here after each command handling
     try{
         CommandMessage command = syncManager->getNextCommand();
+        SamplerStatus samp_status= sampler->getStatus();
         switch(command.command){
             case ControlUnitCommand::START_SAMPLING:
                 try{
@@ -50,9 +50,24 @@ void SurfboardSamplingUnit::handleNextCommand(){
                 }
                 break;
             case ControlUnitCommand::STOP_SAMPLING:
-                if(sampler->getStatus()==SamplerStatus::UNIT_SAMPLING)
+                if(samp_status == SamplerStatus::UNIT_SAMPLING )
                 {
                     sampler->stopSampling();
+                    reportStatus(SamplingUnitStatusMessage::STAND_BY,true);
+                    return;
+                }
+                else if(samp_status == SamplerStatus::UNIT_ERROR)
+                {
+                    reportStatus(SamplingUnitStatusMessage::ERROR,true);
+                    return;
+                }
+                else if(samp_status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD)
+                {
+                    reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD,true);
+                    return;
+                }
+                else if(samp_status == SamplerStatus::UNIT_STAND_BY)
+                {
                     reportStatus(SamplingUnitStatusMessage::STAND_BY,true);
                     return;
                 }
@@ -70,25 +85,37 @@ void SurfboardSamplingUnit::handleNextCommand(){
                             reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD,true);
                         }
                         catch(WifiError& er){
-                            reportStatus(SamplingUnitStatusMessage::ERROR,true);
-                            lastStatusReported = SamplerStatus::UNIT_ERROR;     
+                            reportStatus(SamplingUnitStatusMessage::ERROR,true);    
                             return;
                         }
                     }
                 }
                 else{
-                    reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE,true);
-                    lastStatusReported = SamplerStatus::UNIT_STAND_BY;     
+                    reportStatus(SamplingUnitStatusMessage::SAMPLE_FILES_UPLOAD_COMPLETE,true);    
                     return;
                 }
                 break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
-                if(sampler->getStatus() == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD)
+                if( samp_status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD)
                 {
                     sampler->disconnect();
+                    reportStatus(SamplingUnitStatusMessage::STAND_BY,true);  
+                    return;
+                }
+                else if(samp_status == SamplerStatus::UNIT_ERROR)
+                {
+                    reportStatus(SamplingUnitStatusMessage::ERROR,true);
+                    return; 
+                }
+                else if(samp_status == SamplerStatus::UNIT_SAMPLING)
+                {
+                    reportStatus(SamplingUnitStatusMessage::SAMPLING,true);
+                    return;
+                }
+                else if(samp_status == SamplerStatus::UNIT_STAND_BY)
+                {
                     reportStatus(SamplingUnitStatusMessage::STAND_BY,true);
-                    lastStatusReported = SamplerStatus::UNIT_STAND_BY;   
-                    break;
+                    return;
                 }
                 break;
         }
