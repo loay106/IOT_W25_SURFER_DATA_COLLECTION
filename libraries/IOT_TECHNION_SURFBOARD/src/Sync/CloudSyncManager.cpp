@@ -3,7 +3,7 @@
 CloudSyncManager::CloudSyncManager(Logger* logger, WifiHandler *wifiHandler, String unitMac){
     this->wifiHandler=wifiHandler;
     this->logger = logger;
-    this->sampleUploadEndpoint = "https://us-central1-surfer-data-project.cloudfunctions.net/api/addSamples";
+    this->sampleUploadEndpoint = "https://me-west1-surfer-data-project.cloudfunctions.net/api-1/addSamples";    
     this->unitMac = unitMac;
 }
 

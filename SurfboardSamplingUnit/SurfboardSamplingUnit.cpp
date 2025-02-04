@@ -50,15 +50,10 @@ void SurfboardSamplingUnit::handleNextCommand(){
                 }
                 break;
             case ControlUnitCommand::STOP_SAMPLING:
-                if(samp_status == SamplerStatus::UNIT_SAMPLING )
+                if(samp_status == SamplerStatus::UNIT_SAMPLING || samp_status == SamplerStatus::UNIT_ERROR)
                 {
                     sampler->stopSampling();
                     reportStatus(SamplingUnitStatusMessage::STAND_BY,true);
-                    return;
-                }
-                else if(samp_status == SamplerStatus::UNIT_ERROR)
-                {
-                    reportStatus(SamplingUnitStatusMessage::ERROR,true);
                     return;
                 }
                 else if(samp_status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD)
@@ -96,16 +91,11 @@ void SurfboardSamplingUnit::handleNextCommand(){
                 }
                 break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
-                if( samp_status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD)
+                if( samp_status == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD || samp_status == SamplerStatus::UNIT_ERROR )
                 {
                     sampler->disconnect();
                     reportStatus(SamplingUnitStatusMessage::STAND_BY,true);  
                     return;
-                }
-                else if(samp_status == SamplerStatus::UNIT_ERROR)
-                {
-                    reportStatus(SamplingUnitStatusMessage::ERROR,true);
-                    return; 
                 }
                 else if(samp_status == SamplerStatus::UNIT_SAMPLING)
                 {

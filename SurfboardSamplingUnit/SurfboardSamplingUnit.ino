@@ -46,7 +46,6 @@ void setup() {
         wifiHandler->connect();
         logger->info("Wifi connection established!");
         WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
-        Serial.println(WIFI_ESP_NOW_CHANNEL);
         logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
         wifiHandler->disconnect();
         logger->info("Wifi disconnected!");
@@ -115,7 +114,7 @@ void loop() {
             break;
         case UNIT_SAMPLING:
             samplingUnit->loopSampling();
-            delay(2);
+            delay(5);
             break;
         case UNIT_SAMPLE_FILES_UPLOAD:
             samplingUnit->loopFileUpload();
