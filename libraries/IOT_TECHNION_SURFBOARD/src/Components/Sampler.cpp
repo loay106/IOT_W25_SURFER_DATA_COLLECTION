@@ -81,6 +81,7 @@ void Sampler::disconnect() {
         currentUploadFile.close();
         fileSampleIndex = 0;
     }
+    status = SamplerStatus::UNIT_STAND_BY;
 }
 
 

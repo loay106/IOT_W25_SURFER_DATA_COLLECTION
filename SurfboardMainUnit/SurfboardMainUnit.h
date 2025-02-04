@@ -43,6 +43,7 @@ class SurfboardMainUnit {
         Sampler* sampler; // internal sampler
         SDCardHandler* sdCardHandler;
         int currentSamplingSession;
+        unsigned long uploadStartTime;
 
         SystemStatus status;
 
@@ -68,6 +69,7 @@ class SurfboardMainUnit {
         void loopSampling();
         void loopFileUpload();
         void loopStandby();
+        void loopDiscoverDisconnected();
 
 
 };

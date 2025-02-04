@@ -20,10 +20,10 @@ Logger* logger;
 RGBStatusHandler* statusLighthandler;
 int errorRecoveryTries = 0;
 
-uint8_t samplingUnitsMacAddresses[1][6] =  {
+uint8_t samplingUnitsMacAddresses[2][6] =  {
   //  {0xCC, 0xDB, 0xA7, 0x5A, 0x7F, 0xC0}, // Loay's esp testing board
-    {0xA8, 0x42, 0xE3, 0x45, 0x94, 0x68} // Mousa's esp board
-  //  {0x0C, 0xB8, 0x15, 0x77, 0x84, 0x64} // Shada's esp board
+    {0xA8, 0x42, 0xE3, 0x45, 0x94, 0x68}, // Mousa's esp board
+    {0x0C, 0xB8, 0x15, 0x77, 0x84, 0x64} // Shada's esp board
 };
 
 void setup() {
@@ -95,12 +95,12 @@ void setup() {
 
     try{
         // don't change the order of the init
-        syncManager->init(samplingUnitsMacAddresses, 1, WIFI_ESP_NOW_CHANNEL);
+        syncManager->init(samplingUnitsMacAddresses, 2, WIFI_ESP_NOW_CHANNEL);
         timeHandler->init();
         buttonHandler->init();
         cloudSyncManager->init();
         sampler->init();
-        mainUnit->init(samplingUnitsMacAddresses, 1);
+        mainUnit->init(samplingUnitsMacAddresses, 2);
 
         // init sensors here..
         // you can pass params from the config file
@@ -131,6 +131,7 @@ void loop() {
        // logger->info("LOOPING");
         mainUnit->handleButtonPress();
         mainUnit->readStatusUpdateMessages();
+        mainUnit->loopDiscoverDisconnected();
         SystemStatus status = mainUnit->getStatus();
         switch(status){
           case SystemStatus::SYSTEM_STAND_BY:
@@ -158,6 +159,5 @@ void loop() {
         statusLighthandler->updateColors(RGBColors::RED, RGBColors::NO_COLOR);
         delay(200); // give some time for the system to recover
     }
-
 }
 

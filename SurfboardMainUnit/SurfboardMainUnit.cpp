@@ -9,6 +9,7 @@ SurfboardMainUnit::SurfboardMainUnit(ControlUnitSyncManager *syncManager, RTCTim
     this->logger = logger;
     this->sampler = sampler;
     this->sdCardHandler = sdCardHandler;
+    this->uploadStartTime = 0;
     status = SystemStatus::SYSTEM_STARTING;
     currentSamplingSession = 0;
 }
@@ -130,7 +131,8 @@ void SurfboardMainUnit::startSampleFilesUpload() {
           }
       }
     }
-  updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
+    uploadStartTime = 0;
+    updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
 }
 
 void SurfboardMainUnit::stopSampleFilesUpload() {
@@ -147,8 +149,9 @@ void SurfboardMainUnit::stopSampleFilesUpload() {
       it->second.lastCommandSentMillis = current;
     }
     sampler->disconnect();
-    logger->info("File upload stopped!");
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
+    unsigned long elapsedTime = (current - uploadStartTime)/1000;
+    logger->info("File upload stopped! Process ended in " + to_string(elapsedTime) + " seconds");
 }
 
 SystemStatus SurfboardMainUnit::getStatus(){
@@ -234,19 +237,19 @@ void SurfboardMainUnit::sendCommand(SamplingUnitRep& unit, ControlUnitCommand co
         switch(command){
             case ControlUnitCommand::START_SAMPLING:
                 commandParams["TIMESTAMP"] = to_string(currentSamplingSession);
-                logger->info("Sending START_SAMPLING command to unit " + macToString(unit.mac));
+                logger->debug("Sending START_SAMPLING command to unit " + macToString(unit.mac));
                 syncManager->sendCommand(ControlUnitCommand::START_SAMPLING, commandParams, unit.mac);
                 break;
             case ControlUnitCommand::STOP_SAMPLING:
-                logger->info("Sending STOP_SAMPLING command to unit " + macToString(unit.mac));
+                logger->debug("Sending STOP_SAMPLING command to unit " + macToString(unit.mac));
                 syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLING, commandParams, unit.mac);
                 break;
             case ControlUnitCommand::START_SAMPLE_FILES_UPLOAD:
-                logger->info("Sending START_SAMPLE_FILES_UPLOAD command to unit " + macToString(unit.mac));
+                logger->debug("Sending START_SAMPLE_FILES_UPLOAD command to unit " + macToString(unit.mac));
                 syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, commandParams, unit.mac);
                 break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
-                logger->info("Sending STOP_SAMPLE_FILES_UPLOAD command to unit " + macToString(unit.mac));
+                logger->debug("Sending STOP_SAMPLE_FILES_UPLOAD command to unit " + macToString(unit.mac));
                 syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, commandParams, unit.mac);
                 break;
 
@@ -260,15 +263,24 @@ void SurfboardMainUnit::sendCommand(SamplingUnitRep& unit, ControlUnitCommand co
 
 void SurfboardMainUnit::loopFileUpload(){
     int finishedCount = 0;
+    int uploadingUnitsErrorNum = 0;
     if(sampler->hasFilesToCloudUpload()){
         if(sampler->getStatus() != SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
             logger->debug("Error in internal sampler file upload");
+            try{
+               logger->debug("Trying to reconnect to wifi and retry again...");
+              sampler->connect();
+            }catch(WifiError& er){
+              // ignore...
+            }
             updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
+            uploadingUnitsErrorNum++;
         }else{
             logger->debug("Uploading next file batch...");
             sampler->uploadNextSamples();
         }
     }else{
+        sampler->disconnect();
         finishedCount++;
     }
 
@@ -277,6 +289,7 @@ void SurfboardMainUnit::loopFileUpload(){
         SamplerStatus unitStatus = it->second.status;
         if(unitStatus == SamplerStatus::UNIT_ERROR){
             updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR);
+            uploadingUnitsErrorNum++;
         }
         if(!it->second.hasFilesToUpload){
             finishedCount++;
@@ -287,6 +300,10 @@ void SurfboardMainUnit::loopFileUpload(){
 
     if(finishedCount == samplingUnits.size() + 1){
         updateStatus(SystemStatus::SYSTEM_STAND_BY);
+          unsigned long elapsedTime = (millis() - uploadStartTime)/1000;
+          logger->info("File upload completed! Process ended in " + to_string(elapsedTime) + " seconds");
+    }else if(uploadingUnitsErrorNum == 0){
+        updateStatus(SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD);
     }
 }
 
@@ -325,6 +342,18 @@ void SurfboardMainUnit::loopStandby(){
         }else if(unitStatus == SamplerStatus::UNIT_SAMPLE_FILES_UPLOAD){
           //  logger->info("Unit " + it->first + " is still uploading sample files, sending STOP_SAMPLING command");
             sendCommand(it->second, ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD);
+        }else if(unitStatus == SamplerStatus::UNIT_ERROR){
+            sendCommand(it->second, ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD);
+        }
+    }
+}
+
+void SurfboardMainUnit::loopDiscoverDisconnected(){
+    unsigned long current = millis();
+    std::map<string, SamplingUnitRep>::iterator it;
+    for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
+        if((current - it->second.lastStatusUpdateMillis) >= MAX_STATUS_UPDATE_DELAY){
+            it->second.status = SamplerStatus::UNIT_ERROR;
         }
     }
 }
