@@ -10,7 +10,7 @@ int RGBBluePin = 27;
 void setup() {
     logger = Logger::getInstance();
     logger->init(57600);
-    statusLight = new RGBStatusHandler(logger);
+    statusLight = RGBStatusHandler::getInstance();
     statusLight->init(RGBRedPin, RGBGreenPin, RGBBluePin);
     statusLight->updateColors(RGBColors::GREEN, RGBColors::RED);
 }

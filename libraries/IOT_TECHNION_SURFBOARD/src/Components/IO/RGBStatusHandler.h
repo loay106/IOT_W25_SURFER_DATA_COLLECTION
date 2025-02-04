@@ -4,25 +4,28 @@
 #include "Logger.h"
 #include <Arduino.h>
 
-const int FLICKERING_RATE = 500;
+extern const int FLICKERING_RATE;
 
 enum RGBColors{
     NO_COLOR,
     RED,
+    GREEN,
     BLUE, 
-    YELLOW,
-    GREEN
+    CYAN,
 };
 
 class RGBStatusHandler{
     private:
-        RGBColors firstColor;
-        RGBColors secondColor;
-        Logger* logger;
-        int lastFlickerMillis;
-        void showColor();
+        static RGBStatusHandler* instance;
+        RGBStatusHandler(){};
     public:
-        RGBStatusHandler(Logger* logger);
+        RGBStatusHandler(const RGBStatusHandler& obj) = delete;
+        static RGBStatusHandler* getInstance() {
+            if (instance == nullptr) {
+                instance = new RGBStatusHandler();
+            }
+            return instance;
+        }
         void init(int redPin, int greenPin, int bluePin);
         void updateColors(RGBColors first, RGBColors second);
         void flicker();

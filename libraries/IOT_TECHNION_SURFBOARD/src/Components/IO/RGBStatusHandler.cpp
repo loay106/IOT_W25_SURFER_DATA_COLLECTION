@@ -1,11 +1,14 @@
 #include "RGBStatusHandler.h"
 #include <Arduino.h>
 
-RGBStatusHandler::RGBStatusHandler(Logger* logger) : logger(logger){
-    firstColor = RGBColors::NO_COLOR;
-    secondColor = RGBColors::NO_COLOR;
-    lastFlickerMillis=0;
-}
+const int FLICKERING_RATE = 500;
+
+RGBStatusHandler* RGBStatusHandler::instance = nullptr;
+
+volatile RGBColors firstColor = RGBColors::NO_COLOR;
+volatile RGBColors secondColor = RGBColors::NO_COLOR;
+volatile bool flickerState = false;
+unsigned long lastFlickerMillis = 0;
 
 void RGBStatusHandler::init(int redPin, int greenPin, int bluePin) {
     ledcSetup(0, 5000, 8); // Channel 0, 5kHz, 8-bit resolution
@@ -17,34 +20,9 @@ void RGBStatusHandler::init(int redPin, int greenPin, int bluePin) {
     ledcAttachPin(bluePin, 2);
 }
 
-void RGBStatusHandler::updateColors(RGBColors first, RGBColors second){
-    if(firstColor != first || secondColor != second){
-        firstColor = first;
-        secondColor = second;
-        lastFlickerMillis=0;
-        showColor();
-    }
-
-}
-
-void RGBStatusHandler::flicker(){
-    if(firstColor == secondColor){
-        // nothing to do...
-        return;
-    }
-    unsigned long current = millis();
-    unsigned long elapsedMillis = (current - lastFlickerMillis); 
-    if(elapsedMillis >= FLICKERING_RATE){
-        RGBColors temp = firstColor;
-        firstColor = secondColor;
-        secondColor = temp;
-        lastFlickerMillis = current;
-        showColor();
-    }
-}
-
-void RGBStatusHandler::showColor(){
-    switch (firstColor){
+void showColor(){
+    RGBColors color = flickerState ? firstColor : secondColor;
+    switch (color){
         case RGBColors::RED:
             ledcWrite(0, 255); 
             ledcWrite(1, 0); 
@@ -60,10 +38,10 @@ void RGBStatusHandler::showColor(){
             ledcWrite(1, 0);
             ledcWrite(2, 255); 
             break;
-        case RGBColors::YELLOW:
-            ledcWrite(0, 255); 
+        case RGBColors::CYAN:
+            ledcWrite(0, 0); 
             ledcWrite(1, 255);
-            ledcWrite(2, 0); 
+            ledcWrite(2, 255); 
             break;      
         default:
             // defaulting to NO_COLOR
@@ -73,3 +51,28 @@ void RGBStatusHandler::showColor(){
             break;
     }
 }
+
+void RGBStatusHandler::updateColors(RGBColors first, RGBColors second){
+    if(firstColor != first || secondColor != second){
+        firstColor = first;
+        secondColor = second;
+        lastFlickerMillis=0;
+        showColor();
+    }
+}
+
+void RGBStatusHandler::flicker(){
+    if(firstColor == secondColor){
+        // nothing to do...
+        return;
+    }
+    unsigned long current = millis();
+    unsigned long elapsedMillis = (current - lastFlickerMillis); 
+    if(elapsedMillis >= FLICKERING_RATE){
+        showColor();
+        flickerState = !flickerState;
+        lastFlickerMillis = current;
+    }
+}
+
+
