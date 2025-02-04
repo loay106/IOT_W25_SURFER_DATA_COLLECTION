@@ -1,9 +1,9 @@
 #include "SurfboardSamplingUnit.h"
 
 // constants
-int serialBaudRate = 115200;
+int serialBaudRate = 57600;
 int SDCardChipSelectPin = 5;
-uint8_t CONTROL_UNIT_MAC[6] = {0xCC, 0xDB, 0xA7, 0x5A, 0x7F, 0xC0};
+uint8_t CONTROL_UNIT_MAC[6] = {0xA8, 0x42, 0xE3, 0x46, 0xE0, 0x64};
 
 int doutPin = 12;
  int sckPin = 13;
@@ -47,7 +47,7 @@ void setup() {
         logger->info("Wifi connection established!");
         WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
         Serial.println(WIFI_ESP_NOW_CHANNEL);
-        //logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
+        logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
         wifiHandler->disconnect();
         logger->info("Wifi disconnected!");
     }catch(...){
@@ -64,7 +64,8 @@ void setup() {
     // declare sensors here....
     Force_HX711* sensor0 = new Force_HX711(logger,sdCardHandler,stoi(sensorsParams[0]) ,doutPin,sckPin);
     IMU_BNO080* sensor1 = new IMU_BNO080(logger, sdCardHandler,stoi(sensorsParams[1]));
-    Force_FAKE* sensor2  = new Force_FAKE(logger,sdCardHandler);
+    //Force_FAKE* sensor2 = new Force_FAKE(logger,sdCardHandler);
+    //Force_FAKE* sensor3 = new Force_FAKE(logger,sdCardHandler);
 
     try{
         // don't change the order of the init
@@ -73,7 +74,8 @@ void setup() {
         sampler->init();
         sensor0->init();
         sensor1->init();
-        sensor2->init();
+        //sensor2->init();
+        //sensor3->init();
         // init sensors here..
         // you can pass params from the config file
         // sensor[i] should have the param in sensorsParams[i]
@@ -87,9 +89,11 @@ void setup() {
     }
 
     // add sensors here....
-    //samplingUnit->addSensor(sensor0);
+    samplingUnit->addSensor(sensor0);
     samplingUnit->addSensor(sensor1);
     //samplingUnit->addSensor(sensor2);
+    //samplingUnit->addSensor(sensor3);
+
     try{
         syncManager->connect();
     }catch(ESPNowSyncError& err){

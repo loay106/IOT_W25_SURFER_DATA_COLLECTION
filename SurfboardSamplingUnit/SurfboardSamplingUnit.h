@@ -7,7 +7,7 @@ using namespace std;
 
 #include <IOT_TECHNION_SURFBOARD.h>
 
-const int REPORT_STATUS_INTERVAL_MILLIS = 1000;
+const int REPORT_STATUS_INTERVAL_MILLIS = 3000;
 
 class SurfboardSamplingUnit {
     private:
