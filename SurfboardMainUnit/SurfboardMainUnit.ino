@@ -2,15 +2,23 @@
 
 // constants
 uint8_t SDCardChipSelectPin = 5;
+
 int serialBaudRate = 57600;
+
 int RGBRedPin = 25;
 int RGBGreenPin = 26;
 int RGBBluePin = 27;
 
 int buttonPin = 4;
 
+int MAX_RECOVERY_TRIES = 3;
+
+
 // globals
 SurfboardMainUnit* mainUnit;
+Logger* logger;
+RGBStatusHandler* statusLighthandler;
+int errorRecoveryTries = 0;
 
 uint8_t samplingUnitsMacAddresses[1][6] =  {
    // {0x08, 0xB6, 0x1F, 0x33, 0x49, 0xE4}, // Shada's esp board
@@ -18,9 +26,20 @@ uint8_t samplingUnitsMacAddresses[1][6] =  {
 };
 
 void setup() {
-    Logger* logger = Logger::getInstance();
+    logger = Logger::getInstance();
     logger->init(serialBaudRate);
     logger->setLogLevel(LogLevel::DEBUG);
+
+    logger->info("System init starting...");
+
+    statusLighthandler = RGBStatusHandler::getInstance();
+    try{
+        statusLighthandler->init(RGBRedPin, RGBGreenPin, RGBBluePin);
+    }catch(...){
+        logger->error("Failed to start LED! Check your wiring!");
+        while(true){delay(500);};
+    }
+
     SDCardHandler* sdCardHandler = new SDCardHandler(SDCardChipSelectPin, logger);
     try{
         sdCardHandler->init();
@@ -62,7 +81,6 @@ void setup() {
 
     ControlUnitSyncManager* syncManager = ControlUnitSyncManager::getInstance();
     RTCTimeHandler* timeHandler = new RTCTimeHandler(logger);
-    RGBStatusHandler* statusLighthandler = new RGBStatusHandler(logger);
     ButtonHandler* buttonHandler = new ButtonHandler(logger, buttonPin);
 
     CloudSyncManager* cloudSyncManager = new CloudSyncManager(logger, wifiHandler, wifiHandler->getMacAddress());
@@ -76,10 +94,8 @@ void setup() {
 
     try{
         // don't change the order of the init
-        // todo: add WIFI_ESP_NOW_CHANNEL param here to syncManager and update the channel used to this channel
         syncManager->init(samplingUnitsMacAddresses, 0, WIFI_ESP_NOW_CHANNEL);
         timeHandler->init();
-        statusLighthandler->init(RGBRedPin, RGBGreenPin, RGBBluePin);
         buttonHandler->init();
         cloudSyncManager->init();
         sampler->init();
@@ -110,30 +126,36 @@ void setup() {
     }catch(ESPNowSyncError& err){
         while(true){delay(500);};
     }
-    logger->info("Unit setup complete!");
+    logger->info("System init complete!");
 }
 
 void loop() {
-    mainUnit->loopStatusLight();
-    mainUnit->handleButtonPress();
-    mainUnit->readStatusUpdateMessages();
-    SystemStatus status = mainUnit->getStatus();
-    switch(status){
-      case SystemStatus::SYSTEM_STAND_BY:
-      case SystemStatus::SYSTEM_STARTING:
-      case SystemStatus::SYSTEM_ERROR: 
-        delay(10);
-        break;
-      case SystemStatus::SYSTEM_SAMPLING:
-      case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
-        mainUnit->loopSampling();
-        delay(3);
-        break;
-      case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
-      case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
-        mainUnit->loopFileUpload();
-        delay(10);
-        break;
+    try{  
+        mainUnit->handleButtonPress();
+        mainUnit->readStatusUpdateMessages();
+        SystemStatus status = mainUnit->getStatus();
+        switch(status){
+          case SystemStatus::SYSTEM_STAND_BY:
+          case SystemStatus::SYSTEM_STARTING:
+          case SystemStatus::SYSTEM_ERROR: 
+            delay(10);
+            break;
+          case SystemStatus::SYSTEM_SAMPLING:
+          case SystemStatus::SYSTEM_SAMPLING_PARTIAL_ERROR:
+            mainUnit->loopSampling();
+            delay(3);
+            break;
+          case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
+          case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
+            mainUnit->loopFileUpload();
+            delay(3);
+            break;
+        }
+    }catch(...){
+        logger->error("An unexpected error occured! Trying to recover...");
+        statusLighthandler->updateColors(RGBColors::RED, RGBColors::NO_COLOR);
+        delay(200); // give some time for the system to recover
     }
+
 }
 

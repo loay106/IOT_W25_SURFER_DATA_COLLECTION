@@ -26,7 +26,6 @@ void SurfboardMainUnit::init(uint8_t samplingUnitsAdresses[][6], int samplingUni
         samplingUnits[macString] = samplingUnit;
     }
     syncManager->connect();
-    logger->info("System initalization complete!");
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
 }
 
@@ -40,7 +39,7 @@ void SurfboardMainUnit::updateStatus(SystemStatus newStatus){
             statusLighthandler->updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
             break;
         case SystemStatus::SYSTEM_STAND_BY:
-            statusLighthandler->updateColors(RGBColors::GREEN, RGBColors::GREEN);
+            statusLighthandler->updateColors(RGBColors::BLUE, RGBColors::BLUE);
             break;  
         case SystemStatus::SYSTEM_SAMPLING:
             statusLighthandler->updateColors(RGBColors::GREEN, RGBColors::NO_COLOR);
@@ -49,10 +48,10 @@ void SurfboardMainUnit::updateStatus(SystemStatus newStatus){
             statusLighthandler->updateColors(RGBColors::GREEN, RGBColors::RED);
             break;    
         case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD:
-            statusLighthandler->updateColors(RGBColors::BLUE, RGBColors::NO_COLOR);
+            statusLighthandler->updateColors(RGBColors::CYAN, RGBColors::NO_COLOR);
             break;
         case SystemStatus::SYSTEM_SAMPLE_FILE_UPLOAD_PARTIAL_ERROR:
-            statusLighthandler->updateColors(RGBColors::BLUE, RGBColors::RED);
+            statusLighthandler->updateColors(RGBColors::CYAN, RGBColors::RED);
             break;
         case SystemStatus::SYSTEM_ERROR:
             statusLighthandler->updateColors(RGBColors::RED, RGBColors::RED);
@@ -218,10 +217,6 @@ void SurfboardMainUnit::readStatusUpdateMessages(){
         }
     };
 
-}
-
-void SurfboardMainUnit::loopStatusLight(){
-    statusLighthandler->flicker();
 }
 
 void SurfboardMainUnit::sendCommand(SamplingUnitRep& unit, ControlUnitCommand command){

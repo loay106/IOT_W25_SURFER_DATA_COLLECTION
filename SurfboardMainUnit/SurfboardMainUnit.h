@@ -64,8 +64,7 @@ class SurfboardMainUnit {
 
         void handleButtonPress();
         void readStatusUpdateMessages();
-
-        void loopStatusLight();
+        
         void loopSampling();
         void loopFileUpload();
 

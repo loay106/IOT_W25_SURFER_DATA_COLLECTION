@@ -15,13 +15,12 @@ void setup() {
 }
 
 void loop() {
-    statusLight->updateColors(RGBColors::GREEN, RGBColors::NO_COLOR);
+    statusLight->updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
     delay(3000);
-    statusLight->updateColors(RGBColors::GREEN, RGBColors::RED);
+    statusLight->updateColors(RGBColors::BLUE, RGBColors::BLUE);
     delay(3000);
     statusLight->updateColors(RGBColors::CYAN, RGBColors::NO_COLOR);
     delay(3000);
     statusLight->updateColors(RGBColors::CYAN, RGBColors::RED);
     delay(3000);
-    //statusLight->flicker();
 }
