@@ -12,6 +12,8 @@ The project strives to offer an *efficient* and *robust* technological solution 
 The device can handle sensors with extremely high sampling rates, with high-frequency polling of approximately 1380 Hz.
 Although the device offers this functionality, it's highly recommended to match the delay time with the highest sensor rate to save on CPU usage and extend the device's lifetime.
 
+The device is also designed to use the minimal hardware required (excluding sensors).
+
 This project is the version 2.0 of the [previous](https://github.com/Moamena2/IOT---Surfboard-Data-Recorder.git) project.
 
 
