@@ -14,6 +14,8 @@ The project also utilizes the use of esp32's interrupts to maximize and offer a 
 The device can handle sensors with extremely high sampling rates, with high-frequency polling of approximately 1380 Hz.
 Although the device offers this functionality, it's highly recommended to match the delay time with the highest sensor rate to save on CPU usage and extend the device's lifetime.
 
+The device is also compatible with Firebase. Once the sampling session is complete, the data is persisted and is available on the cloud.
+
 This project is the version 2.0 of the [previous](https://github.com/Moamena2/IOT---Surfboard-Data-Recorder.git) project.
 
 
