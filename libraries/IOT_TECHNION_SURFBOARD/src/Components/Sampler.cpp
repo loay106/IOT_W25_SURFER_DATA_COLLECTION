@@ -81,6 +81,7 @@ void Sampler::disconnect() {
         currentUploadFile.close();
         fileSampleIndex = 0;
     }
+    delay(100); // wait for wifi to disconnected fully
     status = SamplerStatus::UNIT_STAND_BY;
 }
 

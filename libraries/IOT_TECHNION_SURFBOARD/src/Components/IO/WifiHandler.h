@@ -43,6 +43,7 @@ class WifiHandler{
         }
         void disconnect(){
             WiFi.disconnect(true);
+            WiFi.mode(WIFI_STA);
         }
 
         String getMacAddress() {

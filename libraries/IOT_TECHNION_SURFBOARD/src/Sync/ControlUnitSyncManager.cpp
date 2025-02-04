@@ -24,6 +24,7 @@ void ControlUnitSyncManager::connect(){
     if(isConnected){
         return;
     }
+    WiFi.mode(WIFI_STA);
     if (esp_now_init() == ESP_OK) {
         ControlUnitSyncManager::logger->info("ESP Now init success! Connected to channel " + to_string(channel));
     }else {

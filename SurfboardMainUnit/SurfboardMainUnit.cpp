@@ -149,6 +149,8 @@ void SurfboardMainUnit::stopSampleFilesUpload() {
       it->second.lastCommandSentMillis = current;
     }
     sampler->disconnect();
+    //syncManager->disconnect();
+    // syncManager->connect();
     updateStatus(SystemStatus::SYSTEM_STAND_BY);
     unsigned long elapsedTime = (current - uploadStartTime)/1000;
     logger->info("File upload stopped! Process ended in " + to_string(elapsedTime) + " seconds");
@@ -250,9 +252,8 @@ void SurfboardMainUnit::sendCommand(SamplingUnitRep& unit, ControlUnitCommand co
                 break;
             case ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD:
                 logger->debug("Sending STOP_SAMPLE_FILES_UPLOAD command to unit " + macToString(unit.mac));
-                syncManager->sendCommand(ControlUnitCommand::START_SAMPLE_FILES_UPLOAD, commandParams, unit.mac);
+                syncManager->sendCommand(ControlUnitCommand::STOP_SAMPLE_FILES_UPLOAD, commandParams, unit.mac);
                 break;
-
         }
         unit.lastCommandSentMillis = millis();
     }catch(ESPNowSyncError& error){
@@ -281,6 +282,8 @@ void SurfboardMainUnit::loopFileUpload(){
         }
     }else{
         sampler->disconnect();
+        //syncManager->disconnect();
+        //syncManager->connect();
         finishedCount++;
     }
 
@@ -299,7 +302,7 @@ void SurfboardMainUnit::loopFileUpload(){
     }
 
     if(finishedCount == samplingUnits.size() + 1){
-        updateStatus(SystemStatus::SYSTEM_STAND_BY);
+          updateStatus(SystemStatus::SYSTEM_STAND_BY);
           unsigned long elapsedTime = (millis() - uploadStartTime)/1000;
           logger->info("File upload completed! Process ended in " + to_string(elapsedTime) + " seconds");
     }else if(uploadingUnitsErrorNum == 0){
