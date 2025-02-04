@@ -7,10 +7,12 @@
 Surfer Data Collection, a project under the ICST Lab at the Technion – Israel Institute of Technology, captures acceleration force data using multiple sensors strategically placed on the surfer's board. This innovative system provides deep insights into athlete movements and maneuvers, enhancing training and performance analysis with precise data collection.
 Our project seamlessly manages wireless connectivity between sensors, ensuring efficient data transmission to the cloud for processing and analysis.
 
-The project offers an *efficient* and *robust* technological solution for the surfer! It consists of a single main unit and multiple sampling units (up to 20) that can read and write data from a variety of sensors, to better and enhance the surfer's experience and performance!
+The project strives to offer an *efficient* and *robust* technological solution for the surfer! It consists of a single main unit and multiple sampling units (up to 20) that can read and write data from a variety of sensors, to better and enhance the surfer's experience and performance!
 
 The device can handle sensors with extremely high sampling rates, with high-frequency polling of approximately 1380 Hz.
 Although the device offers this functionality, it's highly recommended to match the delay time with the highest sensor rate to save on CPU usage and extend the device's lifetime.
+
+This project is the version 2.0 of the [previous](https://github.com/Moamena2/IOT---Surfboard-Data-Recorder.git) project.
 
 
 # Folder description:
