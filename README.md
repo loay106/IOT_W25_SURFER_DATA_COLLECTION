@@ -7,7 +7,11 @@
 Surfer Data Collection, a project under the ICST Lab at the Technion – Israel Institute of Technology, captures acceleration force data using multiple sensors strategically placed on the surfer's board. This innovative system provides deep insights into athlete movements and maneuvers, enhancing training and performance analysis with precise data collection.
 Our project seamlessly manages wireless connectivity between sensors, ensuring efficient data transmission to the cloud for processing and analysis.
 
-The project offers a *robust* and *efficient* solution for the surfer! It consists of a single main unit and multiple sampling units (up to 20) that can read and write data from a variety of sensors, to better and enhance the surfer's experience and performance!
+The project offers an *efficient* and *robust* technological solution for the surfer! It consists of a single main unit and multiple sampling units (up to 20) that can read and write data from a variety of sensors, to better and enhance the surfer's experience and performance!
+
+The device can handle sensors with extremely high sampling rates, with high-frequency polling of approximately 1380 Hz.
+Although the device offers this functionality, it's highly recommended to match the delay time with the highest sensor rate to save on CPU usage and extend the device's lifetime.
+
 
 # Folder description:
 1. SurfboardMainUnit:
@@ -54,14 +58,16 @@ The project offers a *robust* and *efficient* solution for the surfer! It consis
 4. Open SurfboardMainUnit/SurfboardMainUnit.ino file in your Arduino IDE, choose your wiring pins, and compile the code into your main unit
 5. For every sampling unit desired, open SurfboardSamplingUnit/SurfboardSamplingUnit.ino in your Arduino IDE, update your sensors' data pins in the file and compile it
 6. Setup your Firebase account, endpoints, storage, and host the index.html file
-7. [RECOMMENDED] Press the button (Soft press) in your main unit and validate that the sampling process works.
-8. [RECOMMENDED] Press the button (Long press) in your main unit and validate that the file uploading process works.
-9. [RECOMMENDED] Write and keep track of your esp32's MAC address as it identifies the unit.
+7. [RECOMMENDED] Limit the delay period in your unit's loop function to match the highest sensor's sampling rate
+8. [RECOMMENDED] Press the button (Soft press) in your main unit and validate that the sampling process works.
+9. [RECOMMENDED] Press the button (Long press) in your main unit and validate that the file uploading process works.
+10. [RECOMMENDED] Write and keep track of your esp32's MAC address as it identifies the unit.
 
 ## Notes:
 1. Sensors receive their IDs in the order they were added to the unit, starting from 0.
 2. The sensor's parameters can be set in the unit.config file, in the same order they were inserted in
 3. A Wi-Fi connection is required in the setup stage
+
 
 # Hardware:
       
@@ -88,6 +94,10 @@ Example Sampling Unit Wiring Diagram:
 Example Main Unit Wiring Diagram:
 
 <img src="https://github.com/user-attachments/assets/d2808a2c-2120-4290-80fc-dc2f74cc72e5" alt="Image" width="600">
+
+# Known issues:
+1. System crash in the upload process if Wifi is not available
+2. File duplication if the upload process is interrupted before completion
 
 # Project Poster:
 // to be edited later - saved for template use
