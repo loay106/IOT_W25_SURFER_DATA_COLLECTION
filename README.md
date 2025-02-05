@@ -104,6 +104,7 @@ Example Main Unit Wiring Diagram:
 # Known issues:
 1. System crash in the upload process if Wifi is not available
 2. File duplication if the upload process is interrupted before completion
+3. ESP now protocol doesn't work correctly if wifi is connected with auto channel selection
 
 # Project Poster:
 // to be edited later - saved for template use
