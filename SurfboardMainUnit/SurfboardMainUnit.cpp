@@ -37,7 +37,6 @@ void SurfboardMainUnit::updateStatus(SystemStatus newStatus){
     status = newStatus;
     switch (status){
         case SystemStatus::SYSTEM_STARTING:
-            statusLighthandler->updateColors(RGBColors::NO_COLOR, RGBColors::NO_COLOR);
             break;
         case SystemStatus::SYSTEM_STAND_BY:
             statusLighthandler->updateColors(RGBColors::BLUE, RGBColors::BLUE);
@@ -363,7 +362,8 @@ void SurfboardMainUnit::loopDiscoverDisconnected(){
     unsigned long current = millis();
     std::map<string, SamplingUnitRep>::iterator it;
     for (it=samplingUnits.begin(); it!=samplingUnits.end(); it++) {
-        if((current - it->second.lastStatusUpdateMillis) >= MAX_STATUS_UPDATE_DELAY){
+        if((current - it->second.lastStatusUpdateMillis) >= MAX_STATUS_UPDATE_DELAY && it->second.status != SamplerStatus::UNIT_ERROR){
+            logger->info("Unit " + it->first + " is disconnected!");
             it->second.status = SamplerStatus::UNIT_ERROR;
         }
     }

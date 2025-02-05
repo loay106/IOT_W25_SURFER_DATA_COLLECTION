@@ -65,20 +65,22 @@ void setup() {
     }
 
     WifiHandler* wifiHandler = new WifiHandler(WIFI_SSID, WIFI_PASSWORD);
-    try{
-        logger->info("Checking wifi connection...");
-        wifiHandler->init();
-        wifiHandler->connect();
-        logger->info("Wifi connection established!");
-        WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
-        logger->info("Setting ESP Now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
-        wifiHandler->disconnect();
-        logger->info("Wifi disconnected!");
-    }catch(...){
-          logger->error("Wifi connection failed! Check your ssid and password!");
-          while(true){delay(500);};
+    while(true){
+        try{
+            logger->info("Checking wifi connection...");
+            wifiHandler->init();
+            wifiHandler->connect();
+            logger->info("Wifi connection established!");
+            WIFI_ESP_NOW_CHANNEL = wifiHandler->getChannel();
+            logger->info("Setting ESP now channel to " + to_string(WIFI_ESP_NOW_CHANNEL));
+            wifiHandler->disconnect();
+            logger->info("Wifi disconnected!");
+            break;
+        }catch(...){
+            logger->error("Wifi connection failed! Please check your wifi ssid and password!");
+            delay(3000);
+        }
     }
-
 
     ControlUnitSyncManager* syncManager = ControlUnitSyncManager::getInstance();
     RTCTimeHandler* timeHandler = new RTCTimeHandler(logger);
@@ -89,9 +91,8 @@ void setup() {
     mainUnit = new SurfboardMainUnit(syncManager, timeHandler, statusLighthandler, buttonHandler, logger, sampler, sdCardHandler);
 
     // declare sensors here....
-    Force_FAKE* fake_force_0 = new Force_FAKE(logger,sdCardHandler);
-    Force_FAKE* fake_force_1 = new Force_FAKE(logger,sdCardHandler);
-    Force_FAKE* fake_force_2 = new Force_FAKE(logger,sdCardHandler);
+    Mock_HX711* mock_force_0 = new Mock_HX711(logger,sdCardHandler, 30);
+    Mock_HX711* mock_force_1 = new Mock_HX711(logger,sdCardHandler, 30);
 
     try{
         // don't change the order of the init
@@ -105,18 +106,16 @@ void setup() {
         // init sensors here..
         // you can pass params from the config file
         // sensor[i] should have the param in sensorsParams[i]
-        fake_force_0->init();
-        fake_force_1->init();
-        fake_force_2->init();
+        mock_force_0->init();
+        mock_force_1->init();
     }catch(InitError& err){
         logger->error("Init error! Check your wiring!");
         while(true){delay(500);};
     }
 
     // add sensors here....
-    mainUnit->addSensor(fake_force_0);
-    mainUnit->addSensor(fake_force_1);
-    mainUnit->addSensor(fake_force_2);
+    mainUnit->addSensor(mock_force_0);
+    mainUnit->addSensor(mock_force_1);
 
     try{
         syncManager->connect();

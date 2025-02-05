@@ -19,10 +19,8 @@ using namespace std;
     5. connect to wifi, get wifi channel and set it for esp now 
 */
 
-
-const string CONFIG_FILE_NAME = "unit.config";
 const int COMMAND_SEND_MIN_INTERVAL_MILLIS = 500; 
-const int MAX_STATUS_UPDATE_DELAY = 5000;
+const int MAX_STATUS_UPDATE_DELAY = 3000;
 
 typedef struct SamplingUnitRep{
     uint8_t mac[6];
