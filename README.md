@@ -107,7 +107,8 @@ Example Main Unit Wiring Diagram:
 3. ESP now protocol doesn't work correctly if wifi is connected with auto channel selection
 
 # Project Poster:
-[IOT_POSTER.pdf](https://github.com/user-attachments/files/19032671/IOT_POSTER.pdf)
+![IOT_POSTER_page-0001](https://github.com/user-attachments/assets/ae712cdf-6002-4a4c-ab74-1cca1241ef37)
+
 
 This project is part of ICST - The Interdisciplinary Center for Smart Technologies, Taub Faculty of Computer Science, Technion https://icst.cs.technion.ac.il/
 
